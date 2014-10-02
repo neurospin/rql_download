@@ -82,9 +82,6 @@ class CWSearchAdd(hook.Hook):
 
         # Execute the rql
         # ToDo: try to get the current request cw_rset
-        print self.entity
-        print self.entity.cw_rset
-        print stop
         rset = self._cw.execute(rql)
 
         # Find constant nodes
@@ -174,6 +171,20 @@ class CWSearchAdd(hook.Hook):
             # Entity modification related event: specify that the result has been
             # modified
             self.entity.cw_edited["result"] = f_eid
+
+
+class CWSearchFuseMount(hook.Hook):
+    """ Class that start/update a process specific to a user that mount
+    his CWSearch entities.
+    """
+    __regid__ = "rqldownload.fuse_mount_hook"
+    __select__ = hook.Hook.__select__ & is_instance("CWSearch")
+    events = ("after_add_entity", )
+
+    def __call__(self):
+        """ Method that start/update the user specific process.
+        """
+
 
 
 class CWSearchExpirationDateHook(hook.Hook):
