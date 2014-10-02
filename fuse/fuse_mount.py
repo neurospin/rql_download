@@ -10,6 +10,7 @@
 # System import
 import os
 import re
+import sys
 
 # CW import
 from cubicweb.cwconfig import CubicWebConfiguration as cwcfg
@@ -375,7 +376,9 @@ class FuseRset(LoggingMixIn, Operations):
 
 
 # To tune parameters
-instance_name = "test"
+instance_name = sys.argv[1]
+login = sys.argv[2]
+print instance_name, login
 
 # Get the CWSreach names owned by the user
 mih = get_cw_connection(instance_name)
