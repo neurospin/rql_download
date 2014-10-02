@@ -1,0 +1,21 @@
+Source: cubicweb-rql-download
+Section: web
+Priority: optional
+Maintainer: CEA <contact@logilab.fr>
+Build-Depends: debhelper (>= 7), python (>= 2.6), python-support
+Standards-Version: 3.9.3
+XS-Python-Version: >= 2.6
+
+Package: cubicweb-rql-download
+Architecture: all
+Depends:
+ cubicweb-common (>= 3.19.3),
+ ${python:Depends},
+ ${misc:Depends},
+Description: Cube to download CWSearch.
+ CubicWeb is a semantic web application framework.
+ .
+ Cube to download CWSearch.
+ .
+ This package will install all the components you need to run the
+ cubicweb-rql-download application (cube :)..
