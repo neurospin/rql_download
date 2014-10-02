@@ -11,11 +11,29 @@
 import os
 import re
 import sys
-
+import stat
+import json
+import time
+import pwd
+ 
 # CW import
 from cubicweb.cwconfig import CubicWebConfiguration as cwcfg
 from logilab.common.configuration import Configuration
 
+# Fuse import
+from cubes.rql_download.fuse.fuse import (FUSE, 
+                                          FuseOSError, 
+                                          Operations, 
+                                          ENOENT, 
+                                          ENOTDIR, 
+                                          EROFS, 
+                                          ENOTSUP)
+
+# The following import can be used to help debugging bbut is dangerous because
+# the content of all fuse actions (even the binary content of files) is
+# printed on the log. In order to debug is also necessary to add LoggingMixIn
+# to FuseRset below.
+#from cubes.rql_download.fuse.fuse import LoggingMixIn
 
 def get_cw_connection(instance_name):
     """ Connect to a local instance using an in memory connection.
@@ -75,6 +93,7 @@ def get_cw_basedir(instance_name, basedir_alias="basedir"):
     # If the basedir parameter is nor found raise an exception
     raise Exception("No 'basedir' option has been declared in the '{0}' "
                     "configuration file.".format(config_file))
+
 
 class VirtualDirectory(object):
     """
@@ -190,12 +209,14 @@ class VirtualDirectory(object):
         return real_path
 
 
-class FuseRset(LoggingMixIn, Operations):
+# If debug is necessary, add LoggingMixIn to FuseRset base classes
+#class FuseRset(LoggingMixIn, Operations):
+class FuseRset(Operations):
     def __init__(self, instance, login):
         self.instance = instance
         self.login = login
         try:
-            pw = getpwnam(self.login)
+            pw = pwd.getpwnam(self.login)
         except KeyError:
             print >> sys.stderr, 'ERROR: unknown user %s' % login
             sys.exit(1)
@@ -212,7 +233,7 @@ class FuseRset(LoggingMixIn, Operations):
         cw_connection = get_cw_connection(self.instance)
         try:
             cw_session = cw_connection.session
-            data_root_dir = get_cw_basedir(self.instance)
+            data_root_dir = get_cw_basedir(self.instance, "sftp_server_basedir")
             
             # Create an empty virtual directory
             self.vdir = VirtualDirectory(data_root_dir)
@@ -378,15 +399,8 @@ class FuseRset(LoggingMixIn, Operations):
 # To tune parameters
 instance_name = sys.argv[1]
 login = sys.argv[2]
-print instance_name, login
+mount_base = sys.argv[3]
+mount_point = os.path.join(mount_base, instance_name, login)
+print instance_name, login, moun_point
 
-# Get the CWSreach names owned by the user
-mih = get_cw_connection(instance_name)
-rset = mih.session.execute("Any SN WHERE X is CWSearch, X name SN")
-print rset
-mih.shutdown()
-
-# Get the rql_download basedir
-print get_cw_basedir(instance_name, "sftp_server_basedir")
-
-
+FUSE(FuseRset(instance_name, login), mountpoint, foreground=True, allow_other=True, default_permissions=True)
