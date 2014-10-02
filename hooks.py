@@ -25,6 +25,10 @@ from cubicweb.entity import Entity
 from cubicweb.server.session import Session
 
 
+###############################################################################
+# CW search main hooks
+###############################################################################
+
 class CWSearchAdd(hook.Hook):
     """ CubicWeb hook that is called before adding the new CWSearch entity.
     """
@@ -173,6 +177,22 @@ class CWSearchAdd(hook.Hook):
             self.entity.cw_edited["result"] = f_eid
 
 
+class CWSearchExpirationDateHook(hook.Hook):
+    __regid__ = 'rsetftp.search_add_expiration_hook'
+    __select__ = hook.Hook.__select__ & is_instance('CWSearch')
+    events = ('before_add_entity', )
+
+    def __call__(self):
+        if 'expiration_date' not in self.entity.cw_edited:
+            delay = self._cw.vreg.config['default_expiration_delay']
+            self.entity.cw_edited['expiration_date'] =  (
+                datetime.date.today() + datetime.timedelta(delay))
+
+
+###############################################################################
+# CW search fuse hooks
+###############################################################################
+
 class CWSearchFuseMount(hook.Hook):
     """ Class that start/update a process specific to a user that mount
     his CWSearch entities.
@@ -188,20 +208,36 @@ class CWSearchFuseMount(hook.Hook):
         login = self.entity.owned_by[0].login
         cmd = [sys.executable, "-m", "cubes.rql_download.fuse.fuse_mount",
                instance_name, login]
-        subprocess.call(cmd)
+        process = subprocess.Popen(cmd)
 
 
-class CWSearchExpirationDateHook(hook.Hook):
-    __regid__ = 'rsetftp.search_add_expiration_hook'
-    __select__ = hook.Hook.__select__ & is_instance('CWSearch')
-    events = ('before_add_entity', )
+class ServerStartupFuseMount(hook.Hook):
+    """ On startup, generate all the fuse mount point associated with CWSearch 
+    owners."""
+    __regid__ = "rqldownload.startup_fuse_mount_hook"
+    events = ("server_startup",)
 
     def __call__(self):
-        if 'expiration_date' not in self.entity.cw_edited:
-            delay = self._cw.vreg.config['default_expiration_delay']
-            self.entity.cw_edited['expiration_date'] =  datetime.date.today() + datetime.timedelta(delay)
+        """ Method that start the user specific processes.
+        """
+        # Execute a rql to get all the CWSearch owner logins
+        with self.repo.internal_session() as cnx:
+            rql = "Any L Where S is CWSearch, S owned_by U, U login L"
+            rset = cnx.execute(rql)
+            logins = set([x[0] for x in rset])
+
+        # Start a fuse deamon for each user
+        instance_name = self.repo.schema.name
+        for user in logins:
+            cmd = [sys.executable, "-m", "cubes.rql_download.fuse.fuse_mount",
+                   instance_name, user]
+            process = subprocess.Popen(cmd)   
+        
 
 
+###############################################################################
+# CW search twisted hook
+###############################################################################
 
 class ServerStartupHook(hook.Hook):
     """on startup, register a task to delete old CWSearch entity"""
