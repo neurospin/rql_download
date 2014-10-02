@@ -403,4 +403,5 @@ mount_base = sys.argv[3]
 mount_point = os.path.join(mount_base, instance_name, login)
 print instance_name, login, moun_point
 
-FUSE(FuseRset(instance_name, login), mountpoint, foreground=True, allow_other=True, default_permissions=True)
+FUSE(FuseRset(instance_name, login), mount_point, foreground=True, 
+     allow_other=True, default_permissions=True)
