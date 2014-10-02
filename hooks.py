@@ -184,7 +184,11 @@ class CWSearchFuseMount(hook.Hook):
     def __call__(self):
         """ Method that start/update the user specific process.
         """
-
+        instance_name = self._cw.repo.schema.name
+        login = self.entity.owned_by[0].login
+        cmd = [sys.executable, "-m", "cubes.rql_download.fuse.fuse_mount",
+               instance_name, login]
+        subprocess.call(cmd)
 
 
 class CWSearchExpirationDateHook(hook.Hook):
