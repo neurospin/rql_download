@@ -22,6 +22,13 @@ options = (
               "to the ftp server and fuse processes) ",
       "group": "rql_download", "level": 0,
       }),
+    ("mountdir",
+      {"type": "string",
+      "default": "/home/",
+      "help": "base directory in which fuse will mount the user virtual "
+              "directoies ",
+      "group": "rql_download", "level": 0,
+      }),
     ("start_sftp_server",
       {"type": "yn",
       "default": False,
