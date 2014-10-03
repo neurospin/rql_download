@@ -15,25 +15,28 @@ import stat
 import json
 import time
 import pwd
- 
+import logging
+
+# Define the logger
+logger = logging.getLogger("fuse.log-mixin")
+
 # CW import
 from cubicweb.cwconfig import CubicWebConfiguration as cwcfg
-from logilab.common.configuration import Configuration
 
 # Fuse import
-from cubes.rql_download.fuse.fuse import (FUSE, 
-                                          FuseOSError, 
-                                          Operations, 
-                                          ENOENT, 
-                                          ENOTDIR, 
-                                          EROFS, 
+from cubes.rql_download.fuse.fuse import (FUSE,
+                                          FuseOSError,
+                                          Operations,
+                                          ENOENT,
+                                          ENOTDIR,
+                                          EROFS,
                                           ENOTSUP)
 
 # The following import can be used to help debugging but is dangerous because
 # the content of all fuse actions (even the binary content of files) is
 # printed on the log. In order to debug is also necessary to add LoggingMixIn
 # to FuseRset below.
-from cubes.rql_download.fuse.fuse import LoggingMixIn
+# from cubes.rql_download.fuse.fuse import LoggingMixIn
 
 
 def get_cw_connection(instance_name):
@@ -97,190 +100,382 @@ def get_cw_option(instance_name, cw_option):
 
 
 class VirtualDirectory(object):
-    """
-    Build an internal representation of a full virtual directory to allow
+    """ Build an internal representation of a full virtual directory to allow
     easy and fast usge of this directory with fuse.
     """
     def __init__(self, root_data_dir):
+        """ Creates an empty virtual directory.
+
+        The virtual directory can be populated with make_directory()
+        and add_file().
+        Its content can be accessed with stat(), listdir() and get_real_path().
+
+        Parameters
+        ----------
+        root_data_dir: str (mandatory)
+            parameter used to mask a part of the file path.
         """
-        Creates an empty virtual directory. The virtual directory can be
-        populated with make_directory() and add_file(). Its content can be
-        accessed with stat(), listdir() and get_real_path().
-        """
+        # Class parameters
         self.root_data_dir = root_data_dir
-        now = time.time()
         self.content = {}
-    
+
     def make_directory(self, path, uid, gid, time):
+        """ Create a virtual directory.
+
+        The parent directory must have been created before.
+        The new directory will be owned by the given uid and
+        gid.
+        Its access mode will be 0500 (read and executable for user only).
+        At each access, a modification times will be set to the given time.
+
+        Parameters
+        ----------
+        path: str (mandatory)
+            the virtual path we want to create.
+        uid: str (mandatory)
+            the user identifier.
+        gid: str (mandatory)
+            the user group identifier.
+        time: str (mandatory)
+            the create time that will be set to the created path.
         """
-        Create a virtual directory. The parent directory must have been
-        created before. The new directory will be owned by the given uid and
-        gid. Its access mode will be 0500 (read and executable for user only).
-        All access, a modification times will be set to the given time.
-        """
+        # Try to get the path informations: get something if the
+        # the path has already been created
         path_info = self.content.get(path)
+
+        # If the path is already created, check the that the path information
+        # are correct
         if path_info is not None:
             if path_info[1:] != (uid, gid, 0500, time):
-                raise ValueError('Virtual directory %s already exists' % path)
+                raise ValueError(
+                    "Virtual directory '{0}' already exists".format(path))
+
+        # Otherwise, create a new virtual path
         else:
+            # Path creation
             self.content[path] = ([], uid, gid, 0500, time)
+
+            # Link the current path to the global tree
+            # > get the parent directory name and current directory name
             if path == "/":
-                parent = None
-                dir = "/"
+                parentdir_name = None
+                currentdir_name = "/"
             else:
-                parent, dir = os.path.split(path)
-            info = self.content.get(parent)
-            if info:
-                info[0].append(dir)
-    
+                parentdir_name, currentdir_name = os.path.split(path)
+            # > get the parant path informations
+            parentpath_info = self.content.get(parentdir_name)
+            # > add the current path to the parent info structure
+            if parentpath_info:
+                parentpath_info[0].append(currentdir_name)
+
     def add_file(self, path, real_path, uid, gid):
+        """ Create a virtual file 'pointing to' a real file.
+
+        The parent directory must have been created before.
+        The virtual file will be owned by the given uid and gid.
+        Its access mode will be the same as the real file without write access.
+
+        Parameters
+        ----------
+        path: str (mandatory)
+            the virtual file path we want to create.
+        real_path: str (mandatory)
+            the real file location, where the virtual file point to.
+        uid: str (mandatory)
+            the user identifier.
+        gid: str (mandatory)
+            the user group identifier.
         """
-        Create a virtual file "pointing to" a real file. The parent directory
-        must have been created before. The virtual file will be owned by the
-        given uid and gid. Its access mode will be the same as the real file
-        without write access.
-        """
+        # Try to get the file informations: get something if the
+        # the file has already been created
         path_info = self.content.get(path)
+
+        # If the file is already created, check the that the file information
+        # are correct
         if path_info is not None:
             if path_info != (real_path, uid, gid, None, None):
-                raise ValueError('Virtual file %s already exists' % path)
-        else:
-            self.content[path] = (real_path, uid, gid, None, None)
-            parent, file = os.path.split(path)
-            info = self.content.get(parent)
-            if info:
-                info[0].append(file)
-            else:
-                raise ValueError('Virtual directory %s does not exist' % parent)
+                raise ValueError(
+                    "Virtual file '{0}' already exists".format(path))
 
-    
+        # Otherwise, create a new virtual file pointing to a real one
+        else:
+            # File creation: point to the real file
+            self.content[path] = (real_path, uid, gid, None, None)
+
+            # Link the current file to the global tree
+            # > get the parent directory name and current file name
+            parentdir_name, file_name = os.path.split(path)
+            # > get the parant path informations
+            parentpath_info = self.content.get(parentdir_name)
+            # > add the current file to the parent info structure
+            if parentpath_info:
+                parentpath_info[0].append(file_name)
+            else:
+                raise ValueError(
+                    "Virtual directory '{0}' does not exist".format(
+                        parentdir_name))
+
     def stat(self, path):
+        """ Return a dictionary similar to the result of os.fstat for the
+        given virtual path.
+
+        .. note::
+            raise a 'FuseOSError' exception if the path does not exist.
+
+        Parameters
+        ----------
+        path: str (mandatory)
+            a virtual path we want to check.
         """
-        Return a dictionary similar to the result of os.fstat for the given
-        virtual path.
-        """
-        info = self.content.get(path)
-        if info is None:
+        # Try to get the path informations: get something if the
+        # the path exists
+        path_info = self.content.get(path)
+
+        # If the path does not exist, raise a 'FuseOSError' exception
+        if path_info is None:
             raise FuseOSError(ENOENT)
-        real_path, uid, gid, mode, time = info
+
+        # Unpack path information
+        real_path, uid, gid, mode, ctime = path_info
+
+        # Initilaize the output
         result = dict(st_uid=uid, st_gid=gid)
+
+        # Path link to a real file
         if isinstance(real_path, basestring):
-            # path is a real file
             st = os.lstat(real_path)
             # TODO: Remove write access on st_mode
-            result.update(dict((key, getattr(st, key)) for key in ('st_atime', 'st_ctime',
-                                'st_mode', 'st_mtime', 'st_nlink', 'st_size')))
-            
+            result.update(
+                dict((key, getattr(st, key))
+                     for key in ("st_atime", "st_ctime", "st_mode"
+                                 "st_mtime", "st_nlink", "st_size")))
+        # Path is a virtual directory
         else:
-            # path is a virtual directory
-            result['st_mode'] = stat.S_IFDIR + mode
-            result['st_atime'] = time
-            result['st_ctime'] = time
-            result['st_mtime'] = time
-            # I do not know exactly what is st_nlinks. I decided to set it to
-            # the number of entries returned by self.readdir(path)
-            result['st_nlink'] = len(real_path)+2
-            result['st_size'] = 4096
+            result["st_mode"] = stat.S_IFDIR + mode
+            result["st_atime"] = ctime
+            result["st_ctime"] = ctime
+            result["st_mtime"] = ctime
+            # st_nlinks is the number of reference to the directory a:
+            # the number of sub folders in a pointing to a +
+            # a has a referece to itself and the parent directory has
+            # a reference to a.
+            result["st_nlink"] = len(real_path) + 2
+            result["st_size"] = 4096
+
         return result
 
-    
     def listdir(self, path):
+        """ Return a generator yielding the content of a virtual directory.
+
+        Behave much like os.listdir() but the result also contains '.' and
+        '..' at the begining.
+
+        .. note::
+            raise a 'FuseOSError' exception if the path does not exist or
+            the path is not a directory.
+
+        Parameters
+        ----------
+        path: str (mandatory)
+            a virtual path we want to list.
         """
-        Return a generator yielding the content of a virtual directory. Behave
-        much like os.listdir() but the result also contains '.' and '..' at
-        the begining.
-        """
-        info = self.content.get(path)
-        if info is None:
+        # Try to get the path informations: get something if the
+        # the path exists
+        path_info = self.content.get(path)
+
+        # If the path does not exist, raise a 'FuseOSError' exception
+        if path_info is None:
             raise FuseOSError(ENOENT)
-        real_path, uid, gid, mode, time = info
+
+        # Unpack path information
+        real_path, uid, gid, mode, ctime = path_info
+
+        # Path is a virtual directory
         if isinstance(real_path, list):
-            yield '.'
-            yield '..'
+            yield "."
+            yield ".."
             for path in real_path:
                 yield path
+        # Otherwise raise an exception
         else:
             raise FuseOSError(ENOTDIR)
-    
-    
+
     def get_real_path(self, path):
+        """ For a file, returns the real path for a given virtual path.
+
+        .. note::
+            raise a 'FuseOSError' exception if the path does not exist or
+            the path is not a file.
+
+        Parameters
+        ----------
+        path: str (mandatory)
+            a virtual file from which we want to extract his real path.
         """
-        For a file, returns the real path for a given virtual path.
-        """
-        info = self.content.get(path)
-        if info is None:
+        # Try to get the file informations: get something if the
+        # the path exists
+        path_info = self.content.get(path)
+
+        # If the path does not exist, raise a 'FuseOSError' exception
+        if path_info is None:
             raise FuseOSError(ENOENT)
-        real_path, uid, gid, mode, time = info
-        return real_path
+
+        # Unpack path information
+        real_path, uid, gid, mode, ctime = path_info
+
+        # Path is a virtual file
+        if isinstance(real_path, basestring):
+            return real_path
+        # Otherwise raise an exception
+        else:
+            raise FuseOSError(ENOTDIR)
 
 
 # If debug is necessary, add LoggingMixIn to FuseRset base classes
-class FuseRset(LoggingMixIn, Operations):
-#class FuseRset(Operations):
+# class FuseRset(LoggingMixIn, Operations):
+class FuseRset(Operations):
+    """ Class that create a mount point containing virtual path representing
+    the CWSearch entities of a cw user.
+    """
     def __init__(self, instance, login):
+        """ Initilize the FuseRset class.
+
+        .. note::
+            a user with 'login' login must exist on the system through ldap
+            or the adduser command.
+
+        Parameters
+        ----------
+        instance: str (mandatory)
+            the cw instance name we want to connect
+        login: str (mandatory)
+            the cw login
+        """
+        # Class parameters
         self.instance = instance
         self.login = login
+        self.vdir = None  # the virtual directory object
+
+        # Get the user uid and gid
         try:
-            pw = pwd.getpwnam("ag239446") #self.login)
+            pw = pwd.getpwnam("ag239446")  # self.login)
         except KeyError:
-            print >> sys.stderr, 'ERROR: unknown user %s' % login
-            sys.exit(1)
+            raise Exception("Unknown user '{0}'. A user with 'login' login "
+                            "must exist on the system through ldap or the "
+                            "adduser command.".format(login))
         self.uid = pw.pw_uid
         self.gid = pw.pw_gid
-        print '! login =', self.login, 'uid =', self.uid, 'gid =', self.gid
-        self.vdir = None
+        logger.debug("! login = {0}; uid = {1}; gid = {2}".format(
+            self.login, self.uid, self.gid))
+
+        # Create the virtual directory
         self.update()
-        
+
     def update(self):
-        print '! starting update'
-        # Get a connection to Cubicweb
+        """ Method that create a virtual directory from a user CWSearch
+        entities results.
+        """
+
+        # Message
+        logger.debug("! starting virtual direcotry update")
+
+        # Get a Cubicweb in memory connection
         cw_connection = get_cw_connection(self.instance)
+
         try:
+            # Get the cw session to execute rql requests
             cw_session = cw_connection.session
+
+            # From the cw configuration file, get the mask we will apply
+            # on the virtual tree
             data_root_dir = get_cw_option(self.instance, "basedir")
-            
+
             # Create an empty virtual directory
             self.vdir = VirtualDirectory(data_root_dir)
+
             # Get the current time for virtual directories times
             now = time.time()
-            for cwsearch, cwsearch_name in cw_session.execute('Any S, N WHERE S is CWSearch, S name N, S owned_by U, U login "%s"' % self.login):
-                print '! Processing CWSearch "%s"' % cwsearch_name
-                files_data = cw_session.execute('Any D WHERE S is CWSearch, S eid %(eid)s, S result F, F data D', dict(eid=cwsearch))[0]
-                files = json.load(files_data[0])['files']
-                print '! Found %d valid files for "%s"' % (len(files), cwsearch_name)
-                for file in files:
-                    # Remove data_root_dir from the begining of the path
-                    if file.startswith(data_root_dir):
-                        path = file[len(data_root_dir):]
-                    # Adds CWSearch name to path
+
+            # Go through all the user CWSearch entities
+            rql = ("Any S, N WHERE S is CWSearch, S name N, S owned_by U, "
+                   "U login '{0}'".format(self.login))
+            for cwsearch_eid, cwsearch_name in cw_session.execute(rql):
+
+                # Message
+                logger.debug(
+                    "! Processing CWSearch '{0}'".format(cwsearch_name))
+
+                # Get the files associated to the current CWSearch
+                rql = "Any D WHERE S eid '{0}', S result F, F data D".format(
+                    cwsearch_eid)
+                files_data = cw_session.execute(rql)[0]
+
+                # Get the downloadable files path from the json
+                files = json.load(files_data[0])["files"]
+                logger.debug("! Found {0} valid files for '{1}'".format(
+                    len(files), cwsearch_name))
+
+                # Go through all files and create the virtual direcotry
+                for fname in files:
+
+                    # RApply the mask: rmove 'data_root_dir' from the
+                    # begining of the path
+                    if fname.startswith(data_root_dir):
+                        path = fname[len(data_root_dir):]
+
+                    # Add the CWSearch name to the path
                     if os.path.isabs(path):
                         path = os.path.join(cwsearch_name, path[1:])
                     else:
                         path = os.path.join(cwsearch_name, path)
-                    # Make sure all parent virtual directories are created
-                    virtual_path = path.split(os.path.sep)
-                    # Paths send by fuse are absolute => adds op.path.sep at
+
+                    # Paths send by fuse are absolute => adds os.path.sep at
                     # the begining
+                    virtual_path = path.split(os.path.sep)
                     virtual_path.insert(0, os.path.sep)
-                    for i in xrange(1, len(virtual_path)):
+
+                    # Make sure all parent virtual directories are created
+                    for i in range(1, len(virtual_path)):
                         dir_full_path = os.path.join(*virtual_path[:i])
-                        self.vdir.make_directory(dir_full_path, self.uid, self.gid, now)
-                    self.vdir.add_file(os.path.join(*virtual_path), file, self.uid, self.gid)
+                        self.vdir.make_directory(
+                            dir_full_path, self.uid, self.gid, now)
+
+                    # Add the file to the fuse virtual tree
+                    self.vdir.add_file(
+                        os.path.join(*virtual_path), fname, self.uid, self.gid)
+
+        # Shut down the cw connection
         finally:
             cw_connection.shutdown()
-        print '! update done'
 
+        # Message
+        logger.debug("! update done")
 
-        
+    ########################################################################
     # Filesystem methods
-    # ==================
+    ########################################################################
 
     # access is not called if 'default_permissions' mount option is used
-    #def access(self, path, mode):
-        #return 0
-        
+    # def access(self, path, mode):
+    #    return 0
+
     def getattr(self, path, fh=None):
         """ Return a dict with stats on the given virtual path.
+
+        .. note::
+            when the stat method is called on the '/.isalive' fake folder,
+            the method return a fake folder stat but do not raise an exception.
+            This in turns unables us to check if the fuse process is running.
+
+        .. note::
+            when the stat method is called on the '/.update' fake folder,
+            the virtual direcotry is recreated and the process may not be
+            available during this operation.
+
+        Parameters
+        ----------
+        path: str (mandatory)
+            a virtual path
         """
         # Create a fake folder stat
         fstat = {
@@ -304,30 +499,32 @@ class FuseRset(LoggingMixIn, Operations):
             return fstat
 
         return self.vdir.stat(path)
-    
-    
+
     def opendir(self, path):
-        """
-        opendir is useless here because the path is always given to readdir().
+        """ Tis method is useless here because the path is always given to
+        readdir().
         Always return 0.
         """
         return 0
 
-
     def readdir(self, path, fh):
-        print "READ", path
+        """ List the content of a directory.
+
+        Parameters
+        ----------
+        path: str (mandatory)
+            a virtual path
+        """
         return self.vdir.listdir(path)
 
-
     def releasedir(self, path, fh):
-        """
-        As for opendir, we do not use releasedir.
+        """ As for opendir, we do not use releasedir.
         """
         return 0
 
-
-    # File methods
-    # ============
+    ########################################################################
+    # Implemented file methods
+    ########################################################################
 
     def open(self, path, flags):
         if flags & (os.O_RDWR + os.O_WRONLY):
@@ -341,10 +538,9 @@ class FuseRset(LoggingMixIn, Operations):
     def release(self, path, fh):
         return os.close(fh)
 
-
+    ########################################################################
     # Forbidden methods
-    #==================
-
+    ########################################################################
 
     def chmod(self, path, mode):
         raise FuseOSError(EROFS)
@@ -353,13 +549,6 @@ class FuseRset(LoggingMixIn, Operations):
         raise FuseOSError(EROFS)
 
     def create(self, path, mode, fi=None):
-        '''
-        When raw_fi is False (default case), fi is None and create should
-        return a numerical file handle.
-
-        When raw_fi is True the file handle should be set directly by create
-        and return 0.
-        '''
         raise FuseOSError(EROFS)
 
     def flush(self, path, fh):
@@ -372,7 +561,6 @@ class FuseRset(LoggingMixIn, Operations):
         raise FuseOSError(ENOTSUP)
 
     def link(self, target, source):
-        'creates a hard link `target -> source` (e.g. ln source target)'
         raise FuseOSError(EROFS)
 
     def mkdir(self, path, mode):
@@ -397,17 +585,9 @@ class FuseRset(LoggingMixIn, Operations):
         raise FuseOSError(ENOTSUP)
 
     def statfs(self, path):
-        '''
-        Returns a dictionary with keys identical to the statvfs C structure of
-        statvfs(3).
-
-        On Mac OS X f_bsize and f_frsize must be a power of 2
-        (minimum 512).
-        '''
         raise FuseOSError(ENOTSUP)
 
     def symlink(self, target, source):
-        'creates a symlink `target -> source` (e.g. ln -s source target)'
         raise FuseOSError(EROFS)
 
     def truncate(self, path, length, fh=None):
@@ -417,23 +597,28 @@ class FuseRset(LoggingMixIn, Operations):
         raise FuseOSError(EROFS)
 
     def utimens(self, path, times=None):
-        'Times is a (atime, mtime) tuple. If None use current time.'
         raise FuseOSError(ENOTSUP)
 
     def write(self, path, data, offset, fh):
         raise FuseOSError(EROFS)
 
-import logging
-logger = logging.getLogger('fuse.log-mixin')
+# Setup the logger: cubicweb change the logging config and thus
+# we setup en axtra stream handler
+# ToDo: fix it
 logger.setLevel(logging.DEBUG)
-logger.addHandler( logging.StreamHandler())
+logger.addHandler(logging.StreamHandler())
 
 # Command line parameters
 instance_name = sys.argv[1]
 login = sys.argv[2]
 mount_base = get_cw_option(instance_name, "mountdir")
 mount_point = os.path.join(mount_base, instance_name, login)
-print instance_name, login, mount_point
+logger.debug("Command line parameters: instance name = {0}, login = {1} fuse "
+             "mount point = {2}".format(instance_name, login, mount_point))
 
-FUSE(FuseRset(instance_name, login), mount_point, foreground=True, 
-     allow_other=True, default_permissions=True)
+# Create the fuse mount point
+FUSE(FuseRset(instance_name, login),
+     mount_point,
+     foreground=True,
+     allow_other=True,
+     default_permissions=True)
