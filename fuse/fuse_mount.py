@@ -29,11 +29,12 @@ from cubes.rql_download.fuse.fuse import (FUSE,
                                           EROFS, 
                                           ENOTSUP)
 
-# The following import can be used to help debugging bbut is dangerous because
+# The following import can be used to help debugging but is dangerous because
 # the content of all fuse actions (even the binary content of files) is
 # printed on the log. In order to debug is also necessary to add LoggingMixIn
 # to FuseRset below.
-#from cubes.rql_download.fuse.fuse import LoggingMixIn
+from cubes.rql_download.fuse.fuse import LoggingMixIn
+
 
 def get_cw_connection(instance_name):
     """ Connect to a local instance using an in memory connection.
@@ -61,14 +62,14 @@ def get_cw_connection(instance_name):
     return mih
 
 
-def get_cw_basedir(instance_name, basedir_alias="basedir"):
-    """ Get the instance 'basedir' parameter.
+def get_cw_option(instance_name, cw_option):
+    """ Get a cw option.
 
     Parameters
     ----------
     instance_name: str (mandatory)
         the name of the cw instance we want to connect.
-    basedir_alias: str (optional, default 'basedir')
+    cw_option: str (mandatory)
         the cw option name.
 
     Returns
@@ -87,12 +88,12 @@ def get_cw_basedir(instance_name, basedir_alias="basedir"):
             match = re.match(r"^(\w+)=(\S*)$", line)
             if match:
                 name, value = match.groups()
-                if name == basedir_alias:
+                if name == cw_option:
                     return value
 
     # If the basedir parameter is nor found raise an exception
-    raise Exception("No 'basedir' option has been declared in the '{0}' "
-                    "configuration file.".format(config_file))
+    raise Exception("No '{0}' option has been declared in the '{1}' "
+                    "configuration file.".format(cw_option, config_file))
 
 
 class VirtualDirectory(object):
@@ -109,24 +110,28 @@ class VirtualDirectory(object):
         self.root_data_dir = root_data_dir
         now = time.time()
         self.content = {}
-        self.content['/'] = ([], 0, 0, 0555, now)
     
     def make_directory(self, path, uid, gid, time):
         """
         Create a virtual directory. The parent directory must have been
         created before. The new directory will be owned by the given uid and
-        gid. Its access mode will be 0500 (read and axecutable for user only).
-        All access an modification times will be set to the given time.
+        gid. Its access mode will be 0500 (read and executable for user only).
+        All access, a modification times will be set to the given time.
         """
         path_info = self.content.get(path)
         if path_info is not None:
             if path_info[1:] != (uid, gid, 0500, time):
                 raise ValueError('Virtual directory %s already exists' % path)
-        self.content[path] = ([], uid, gid, 0500, time)
-        parent, dir = os.path.split(path)
-        info = self.content.get(parent)
-        if info:
-            info[0].append(dir)
+        else:
+            self.content[path] = ([], uid, gid, 0500, time)
+            if path == "/":
+                parent = None
+                dir = "/"
+            else:
+                parent, dir = os.path.split(path)
+            info = self.content.get(parent)
+            if info:
+                info[0].append(dir)
     
     def add_file(self, path, real_path, uid, gid):
         """
@@ -210,13 +215,13 @@ class VirtualDirectory(object):
 
 
 # If debug is necessary, add LoggingMixIn to FuseRset base classes
-#class FuseRset(LoggingMixIn, Operations):
-class FuseRset(Operations):
+class FuseRset(LoggingMixIn, Operations):
+#class FuseRset(Operations):
     def __init__(self, instance, login):
         self.instance = instance
         self.login = login
         try:
-            pw = pwd.getpwnam(self.login)
+            pw = pwd.getpwnam("ag239446") #self.login)
         except KeyError:
             print >> sys.stderr, 'ERROR: unknown user %s' % login
             sys.exit(1)
@@ -226,14 +231,13 @@ class FuseRset(Operations):
         self.vdir = None
         self.update()
         
-        
-    self.update(self):
+    def update(self):
         print '! starting update'
         # Get a connection to Cubicweb
         cw_connection = get_cw_connection(self.instance)
         try:
             cw_session = cw_connection.session
-            data_root_dir = get_cw_basedir(self.instance, "sftp_server_basedir")
+            data_root_dir = get_cw_option(self.instance, "basedir")
             
             # Create an empty virtual directory
             self.vdir = VirtualDirectory(data_root_dir)
@@ -260,8 +264,8 @@ class FuseRset(Operations):
                     virtual_path.insert(0, os.path.sep)
                     for i in xrange(1, len(virtual_path)):
                         dir_full_path = os.path.join(*virtual_path[:i])
-                        self.make_directory(dir_full_path, uid, gid, now)
-                    self.add_file(path, file, uid, gid)
+                        self.vdir.make_directory(dir_full_path, self.uid, self.gid, now)
+                    self.vdir.add_file(os.path.join(*virtual_path), file, self.uid, self.gid)
         finally:
             cw_connection.shutdown()
         print '! update done'
@@ -276,6 +280,29 @@ class FuseRset(Operations):
         #return 0
         
     def getattr(self, path, fh=None):
+        """ Return a dict with stats on the given virtual path.
+        """
+        # Create a fake folder stat
+        fstat = {
+            "st_ctime": 1.,
+            "st_mtime": 1.,
+            "st_nlink": 1,
+            "st_mode": 16704,
+            "st_size": 4096,
+            "st_gid": 5009,
+            "st_uid": 5009,
+            "st_atime": 1.
+        }
+
+        # Check if the fuse mount is alive
+        if path == "/.isalive":
+            return fstat
+
+        # Start the fuse update: the process is not avalaible during the update
+        elif path == "/.update":
+            self.update()
+            return fstat
+
         return self.vdir.stat(path)
     
     
@@ -288,6 +315,7 @@ class FuseRset(Operations):
 
 
     def readdir(self, path, fh):
+        print "READ", path
         return self.vdir.listdir(path)
 
 
@@ -395,13 +423,17 @@ class FuseRset(Operations):
     def write(self, path, data, offset, fh):
         raise FuseOSError(EROFS)
 
+import logging
+logger = logging.getLogger('fuse.log-mixin')
+logger.setLevel(logging.DEBUG)
+logger.addHandler( logging.StreamHandler())
 
-# To tune parameters
+# Command line parameters
 instance_name = sys.argv[1]
 login = sys.argv[2]
-mount_base = sys.argv[3]
+mount_base = get_cw_option(instance_name, "mountdir")
 mount_point = os.path.join(mount_base, instance_name, login)
-print instance_name, login, moun_point
+print instance_name, login, mount_point
 
 FUSE(FuseRset(instance_name, login), mount_point, foreground=True, 
      allow_other=True, default_permissions=True)

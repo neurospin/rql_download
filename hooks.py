@@ -11,6 +11,7 @@
 import subprocess
 import sys
 import json
+import os
 import os.path as osp
 import datetime
 
@@ -204,11 +205,28 @@ class CWSearchFuseMount(hook.Hook):
     def __call__(self):
         """ Method that start/update the user specific process.
         """
+        # Get cw parameters
         instance_name = self._cw.repo.schema.name
         login = self.entity.owned_by[0].login
-        cmd = [sys.executable, "-m", "cubes.rql_download.fuse.fuse_mount",
-               instance_name, login]
-        process = subprocess.Popen(cmd)
+        mountdir = self._cw.vreg.config["mountdir"]
+        mount_point = osp.join(mountdir, instance_name, login)
+
+        # Check if the user fuse mount point is available
+        isalive = True
+        try:
+            os.stat(osp.join(mount_point, ".isalive"))
+        except:
+            isalive = False
+
+        # Add the new search to the user fuse mount point:
+        # if the process is already created, just start the update,
+        # otherwise create the user process
+        if isalive:
+            os.stat(osp.join(mount_point, ".update")) 
+        else:
+            cmd = [sys.executable, "-m", "cubes.rql_download.fuse.fuse_mount",
+                   instance_name, login]
+            process = subprocess.Popen(cmd)
 
 
 class ServerStartupFuseMount(hook.Hook):
