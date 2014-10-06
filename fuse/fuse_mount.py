@@ -358,7 +358,7 @@ class FuseRset(Operations):
 
         # Get the user uid and gid
         try:
-            pw = pwd.getpwnam("ag239446")  # self.login)
+            pw = pwd.getpwnam(self.login)
         except KeyError:
             raise Exception("Unknown user '{0}'. A user with 'login' login "
                             "must exist on the system through ldap or the "
@@ -378,6 +378,7 @@ class FuseRset(Operations):
 
         # Message
         logger.debug("! starting virtual direcotry update")
+        time.sleep(10)
 
         # Get a Cubicweb in memory connection
         cw_connection = get_cw_connection(self.instance)
@@ -616,9 +617,22 @@ mount_point = os.path.join(mount_base, instance_name, login)
 logger.debug("Command line parameters: instance name = {0}, login = {1} fuse "
              "mount point = {2}".format(instance_name, login, mount_point))
 
-# Create the fuse mount point
-FUSE(FuseRset(instance_name, login),
-     mount_point,
-     foreground=True,
-     allow_other=True,
-     default_permissions=True)
+# Check if the user fuse mount point is available
+isalive = True
+try:
+    os.stat(os.path.join(mount_point, ".isalive"))
+except:
+    isalive = False
+
+# Add the new search to the user fuse mount point:
+# if the process is already created, just start the update,
+# otherwise create a fuse loop
+if isalive:
+    os.stat(os.path.join(mount_point, ".update")) 
+else:
+    # Create the fuse mount point
+    FUSE(FuseRset(instance_name, login),
+         mount_point,
+         foreground=True,
+         allow_other=True,
+         default_permissions=True)

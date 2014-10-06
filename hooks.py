@@ -205,28 +205,33 @@ class CWSearchFuseMount(hook.Hook):
     def __call__(self):
         """ Method that start/update the user specific process.
         """
+        PostCommitFuseOperation(self._cw, _cw=self._cw, entity=self.entity)
+
+
+class PostCommitFuseOperation(hook.Operation):
+    """ Start/update a fuse process after a CWSearch entity is commited.
+    """
+    def postcommit_event(self):
+        """ Define the FuseOperation postcommit operation.
+        """
         # Get cw parameters
-        instance_name = self._cw.repo.schema.name
+        repo = self._cw.repo
+        instance_name = repo.schema.name
         login = self.entity.owned_by[0].login
         mountdir = self._cw.vreg.config["mountdir"]
         mount_point = osp.join(mountdir, instance_name, login)
 
-        # Check if the user fuse mount point is available
-        isalive = True
-        try:
-            os.stat(osp.join(mount_point, ".isalive"))
-        except:
-            isalive = False
-
-        # Add the new search to the user fuse mount point:
-        # if the process is already created, just start the update,
-        # otherwise create the user process
-        if isalive:
-            os.stat(osp.join(mount_point, ".update")) 
+        # Create a new fuse process: try first to update the fuse mount point
+        # if already created otherwise create a new mount point. 
+        cmd = [sys.executable, "-m", "cubes.rql_download.fuse.fuse_mount",
+               instance_name, login]
+        process = subprocess.Popen(cmd)
+        # Create zombie process, keep trace in memory to deal with them later.
+        if "cw_fuse_zombies" not in globals():
+            globals()["cw_fuse_zombies"] = [process]
         else:
-            cmd = [sys.executable, "-m", "cubes.rql_download.fuse.fuse_mount",
-                   instance_name, login]
-            process = subprocess.Popen(cmd)
+            globals()["cw_fuse_zombies"].append(process)
+        print "ZOMBIES", globals()["cw_fuse_zombies"]
 
 
 class ServerStartupFuseMount(hook.Hook):
@@ -249,8 +254,32 @@ class ServerStartupFuseMount(hook.Hook):
         for user in logins:
             cmd = [sys.executable, "-m", "cubes.rql_download.fuse.fuse_mount",
                    instance_name, user]
-            process = subprocess.Popen(cmd)   
-        
+            process = subprocess.Popen(cmd)
+
+
+class ServerStartupFuseZombiesLoop(hook.Hook):
+    """ On startup, register a task to clean zombie (defunc) processes stored
+    in the 'cw_fuse_zombies' global parameter.
+    """
+    __regid__ = "rqldownload.startup_fuse_zombies_loop"
+    events = ("server_startup", )
+
+    def __call__(self):
+        """ Start a loop to clean zombie processes.
+        """
+        # Specify the refresh time in days: every minute here
+        dt = datetime.timedelta(1. / 1440.)
+
+        # Define the cleaning function
+        def cleaning_cw_fuse_zombies():
+            if "cw_fuse_zombies" in globals():
+                for process in globals()["cw_fuse_zombies"]:
+                    if process.poll() is not None:
+                        process.wait()
+                        globals()["cw_fuse_zombies"].remove(process)
+
+        # Register the cleaning looping task
+        self.repo.looping_task(dt.total_seconds(), cleaning_cw_fuse_zombies)   
 
 
 ###############################################################################
