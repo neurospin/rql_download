@@ -11,7 +11,6 @@
 import subprocess
 import sys
 import json
-import os
 import os.path as osp
 import datetime
 
@@ -22,8 +21,6 @@ from rql.nodes import Constant
 from cubicweb import Binary, ValidationError
 from cubicweb.server import hook
 from cubicweb.selectors import is_instance
-from cubicweb.entity import Entity
-from cubicweb.server.session import Session
 
 
 ###############################################################################
@@ -56,7 +53,7 @@ class CWSearchAdd(hook.Hook):
             if isinstance(node, Constant):
 
                 # Get the entity name and related parameter name in the rql
-                if not node.type in constant_nodes:
+                if node.type not in constant_nodes:
                     constant_nodes[node.type] = []
                 rql_type = node.parent
                 rql_expression = rql_type.parent.children
@@ -70,9 +67,9 @@ class CWSearchAdd(hook.Hook):
 
     def __call__(self):
         """ Before adding the CWSearch entity, create a 'rset' and a 'result.json'
-        File entities that contain all the filepath attached to the current 
+        File entities that contain all the filepath attached to the current
         rql request.
-        Filepath are found by patching the rql request with the declared 
+        Filepath are found by patching the rql request with the declared
         'rqldownload-adaptors' actions.
 
         .. note::
@@ -108,8 +105,8 @@ class CWSearchAdd(hook.Hook):
             # Keep only actions that respect the current context
             for action in possible_actions:
                 for selector in action.__select__.selectors:
-                    if (isinstance(selector, is_instance) and 
-                        etype in selector.expected_etypes):
+                    if (isinstance(selector, is_instance) and
+                       etype in selector.expected_etypes):
                         actions.append((action, parameter_name))
 
         # Check that at least one action has been found for this request
@@ -117,7 +114,7 @@ class CWSearchAdd(hook.Hook):
             raise ValidationError(
                 "CWSearch", {
                     "actions": _('cannot find an action for this request '
-                                   '{0}'.format(rql))})
+                                 '{0}'.format(rql))})
 
         # Create an empty result structure
         result = {"rql": rql, "files": [], "nonexistent-files": []}
@@ -137,19 +134,22 @@ class CWSearchAdd(hook.Hook):
             # parameter
             self._cw.__dict__["form"] = {}
             try:
-                view = self._cw.vreg["views"].select(export_vid, self._cw, rset=rset)
+                view = self._cw.vreg["views"].select(
+                    export_vid, self._cw, rset=rset)
                 rset_view = Binary()
                 view.w = rset_view.write
                 view.call()
             except:
                 raise ValidationError(
                     "CWSearch", {
-                        "rset_type": _('cannot apply this view "{0}" on this rset, '
-                                       'choose another view id'.format(export_vid))})
+                        "rset_type": _('cannot apply this view "{0}" on this '
+                                       'rset, choose another view '
+                                       'id'.format(export_vid))})
 
             # Save the rset in a File entity
             f_eid = self._cw.create_entity(
-                "File", data=rset_view, data_format=view.content_type or u"text",
+                "File", data=rset_view,
+                data_format=view.content_type or u"text",
                 data_name=u"rset").eid
 
             # Entity modification related event: specify that the rset has been
@@ -158,8 +158,8 @@ class CWSearchAdd(hook.Hook):
 
             # Get all the files attached to the current request
             # Note: we assume the database intergrity (ie. all file pathes
-            # inserted in the db exist on the file system) and thus do not check
-            # to speed up this process.
+            # inserted in the db exist on the file system) and thus do not
+            # check to speed up this process.
             files_set = set()
             non_existent_files_set = set()
             files_set = tuple([row[0] for row in rset.rows])
@@ -173,8 +173,8 @@ class CWSearchAdd(hook.Hook):
                 "File", data=Binary(json.dumps(result)),
                 data_format=u"text/json", data_name=u"result.json").eid
 
-            # Entity modification related event: specify that the result has been
-            # modified
+            # Entity modification related event: specify that the result has
+            # been modified
             self.entity.cw_edited["result"] = f_eid
 
 
@@ -186,7 +186,7 @@ class CWSearchExpirationDateHook(hook.Hook):
     def __call__(self):
         if 'expiration_date' not in self.entity.cw_edited:
             delay = self._cw.vreg.config['default_expiration_delay']
-            self.entity.cw_edited['expiration_date'] =  (
+            self.entity.cw_edited['expiration_date'] = (
                 datetime.date.today() + datetime.timedelta(delay))
 
 
@@ -205,7 +205,13 @@ class CWSearchFuseMount(hook.Hook):
     def __call__(self):
         """ Method that start/update the user specific process.
         """
-        PostCommitFuseOperation(self._cw, _cw=self._cw, entity=self.entity)
+        # Check if fuse virtual directory have to be mounted
+        use_fuse = self._cw.vreg.config["start_user_fuse"]
+        if use_fuse:
+            
+            # Update/Create action
+            PostCommitFuseOperation(
+                self._cw, _cw=self._cw,entity=self.entity)
 
 
 class PostCommitFuseOperation(hook.Operation):
@@ -218,11 +224,9 @@ class PostCommitFuseOperation(hook.Operation):
         repo = self._cw.repo
         instance_name = repo.schema.name
         login = self.entity.owned_by[0].login
-        mountdir = self._cw.vreg.config["mountdir"]
-        mount_point = osp.join(mountdir, instance_name, login)
 
         # Create a new fuse process: try first to update the fuse mount point
-        # if already created otherwise create a new mount point. 
+        # if already created otherwise create a new mount point.
         cmd = [sys.executable, "-m", "cubes.rql_download.fuse.fuse_mount",
                instance_name, login]
         process = subprocess.Popen(cmd)
@@ -231,11 +235,10 @@ class PostCommitFuseOperation(hook.Operation):
             globals()["cw_fuse_zombies"] = [process]
         else:
             globals()["cw_fuse_zombies"].append(process)
-        print "ZOMBIES", globals()["cw_fuse_zombies"]
 
 
 class ServerStartupFuseMount(hook.Hook):
-    """ On startup, generate all the fuse mount point associated with CWSearch 
+    """ On startup, generate all the fuse mount point associated with CWSearch
     owners."""
     __regid__ = "rqldownload.startup_fuse_mount_hook"
     events = ("server_startup",)
@@ -243,18 +246,23 @@ class ServerStartupFuseMount(hook.Hook):
     def __call__(self):
         """ Method that start the user specific processes.
         """
-        # Execute a rql to get all the CWSearch owner logins
-        with self.repo.internal_session() as cnx:
-            rql = "Any L Where S is CWSearch, S owned_by U, U login L"
-            rset = cnx.execute(rql)
-            logins = set([x[0] for x in rset])
+        # Check if fuse virtual directory have to be mounted
+        use_fuse = self.repo.vreg.config["start_user_fuse"]
+        if use_fuse:
 
-        # Start a fuse deamon for each user
-        instance_name = self.repo.schema.name
-        for user in logins:
-            cmd = [sys.executable, "-m", "cubes.rql_download.fuse.fuse_mount",
-                   instance_name, user]
-            process = subprocess.Popen(cmd)
+            # Execute a rql to get all the CWSearch owner logins
+            with self.repo.internal_session() as cnx:
+                rql = "Any L Where S is CWSearch, S owned_by U, U login L"
+                rset = cnx.execute(rql)
+                logins = set([x[0] for x in rset])
+
+            # Start a fuse deamon for each user
+            instance_name = self.repo.schema.name
+            for user in logins:
+                cmd = [sys.executable, "-m",
+                       "cubes.rql_download.fuse.fuse_mount",
+                       instance_name, user]
+                subprocess.Popen(cmd)
 
 
 class ServerStartupFuseZombiesLoop(hook.Hook):
@@ -279,7 +287,7 @@ class ServerStartupFuseZombiesLoop(hook.Hook):
                         globals()["cw_fuse_zombies"].remove(process)
 
         # Register the cleaning looping task
-        self.repo.looping_task(dt.total_seconds(), cleaning_cw_fuse_zombies)   
+        self.repo.looping_task(dt.total_seconds(), cleaning_cw_fuse_zombies)
 
 
 ###############################################################################
@@ -292,14 +300,16 @@ class ServerStartupHook(hook.Hook):
     events = ('server_startup',)
 
     def __call__(self):
-        dt = datetime.timedelta(0.5) # 12h
+        dt = datetime.timedelta(0.5)  # 12h
+
         def cleaning_old_cwsearch(repo):
             with repo.internal_session() as cnx:
-                cnx.execute('DELETE CWSearch S WHERE S expiration_date < today')
+                cnx.execute(
+                    'DELETE CWSearch S WHERE S expiration_date < today')
                 cnx.commit()
         cleaning_old_cwsearch(self.repo)
-        self.repo.looping_task(dt.total_seconds(), cleaning_old_cwsearch, self.repo)
-
+        self.repo.looping_task(
+            dt.total_seconds(), cleaning_old_cwsearch, self.repo)
 
 
 class LaunchFTPServer(hook.Hook):
@@ -316,4 +326,3 @@ class LaunchFTPServer(hook.Hook):
             if sftp_server_basedir:
                 basedir_opt = '--base-dir=%s' % sftp_server_basedir
             subprocess.Popen([sys.executable, ftpserver_path, basedir_opt])
-

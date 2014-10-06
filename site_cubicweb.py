@@ -9,6 +9,13 @@
 
 
 options = (
+    ("rql_download_log",
+      {"type": "string",
+      "default": "",
+      "help": "base directory in which a 'rql_download.log' file is stored: "
+              "if not a valid directory do not log anything.",
+      "group": "rql_download", "level": 0,
+      }),
     ("default_expiration_delay",
      {"type": "int",
       "default": 15,
@@ -34,6 +41,13 @@ options = (
       "default": False,
       "help": "if true cubicweb will start automatically sftp server "
               "(configured with it is config file, see also README)",
+      "group": "rql_download", "level": 0,
+      }),
+    ("start_user_fuse",
+      {"type": "yn",
+      "default": False,
+      "help": "if true cubicweb will start automatically a fuse mount per user "
+              "when the user has some CWSearch entities.",
       "group": "rql_download", "level": 0,
       }),
 )

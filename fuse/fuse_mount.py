@@ -16,6 +16,7 @@ import json
 import time
 import pwd
 import logging
+import datetime
 
 # Define the logger
 logger = logging.getLogger("fuse.log-mixin")
@@ -247,7 +248,7 @@ class VirtualDirectory(object):
             # TODO: Remove write access on st_mode
             result.update(
                 dict((key, getattr(st, key))
-                     for key in ("st_atime", "st_ctime", "st_mode"
+                     for key in ("st_atime", "st_ctime", "st_mode",
                                  "st_mtime", "st_nlink", "st_size")))
         # Path is a virtual directory
         else:
@@ -355,6 +356,16 @@ class FuseRset(Operations):
         self.instance = instance
         self.login = login
         self.vdir = None  # the virtual directory object
+
+        # Get the directory where to generate the user acces log
+        # Check the permissions
+        log_dir = get_cw_option(self.instance, "rql_download_log")
+        self.generate_log = (os.access(log_dir, os.F_OK) and
+                     os.access(log_dir, os.W_OK))
+        if self.generate_log:
+            self.log_file = open(os.path.join(
+                log_dir, "rql_download_{0}.log".format(self.login)), "a")
+
 
         # Get the user uid and gid
         try:
@@ -528,6 +539,15 @@ class FuseRset(Operations):
     ########################################################################
 
     def open(self, path, flags):
+        # Update the log file if requested
+        if self.generate_log:
+            self.log_file.write(" ".join(
+                [str(datetime.datetime.now()), self.instance, self.login,
+                 path, str(os.path.isfile(path))]))
+            self.log_file.write("\n")
+            self.log_file.flush()
+                
+        print "OPEN::", path
         if flags & (os.O_RDWR + os.O_WRONLY):
             raise FuseOSError(EROFS)
         return os.open(self.vdir.get_real_path(path), flags)
@@ -628,7 +648,7 @@ except:
 # if the process is already created, just start the update,
 # otherwise create a fuse loop
 if isalive:
-    os.stat(os.path.join(mount_point, ".update")) 
+    os.stat(os.path.join(mount_point, ".update"))
 else:
     # Create the fuse mount point
     FUSE(FuseRset(instance_name, login),
