@@ -143,18 +143,24 @@ class VirtualDirectory(object):
         # Try to get the path informations: get something if the
         # the path has already been created
         path_info = self.content.get(path)
+        
+        # Create a special mask for the root element in irder to be able to
+        # update fuse as the cw master
+        mask = 0500
+        if path == "/":
+            mask = 0555
 
         # If the path is already created, check the that the path information
         # are correct
         if path_info is not None:
-            if path_info[1:] != (uid, gid, 0500, time):
+            if path_info[1:] != (uid, gid, mask, time):
                 raise ValueError(
                     "Virtual directory '{0}' already exists".format(path))
 
         # Otherwise, create a new virtual path
         else:
             # Path creation
-            self.content[path] = ([], uid, gid, 0500, time)
+            self.content[path] = ([], uid, gid, mask, time)
 
             # Link the current path to the global tree
             # > get the parent directory name and current directory name
@@ -389,7 +395,6 @@ class FuseRset(Operations):
 
         # Message
         logger.debug("! starting virtual direcotry update")
-        time.sleep(10)
 
         # Get a Cubicweb in memory connection
         cw_connection = get_cw_connection(self.instance)
