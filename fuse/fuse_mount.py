@@ -143,7 +143,7 @@ class VirtualDirectory(object):
         # Try to get the path informations: get something if the
         # the path has already been created
         path_info = self.content.get(path)
-        
+
         # Create a special mask for the root element in irder to be able to
         # update fuse as the cw master
         mask = 0500
@@ -367,11 +367,10 @@ class FuseRset(Operations):
         # Check the permissions
         log_dir = get_cw_option(self.instance, "rql_download_log")
         self.generate_log = (os.access(log_dir, os.F_OK) and
-                     os.access(log_dir, os.W_OK))
+                             os.access(log_dir, os.W_OK))
         if self.generate_log:
             self.log_file = open(os.path.join(
                 log_dir, "rql_download_{0}.log".format(self.login)), "a")
-
 
         # Get the user uid and gid
         try:
@@ -551,8 +550,7 @@ class FuseRset(Operations):
                  path, str(os.path.isfile(path))]))
             self.log_file.write("\n")
             self.log_file.flush()
-                
-        print "OPEN::", path
+
         if flags & (os.O_RDWR + os.O_WRONLY):
             raise FuseOSError(EROFS)
         return os.open(self.vdir.get_real_path(path), flags)
@@ -638,7 +636,7 @@ logger.addHandler(logging.StreamHandler())
 instance_name = sys.argv[1]
 login = sys.argv[2]
 mount_base = get_cw_option(instance_name, "mountdir")
-mount_point = os.path.join(mount_base, instance_name, login)
+mount_point = os.path.join(mount_base, login, "rql_download", instance_name)
 logger.debug("Command line parameters: instance name = {0}, login = {1} fuse "
              "mount point = {2}".format(instance_name, login, mount_point))
 

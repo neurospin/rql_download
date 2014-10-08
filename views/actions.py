@@ -13,9 +13,8 @@ from cgi import parse_qs
 
 # CW import
 from cubicweb.web.action import Action
-from cubicweb.predicates import nonempty_rset, adaptable
 from cubicweb.predicates import (
-    is_instance, nonempty_rset, anonymous_user, multi_lines_rset)
+    is_instance, multi_lines_rset)
 
 
 ###############################################################################
@@ -37,7 +36,7 @@ class SaveCWSearchAction(Action):
         param = ""
         if "?" in path:
             path, param = path.split("?", 1)
-            # remove possible '_cwmsgid' parameter in url 
+            # remove possible '_cwmsgid' parameter in url
             params_dict = parse_qs(param)
             if '_cwmsgid' in params_dict:
                 del params_dict['_cwmsgid']

@@ -208,10 +208,10 @@ class CWSearchFuseMount(hook.Hook):
         # Check if fuse virtual directory have to be mounted
         use_fuse = self._cw.vreg.config["start_user_fuse"]
         if use_fuse:
-            
+
             # Update/Create action
             PostCommitFuseOperation(
-                self._cw, _cw=self._cw,entity=self.entity)
+                self._cw, _cw=self._cw, entity=self.entity)
 
 
 class PostCommitFuseOperation(hook.Operation):
