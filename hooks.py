@@ -80,7 +80,7 @@ class CWSearchAdd(hook.Hook):
         """
         # Get the rql/export type from the CWSearch form
         rql = self.entity.cw_edited.get("request")
-        export_vid = self.entity.cw_edited.get("rset_type")
+        export_vid = "jsonexport"  # self.entity.cw_edited.get("rset_type")
 
         # Execute the rql
         # ToDo: try to get the current request cw_rset
@@ -126,6 +126,13 @@ class CWSearchAdd(hook.Hook):
             # Create the global rql from the first declared action
             # For the moment do not consider the others
             action, parameter_name = actions[0]
+
+            # If the action is of EntityAdaptor type, export the entity content
+            if action.__name__ == "EntityAdaptor":
+                print "in"
+                export_vid = "ecsvexport"
+            print action.__name__, export_vid
+
             global_rql = action(self._cw).rql(rql, parameter_name)
             rset = self._cw.execute(global_rql)
             result["rql"] = global_rql

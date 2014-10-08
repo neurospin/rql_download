@@ -50,7 +50,7 @@ class SaveCWSearchAction(Action):
 # Adaptors
 ###############################################################################
 
-class FSetAdapter(Action):
+class FSetAdaptor(Action):
     """ Action to download entity objects related through an FileSet entity.
     """
     __regid__ = "rqldownload-adaptors"
@@ -84,10 +84,23 @@ class FSetAdapter(Action):
         return global_rql
 
 
+class EntityAdaptor(Action):
+    """ Action to download entity attributes.
+    """
+    __regid__ = "rqldownload-adaptors"
+    __select__ = Action.__select__ & is_instance("Subject")
+
+    def rql(self, rql, parameter_name):
+        """ Method return the rql.
+        """
+        return rql
+
+
 ###############################################################################
 # Registration callback
 ###############################################################################
 
 def registration_callback(vreg):
-    vreg.register(FSetAdapter)
+    vreg.register(FSetAdaptor)
+    vreg.register(EntityAdaptor)
     vreg.register(SaveCWSearchAction)

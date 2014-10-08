@@ -23,7 +23,8 @@ class SaveCWSearchBox(component.CtxComponent):
     """
     __regid__ = "ctx-save-search-box"
     __select__ = (component.CtxComponent.__select__ & nonempty_rset() &
-                  ~anonymous_user() & is_instance("Scan", "ProcessingRun"))
+                  ~anonymous_user() & 
+                  is_instance("Scan", "ProcessingRun", "Subject"))
     context = "left"
     order = 0
     title = _("Tools")
