@@ -253,7 +253,7 @@ class VirtualDirectory(object):
         if isinstance(real_path, basestring):
 
             # Deal with rset binary file
-            if path.endswith("rset"):
+            if path.endswith("request_result"):
                 cwsearch_name = path.split("/")[-2]
                 rset_time = self.content["/" + cwsearch_name][4]
                 result.update({
@@ -455,7 +455,7 @@ class FuseRset(Operations):
                     cw_session.execute(rql)[0][0])
 
                 # Add the rset to the build tree
-                files.append(os.path.join(data_root_dir, "rset"))
+                files.append(os.path.join(data_root_dir, "request_result"))
 
                 # Go through all files and create the virtual direcotry
                 for fname in files:
@@ -588,7 +588,7 @@ class FuseRset(Operations):
             raise FuseOSError(EROFS)
 
         # Special case for the rset binary file
-        if path.endswith("rset"):
+        if path.endswith("request_result"):
             return
 
         return os.open(self.vdir.get_real_path(path), flags)
@@ -599,7 +599,7 @@ class FuseRset(Operations):
         """
         logger.debug("read {0}".format(path))
         # Special case for the rset binary file
-        if path.endswith("rset"):
+        if path.endswith("request_result"):
             cwsearch_name = path.split("/")[-2]
             self.vdir.rset_data[cwsearch_name].seek(offset)
             return self.vdir.rset_data[cwsearch_name].read(length)
@@ -615,7 +615,7 @@ class FuseRset(Operations):
         logger.debug("realease {0}".format(path))
         # Special case for the rset binary file
         # Keep binary file in memory
-        if path.endswith("rset"):
+        if path.endswith("request_result"):
             return
         # Close file from descriptor
         else:
