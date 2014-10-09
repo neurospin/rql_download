@@ -306,34 +306,43 @@ class ServerStartupFuseZombiesLoop(hook.Hook):
 ###############################################################################
 
 class ServerStartupHook(hook.Hook):
-    """on startup, register a task to delete old CWSearch entity"""
-    __regid__ = 'rsetftp.search_delete_hook'
-    events = ('server_startup',)
+    """ On startup, register a task to delete old CWSearch entities.
+    """
+    __regid__ = "rqldownload.search_delete_hook"
+    events = ("server_startup",)
 
     def __call__(self):
-        dt = datetime.timedelta(0.5)  # 12h
-
+        """ Method to execute the 'ServerStartupHook' hook.
+        """
         def cleaning_old_cwsearch(repo):
+            """ Delete all CWSearch entities that have expired.
+            """
             with repo.internal_session() as cnx:
                 cnx.execute(
-                    'DELETE CWSearch S WHERE S expiration_date < today')
+                    "DELETE CWSearch S WHERE S expiration_date < today")
                 cnx.commit()
-        cleaning_old_cwsearch(self.repo)
+
+        # Set the cleaning event loop
+        dt = datetime.timedelta(0.5)  # 12h
         self.repo.looping_task(
             dt.total_seconds(), cleaning_old_cwsearch, self.repo)
 
+        # Call the clean function manually on the startup
+        cleaning_old_cwsearch(self.repo)
+
 
 class LaunchFTPServer(hook.Hook):
-    """on startup launch ftp server"""
-    __regid__ = 'rsetftp.launch_server'
-    events = ('server_startup',)
+    """ On startup launch ftp server.
+    """
+    __regid__ = "rqldownload.launch_server"
+    events = ("server_startup",)
 
     def __call__(self):
-        if self.repo.vreg.config['start_sftp_server']:
+        if self.repo.vreg.config["start_sftp_server"]:
             cube_path = osp.dirname(osp.abspath(__file__))
-            ftpserver_path = osp.join(cube_path, 'ftpserver/main.py')
-            basedir_opt = ''
-            sftp_server_basedir = self.repo.vreg.config['basedir']
+            ftpserver_path = osp.join(cube_path, "ftpserver/main.py")
+            basedir_opt = ""
+            sftp_server_basedir = self.repo.vreg.config["basedir"]
             if sftp_server_basedir:
-                basedir_opt = '--base-dir=%s' % sftp_server_basedir
+                basedir_opt = "--base-dir=%s" % sftp_server_basedir
             subprocess.Popen([sys.executable, ftpserver_path, basedir_opt])
