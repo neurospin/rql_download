@@ -484,10 +484,13 @@ class FUSE(object):
         fi = fip.contents
         if self.raw_fi:
             return self.operations('open', path.decode(self.encoding), fi)
+        # In the case we have no file descriptor for the rset binary files
+        elif path.endswith("rset"):
+            self.operations('open', path.decode(self.encoding), fi.flags)
+            return 0
         else:
             fi.fh = self.operations('open', path.decode(self.encoding),
                                             fi.flags)
-
             return 0
 
     def read(self, path, buf, size, offset, fip):

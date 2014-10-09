@@ -119,6 +119,7 @@ class VirtualDirectory(object):
         # Class parameters
         self.root_data_dir = root_data_dir
         self.content = {}
+        self.rset_data = {}
 
     def make_directory(self, path, uid, gid, time):
         """ Create a virtual directory.
@@ -250,12 +251,28 @@ class VirtualDirectory(object):
 
         # Path link to a real file
         if isinstance(real_path, basestring):
-            st = os.lstat(real_path)
-            # TODO: Remove write access on st_mode
-            result.update(
-                dict((key, getattr(st, key))
-                     for key in ("st_atime", "st_ctime", "st_mode",
-                                 "st_mtime", "st_nlink", "st_size")))
+
+            # Deal with rset binary file
+            if path.endswith("rset"):
+                cwsearch_name = path.split("/")[-2]
+                rset_time = self.content["/" + cwsearch_name][4]
+                result.update({
+                    "st_ctime": rset_time,
+                    "st_mtime": rset_time,
+                    "st_nlink": 1,
+                    "st_mode": 33204,
+                    "st_size": self.rset_data[cwsearch_name].len,
+                    "st_atime": rset_time
+                })
+
+            # File on the file system
+            else:
+                st = os.lstat(real_path)
+                # TODO: Remove write access on st_mode
+                result.update(
+                    dict((key, getattr(st, key))
+                         for key in ("st_atime", "st_ctime", "st_mode",
+                                     "st_mtime", "st_nlink", "st_size")))
         # Path is a virtual directory
         else:
             result["st_mode"] = stat.S_IFDIR + mode
@@ -431,10 +448,19 @@ class FuseRset(Operations):
                 logger.debug("! Found {0} valid files for '{1}'".format(
                     len(files), cwsearch_name))
 
+                # Get the rset binary associated to the current CWSearch
+                rql = "Any D WHERE S eid '{0}', S rset F, F data D".format(
+                    cwsearch_eid)
+                self.vdir.rset_data[cwsearch_name] = (
+                    cw_session.execute(rql)[0][0])
+
+                # Add the rset to the build tree
+                files.append(os.path.join(data_root_dir, "rset"))
+
                 # Go through all files and create the virtual direcotry
                 for fname in files:
 
-                    # RApply the mask: rmove 'data_root_dir' from the
+                    # Apply the mask: remove 'data_root_dir' from the
                     # begining of the path
                     if fname.startswith(data_root_dir):
                         path = fname[len(data_root_dir):]
@@ -476,7 +502,10 @@ class FuseRset(Operations):
     #    return 0
 
     def getattr(self, path, fh=None):
-        """ Return a dict with stats on the given virtual path.
+        """ File-class version of 'getattr'.
+        Retrieves information about a file (the "stat" of a file).
+
+        Return a dict with stats on the given virtual path.
 
         .. note::
             when the stat method is called on the '/.isalive' fake folder,
@@ -543,6 +572,10 @@ class FuseRset(Operations):
     ########################################################################
 
     def open(self, path, flags):
+        """ File-class version of 'open'.
+        Open a file.
+        """
+        logger.debug("open {0}".format(path))
         # Update the log file if requested
         if self.generate_log:
             self.log_file.write(" ".join(
@@ -553,77 +586,126 @@ class FuseRset(Operations):
 
         if flags & (os.O_RDWR + os.O_WRONLY):
             raise FuseOSError(EROFS)
+
+        # Special case for the rset binary file
+        if path.endswith("rset"):
+            return
+
         return os.open(self.vdir.get_real_path(path), flags)
 
     def read(self, path, length, offset, fh):
-        os.lseek(fh, offset, os.SEEK_SET)
-        return os.read(fh, length)
+        """ File-class version of 'read'.
+        Get all or part of the contents of a file.
+        """
+        logger.debug("read {0}".format(path))
+        # Special case for the rset binary file
+        if path.endswith("rset"):
+            cwsearch_name = path.split("/")[-2]
+            self.vdir.rset_data[cwsearch_name].seek(offset)
+            return self.vdir.rset_data[cwsearch_name].read(length)
+        # The file exists on the file system
+        else:
+            os.lseek(fh, offset, os.SEEK_SET)
+            return os.read(fh, length)
 
     def release(self, path, fh):
-        return os.close(fh)
+        """ File-class version of 'release'.
+        Closes an open file. Allows filesystem to clean up.
+        """
+        logger.debug("realease {0}".format(path))
+        # Special case for the rset binary file
+        # Keep binary file in memory
+        if path.endswith("rset"):
+            return
+        # Close file from descriptor
+        else:
+            return os.close(fh)
+
+    def flush(self, path, fh):
+        """ File-class version of 'flush".
+        Flush cached data to the file system.
+        """
+        logger.debug("flush {0}".format(path))
+        # raise FuseOSError(ENOTSUP)
 
     ########################################################################
     # Forbidden methods
     ########################################################################
 
     def chmod(self, path, mode):
+        logging.error("chmod")
         raise FuseOSError(EROFS)
 
     def chown(self, path, uid, gid):
+        logger.error("chown")
         raise FuseOSError(EROFS)
 
     def create(self, path, mode, fi=None):
+        logger.error("create")
         raise FuseOSError(EROFS)
 
-    def flush(self, path, fh):
-        raise FuseOSError(ENOTSUP)
-
     def fsync(self, path, datasync, fh):
+        logger.error("fsync")
         raise FuseOSError(ENOTSUP)
 
     def fsyncdir(self, path, datasync, fh):
+        logger.error("fsyncdir")
         raise FuseOSError(ENOTSUP)
 
     def link(self, target, source):
+        logger.error("link")
         raise FuseOSError(EROFS)
 
     def mkdir(self, path, mode):
+        logger.error("mkdir")
         raise FuseOSError(EROFS)
 
     def mknod(self, path, mode, dev):
+        logger.error("mknod")
         raise FuseOSError(EROFS)
 
     def readlink(self, path):
+        logger.error("readlink")
         raise FuseOSError(ENOTSUP)
 
     def removexattr(self, path, name):
+        logger.error("removexattr")
         raise FuseOSError(ENOTSUP)
 
     def rename(self, old, new):
+        logger.error("rename")
         raise FuseOSError(EROFS)
 
     def rmdir(self, path):
+        logger.error("rmdir")
         raise FuseOSError(EROFS)
 
     def setxattr(self, path, name, value, options, position=0):
+        logger.error("setxattr")
         raise FuseOSError(ENOTSUP)
 
     def statfs(self, path):
+        logger.error("statfs")
         raise FuseOSError(ENOTSUP)
 
     def symlink(self, target, source):
+        logger.error("symlink")
         raise FuseOSError(EROFS)
 
     def truncate(self, path, length, fh=None):
+        logger.error("truncate")
         raise FuseOSError(EROFS)
 
     def unlink(self, path):
+        logger.error("unlink")
         raise FuseOSError(EROFS)
 
     def utimens(self, path, times=None):
+        logger.error("utimens")
         raise FuseOSError(ENOTSUP)
 
     def write(self, path, data, offset, fh):
+        logger.error("write")
         raise FuseOSError(EROFS)
 
 # Setup the logger: cubicweb change the logging config and thus

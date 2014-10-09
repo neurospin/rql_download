@@ -71,6 +71,11 @@ class CWSearchAdd(hook.Hook):
         rql request.
         Filepath are found by patching the rql request with the declared
         'rqldownload-adaptors' actions.
+        A 'json_export' is used to export the rset.
+
+        When an 'EntityAdaptor' is used, an 'ecsvexport' is used to export the
+        entities contents.
+        No file are then attached in the 'result.json' file.
 
         .. note::
             For the moment we expect only one entity node (type = 'etype'), we
@@ -129,9 +134,7 @@ class CWSearchAdd(hook.Hook):
 
             # If the action is of EntityAdaptor type, export the entity content
             if action.__name__ == "EntityAdaptor":
-                print "in"
                 export_vid = "ecsvexport"
-            print action.__name__, export_vid
 
             global_rql = action(self._cw).rql(rql, parameter_name)
             rset = self._cw.execute(global_rql)
@@ -169,7 +172,8 @@ class CWSearchAdd(hook.Hook):
             # check to speed up this process.
             files_set = set()
             non_existent_files_set = set()
-            files_set = tuple([row[0] for row in rset.rows])
+            if action.__name__ != "EntityAdaptor":
+                files_set = tuple([row[0] for row in rset.rows])
 
             # Update the result structure
             result["files"] = list(files_set)
