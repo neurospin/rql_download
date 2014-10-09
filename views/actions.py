@@ -16,6 +16,9 @@ from cubicweb.web.action import Action
 from cubicweb.predicates import (
     is_instance, multi_lines_rset)
 
+# Define global adaptor variables
+RQL_DOWNLOAD_EXPORT_ENTITIES = ["Subject"]
+
 
 ###############################################################################
 # Save CW search action
@@ -88,7 +91,7 @@ class EntityAdaptor(Action):
     """ Action to download entity attributes.
     """
     __regid__ = "rqldownload-adaptors"
-    __select__ = Action.__select__ & is_instance("Subject")
+    __select__ = Action.__select__ & is_instance(*RQL_DOWNLOAD_EXPORT_ENTITIES)
 
     def rql(self, rql, parameter_name):
         """ Method return the rql.
