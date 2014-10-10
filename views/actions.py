@@ -15,6 +15,7 @@ from cgi import parse_qs
 from cubicweb.web.action import Action
 from cubicweb.predicates import (
     is_instance, multi_lines_rset)
+from cubicweb import ValidationError
 
 # Define global adaptor variables
 RQL_DOWNLOAD_EXPORT_ENTITIES = ["Subject"]

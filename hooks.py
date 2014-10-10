@@ -54,12 +54,14 @@ class CWSearchAdd(hook.Hook):
 
                 # Get the entity name and related parameter name in the rql
                 if node.type not in constant_nodes:
-                    constant_nodes[node.type] = []
+                    constant_nodes[node.type] = {}
                 rql_type = node.parent
                 rql_expression = rql_type.parent.children
                 index = int(not(rql_expression.index(rql_type)))
                 variable_name = rql_expression[index].name
-                constant_nodes[node.type].append((node.value, variable_name))
+                if node.value not in constant_nodes[node.type]:
+                    constant_nodes[node.type][node.value] = []
+                constant_nodes[node.type][node.value].append(variable_name)
 
             # Otherwise go deaper
             else:
@@ -78,7 +80,7 @@ class CWSearchAdd(hook.Hook):
         No file are then attached in the 'result.json' file.
 
         .. note::
-            For the moment we expect only one entity node (type = 'etype'), we
+            For the moment we consider the first result entity only, we
             consider the first declared action, and we assume the database
             intergrity (ie. all file pathes inserted in the db exist on the
             file system) and thus do not check to speed up the hook.
@@ -91,28 +93,42 @@ class CWSearchAdd(hook.Hook):
         # ToDo: try to get the current request cw_rset
         rset = self._cw.execute(rql)
 
+        # Get all the entities
+        entities = [e for e in rset.entities()]
+        if len(entities) == 0:
+            raise ValidationError(
+                "CWSearch", {
+                    "entities": _('cannot find any entity for the request '
+                                  '{0}'.format(rql))})
+        etype = entities[0].__class__.__name__
+
         # Find constant nodes
         constant_nodes = {}
         self._find_constant_nodes(rset._rqlst.children, constant_nodes)
 
         # Select the appropriate action
-        # We expect only one entity node: type = 'etype'
+        # We consider only one the first rql entity
         actions = []
-        if len(constant_nodes.get("etype", [])) == 1:
+        rql_etypes = constant_nodes.get("etype", {})
+        if etype not in rql_etypes or len(rql_etypes[etype]) != 1:
+            raise ValidationError(
+                "CWSearch", {
+                    "rql": _('cannot find entity description in the request '
+                             '{0}. Expect somethinh like "Any X Where X is '
+                             '{1}, ..."'.format(rql, etype))})
 
-            # Get the entity type and associated rql parameter name: current
-            # context
-            etype, parameter_name = constant_nodes["etype"][0]
+        # Get the associated rql parameter name: current context
+        parameter_name = rql_etypes[etype][0]
 
-            # Get all the rqldownload declared adaptors
-            possible_actions = self._cw.vreg["actions"]["rqldownload-adaptors"]
+        # Get all the rqldownload declared adaptors
+        possible_actions = self._cw.vreg["actions"]["rqldownload-adaptors"]
 
-            # Keep only actions that respect the current context
-            for action in possible_actions:
-                for selector in action.__select__.selectors:
-                    if (isinstance(selector, is_instance) and
-                       etype in selector.expected_etypes):
-                        actions.append((action, parameter_name))
+        # Keep only actions that respect the current context
+        for action in possible_actions:
+            for selector in action.__select__.selectors:
+                if (isinstance(selector, is_instance) and
+                   etype in selector.expected_etypes):
+                    actions.append((action, parameter_name))
 
         # Check that at least one action has been found for this request
         if actions == []:
