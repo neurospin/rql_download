@@ -33,6 +33,14 @@ from cubes.rql_download.fuse.fuse import (FUSE,
                                           EROFS,
                                           ENOTSUP)
 
+# Define a maping between cw export vid and file extension
+VID_TO_EXT = {
+    "csvexport": ".csv",
+    "jsonexport": ".json",
+    "ecsvexport": ".csv",
+    "ejsonexport": ".json"
+}
+
 # The following import can be used to help debugging but is dangerous because
 # the content of all fuse actions (even the binary content of files) is
 # printed on the log. In order to debug is also necessary to add LoggingMixIn
@@ -253,7 +261,7 @@ class VirtualDirectory(object):
         if isinstance(real_path, basestring):
 
             # Deal with rset binary file
-            if path.endswith("request_result"):
+            if os.path.basename(path).startswith("request_result"):
                 cwsearch_name = path.split("/")[-2]
                 rset_time = self.content["/" + cwsearch_name][4]
                 result.update({
@@ -454,8 +462,13 @@ class FuseRset(Operations):
                 self.vdir.rset_data[cwsearch_name] = (
                     cw_session.execute(rql)[0][0])
 
-                # Add the rset to the build tree
-                files.append(os.path.join(data_root_dir, "request_result"))
+                # Add the rset to the build tree, add the appropriate
+                # file extension
+                rql = "Any T WHERE S eid '{0}', S rset_type T".format(
+                    cwsearch_eid)
+                fext = VID_TO_EXT[cw_session.execute(rql)[0][0]]
+                files.append(
+                    os.path.join(data_root_dir, "request_result" + fext))
 
                 # Go through all files and create the virtual direcotry
                 for fname in files:
@@ -588,7 +601,7 @@ class FuseRset(Operations):
             raise FuseOSError(EROFS)
 
         # Special case for the rset binary file
-        if path.endswith("request_result"):
+        if os.path.basename(path).startswith("request_result"):
             return
 
         return os.open(self.vdir.get_real_path(path), flags)
@@ -599,7 +612,7 @@ class FuseRset(Operations):
         """
         logger.debug("read {0}".format(path))
         # Special case for the rset binary file
-        if path.endswith("request_result"):
+        if os.path.basename(path).startswith("request_result"):
             cwsearch_name = path.split("/")[-2]
             self.vdir.rset_data[cwsearch_name].seek(offset)
             return self.vdir.rset_data[cwsearch_name].read(length)
@@ -615,7 +628,7 @@ class FuseRset(Operations):
         logger.debug("realease {0}".format(path))
         # Special case for the rset binary file
         # Keep binary file in memory
-        if path.endswith("request_result"):
+        if os.path.basename(path).startswith("request_result"):
             return
         # Close file from descriptor
         else:

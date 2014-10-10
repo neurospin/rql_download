@@ -59,6 +59,7 @@ class FSetAdaptor(Action):
     """
     __regid__ = "rqldownload-adaptors"
     __select__ = Action.__select__ & is_instance("Scan", "ProcessingRun")
+    __rset_type__ = "jsonexport"
 
     def rql(self, rql, parameter_name):
         """ Method that patch the rql.
@@ -90,9 +91,13 @@ class FSetAdaptor(Action):
 
 class EntityAdaptor(Action):
     """ Action to download entity attributes.
+
+    Add items in the global list 'RQL_DOWNLOAD_EXPORT_ENTITIES' to activate
+    such actions.
     """
     __regid__ = "rqldownload-adaptors"
     __select__ = Action.__select__ & is_instance(*RQL_DOWNLOAD_EXPORT_ENTITIES)
+    __rset_type__ = "ecsvexport"
 
     def rql(self, rql, parameter_name):
         """ Method return the rql.
