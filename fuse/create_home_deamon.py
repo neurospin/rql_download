@@ -40,7 +40,9 @@ parser.add_option("-r", "--ldapbase", dest="base",
                   default="dc=imagen2,dc=cea,dc=fr",
                   help="the ldap base login.")
 parser.add_option("-p", "--ldappwd", dest="password",
-                  help="the ldap user password.")                  
+                  help="the ldap user password.")
+parser.add_option("-i", "--cwuser", dest="cw_uid",
+                  help="the cw instance user id.")                  
 (options, args) = parser.parse_args()
 
 
@@ -55,12 +57,9 @@ else:
     ldapobject.simple_bind_s(
         "cn=" + options.user + "," + options.base, options.password)
     group = ldapobject.search_s(
-        "cn={0},ou=Groups,dc={1}".format(options.group_name, options.base),
+        "cn={0},ou=Groups,{1}".format(options.group_name, options.base),
         ldap.SCOPE_BASE)
-    members = a[0][1]["memberUid"]
-
-print members
-print stop
+    members = group[0][1]["memberUid"]
 
 # Create the home of each member
 for m in members:
@@ -68,3 +67,9 @@ for m in members:
                              options.db_name)
     if not os.path.isdir(fuse_home):
         os.makedirs(fuse_home, 0755)
+	cw_uid = int(options.cw_uid)
+        os.chown(os.path.join(options.basedir, "home", m),
+                 -1, cw_uid)
+	os.chown(os.path.join(options.basedir, "home", m, "rql_download"), 
+		 cw_uid, cw_uid)
+        os.chown(fuse_home, cw_uid, cw_uid)
