@@ -7,6 +7,10 @@
 # for details.
 ##########################################################################
 
+"""
+> ldpa exemple:
+    python create_home_deamon.py -g OPEN_FU1 -l -b /chroot_fuse -n imagen2 -p mypwd
+"""
 # System import
 import grp
 from optparse import OptionParser
@@ -28,14 +32,15 @@ parser.add_option("-b", "--basedir", dest="basedir",
                   help="the basedir where the user home will be built.")
 parser.add_option("-n", "--dbname", dest="db_name",
                   help="the cw database instance name.")
-parser.add_option("-a", "--ldapaddr", dest="uri",
+parser.add_option("-a", "--ldapaddr", dest="uri", default="ldap://127.0.0.1",
                   help="the ldap address.")
-parser.add_option("-c", "--ldapuser", dest="user",
+parser.add_option("-c", "--ldapuser", dest="user", default="admin",
                   help="the ldap user login.")
+parser.add_option("-r", "--ldapbase", dest="base",
+                  default="dc=imagen2,dc=cea,dc=fr",
+                  help="the ldap base login.")
 parser.add_option("-p", "--ldappwd", dest="password",
-                  help="the ldap user password.")
-parser.add_option("-u", "--user", dest="user",
-                  help="a specific user.")
+                  help="the ldap user password.")                  
 (options, args) = parser.parse_args()
 
 
@@ -44,10 +49,18 @@ parser.add_option("-u", "--user", dest="user",
 if not options.use_ldap:
     sys_group = grp.getgrnam(options.group_name)
     members = sys_group.gr_mem
+# > ldap
 else:
-    members = []
-if options.user:
-    members.append(options.user)
+    ldapobject = ldap.initialize(options.uri)
+    ldapobject.simple_bind_s(
+        "cn=" + options.user + "," + options.base, options.password)
+    group = ldapobject.search_s(
+        "cn={0},ou=Groups,dc={1}".format(options.group_name, options.base),
+        ldap.SCOPE_BASE)
+    members = a[0][1]["memberUid"]
+
+print members
+print stop
 
 # Create the home of each member
 for m in members:
