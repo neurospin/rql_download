@@ -22,35 +22,6 @@ RQL_DOWNLOAD_EXPORT_ENTITIES = ["Subject"]
 
 
 ###############################################################################
-# Save CW search action
-###############################################################################
-
-class SaveCWSearchAction(Action):
-    """ Action that generates a new CWSearch form.
-    """
-    __regid__ = "save-search"
-    __select__ = Action.__select__ & multi_lines_rset()
-    title = _("Save search")
-    category = "save-search"
-
-    def url(self, rql):
-        """ Method that generates the url of CWSearch form.
-        """
-        path = self._cw.relative_path()
-        param = ""
-        if "?" in path:
-            path, param = path.split("?", 1)
-            # remove possible '_cwmsgid' parameter in url
-            params_dict = parse_qs(param)
-            if '_cwmsgid' in params_dict:
-                del params_dict['_cwmsgid']
-                param = self._cw.build_url_params(**params_dict)
-        return self._cw.build_url(
-            "add/CWSearch", request="{0}".format(rql), __redirectpath=path,
-            __redirectparams=param)
-
-
-###############################################################################
 # Adaptors
 ###############################################################################
 
@@ -112,4 +83,3 @@ class EntityAdaptor(Action):
 def registration_callback(vreg):
     vreg.register(FSetAdaptor)
     vreg.register(EntityAdaptor)
-    vreg.register(SaveCWSearchAction)

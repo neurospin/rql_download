@@ -85,7 +85,7 @@ class CWSearchAdd(hook.Hook):
             file system) and thus do not check to speed up the hook.
         """
         # Get the rql/export type from the CWSearch form
-        rql = self.entity.cw_edited.get("request")
+        rql = self.entity.cw_edited.get("path")
 
         # Execute the rql
         # ToDo: try to get the current request cw_rset

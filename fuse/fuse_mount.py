@@ -438,7 +438,7 @@ class FuseRset(Operations):
             now = time.time()
 
             # Go through all the user CWSearch entities
-            rql = ("Any S, N WHERE S is CWSearch, S name N, S owned_by U, "
+            rql = ("Any S, N WHERE S is CWSearch, S title N, S owned_by U, "
                    "U login '{0}'".format(self.login))
             for cwsearch_eid, cwsearch_name in cw_session.execute(rql):
 

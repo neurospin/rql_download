@@ -18,13 +18,16 @@ class CWSearch(EntityType):
         "delete": ("managers", "owners"),
         "update": ("managers", "owners"),
     }
-    name = String(maxsize=256, required=True,
+    title = String(maxsize=256, required=True,
                   constraints=[
-                      RQLUniqueConstraint("X name N, S name N, X owned_by U, X is CWSearch",
-                                          mainvars="X",
-                                          msg=_("this name is already used"))
+                      RQLUniqueConstraint(
+                          "X title N, S title N, X owned_by U, X is CWSearch",
+                          mainvars="X",
+                          msg=_("this name is already used"))
                   ])
-    request = String(required=True)
+    path = String(required=True,
+                  description=_("the rql request we will save (do not edit "
+                                "this field)."))
     expiration_date = Date(required=True, indexed=True)
     # json which contains resultset and filepath
     result = SubjectRelation("File", cardinality="1*", inlined=True,
