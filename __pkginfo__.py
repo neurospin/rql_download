@@ -13,7 +13,7 @@ author_email = 'contact@logilab.fr'
 description = 'Cube to download CWSearch.'
 web = 'http://www.cubicweb.org/project/%s' % distname
 
-__depends__ =  {'cubicweb': '>= 3.19.3'}
+__depends__ =  {'cubicweb': '>= 3.17.2'}
 __recommends__ = {}
 
 classifiers = [
