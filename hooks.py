@@ -15,7 +15,7 @@ import os.path as osp
 import datetime
 
 # RQL import
-from rql.nodes import Constant
+from rql.nodes import Constant, Function
 
 # CW import
 from cubicweb import Binary, ValidationError
@@ -49,8 +49,12 @@ class CWSearchAdd(hook.Hook):
         # Go through all rql nodes
         for node in nodes:
 
+            # Skip function node
+            if isinstance(node, Function):
+                continue
+
             # If a leaf constant node is reached
-            if isinstance(node, Constant):
+            elif isinstance(node, Constant):
 
                 # Get the entity name and related parameter name in the rql
                 if node.type not in constant_nodes:
