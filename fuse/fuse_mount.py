@@ -721,36 +721,39 @@ class FuseRset(Operations):
         logger.error("write")
         raise FuseOSError(EROFS)
 
-# Setup the logger: cubicweb change the logging config and thus
-# we setup en axtra stream handler
-# ToDo: fix it
-logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.StreamHandler())
 
-# Command line parameters
-instance_name = sys.argv[1]
-login = sys.argv[2]
-mount_base = get_cw_option(instance_name, "mountdir")
-mount_point = os.path.join(mount_base, login, "rql_download", instance_name)
-logger.debug("Command line parameters: instance name = {0}, login = {1} fuse "
-             "mount point = {2}".format(instance_name, login, mount_point))
+if __name__ == "__main__":
 
-# Check if the user fuse mount point is available
-isalive = True
-try:
-    os.stat(os.path.join(mount_point, ".isalive"))
-except:
-    isalive = False
+    # Setup the logger: cubicweb change the logging config and thus
+    # we setup en axtra stream handler
+    # ToDo: fix it
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging.StreamHandler())
 
-# Add the new search to the user fuse mount point:
-# if the process is already created, just start the update,
-# otherwise create a fuse loop
-if isalive:
-    os.stat(os.path.join(mount_point, ".update"))
-else:
-    # Create the fuse mount point
-    FUSE(FuseRset(instance_name, login),
-         mount_point,
-         foreground=True,
-         allow_other=True,
-         default_permissions=True)
+    # Command line parameters
+    instance_name = sys.argv[1]
+    login = sys.argv[2]
+    mount_base = get_cw_option(instance_name, "mountdir")
+    mount_point = os.path.join(mount_base, login, "rql_download", instance_name)
+    logger.debug("Command line parameters: instance name = {0}, login = {1} fuse "
+                 "mount point = {2}".format(instance_name, login, mount_point))
+
+    # Check if the user fuse mount point is available
+    isalive = True
+    try:
+        os.stat(os.path.join(mount_point, ".isalive"))
+    except:
+        isalive = False
+
+    # Add the new search to the user fuse mount point:
+    # if the process is already created, just start the update,
+    # otherwise create a fuse loop
+    if isalive:
+        os.stat(os.path.join(mount_point, ".update"))
+    else:
+        # Create the fuse mount point
+        FUSE(FuseRset(instance_name, login),
+             mount_point,
+             foreground=True,
+             allow_other=True,
+             default_permissions=True)
