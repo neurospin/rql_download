@@ -248,7 +248,7 @@ class Search(object):
     def get_files(self, virtpath):
         """ return a list of file associated to CWSearch named ``search_name``
         including ``rset`` file"""
-        rset = self.session.execute('Any D WHERE S is CWSearch, S name %(name)s, '
+        rset = self.session.execute('Any D WHERE S is CWSearch, S title %(name)s, '
                                     'S owned_by %(cwuser)s, '
                                     'S result F, F data D',
                                     {'name': virtpath.search_name,
@@ -259,7 +259,7 @@ class Search(object):
         return filepaths
 
     def get_searches(self):
-        rset = self.session.execute('Any SN WHERE X is CWSearch, X name SN, '
+        rset = self.session.execute('Any SN WHERE X is CWSearch, X title SN, '
                                     'X owned_by %(cwuser)s ',
                                     {'cwuser': self.cwuser})
         return rset
@@ -267,7 +267,7 @@ class Search(object):
     def get_file_data(self, file_eid, rset_file, search_name=None):
         if rset_file:
             rset = self.session.execute('Any D WHERE F is File, '
-                                        'S is CWSearch, S name %(name)s, '
+                                        'S is CWSearch, S title %(name)s, '
                                         'S owned_by %(cwuser)s, S rset F, '
                                         'F data D',
                                         {'name': search_name,

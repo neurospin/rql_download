@@ -7,7 +7,7 @@ from twisted.internet import reactor
 
 from logilab.common.configuration import Configuration
 
-from cubes.rsetftp.ftpserver.server import CubicWebSSHdFactory
+from cubes.rql_download.ftpserver.server import CubicWebSSHdFactory
 
 class BrainFTPCommand(object):
     """Run SFTP server which will connect to a Brainomics Cubicweb instance

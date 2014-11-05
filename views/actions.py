@@ -26,7 +26,7 @@ RQL_DOWNLOAD_EXPORT_ENTITIES = ["Subject"]
 ###############################################################################
 
 class FSetAdaptor(Action):
-    """ Action to download entity objects related through an FileSet entity.
+    """ Action to download entity objects related through a FileSet entity.
     """
     __regid__ = "rqldownload-adaptors"
     __select__ = Action.__select__ & is_instance("Scan", "ProcessingRun")
