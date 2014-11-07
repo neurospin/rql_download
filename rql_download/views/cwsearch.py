@@ -8,6 +8,7 @@
 ##########################################################################
 
 # CW import
+from cgi import parse_qs
 from cubicweb.web.views import uicfg
 from cubicweb.web.formwidgets import FieldWidget
 from cubicweb import tags
@@ -28,7 +29,7 @@ class CWSearchPathWidget(FieldWidget):
         # Get the path form value
         values, attrs = self.values_and_attributes(form, field)
         attrs.setdefault("onkeyup", "autogrow(this)")
-
+        
         # Check the inputs
         if not values:
             value = u""
@@ -47,8 +48,18 @@ class CWSearchPathWidget(FieldWidget):
             rql = ""
 
         # Get unquoted rql value
-        rql = [v for k, v in form._cw.url_parse_qsl(rql)][0]
-        rql = rql.replace("DISTINCT ","")
+        if rql != "":
+            rql = [v for k, v in form._cw.url_parse_qsl(rql)][0]
+            rql = rql.replace("DISTINCT ","")
+
+        # If no rql is specified by the script, check the url 'path' parameter
+        if rql == "":
+            relative_url = form._cw.relative_path()
+            if "?" in relative_url:
+                path, params = relative_url.split("?", 1)
+                params_dict = parse_qs(params)
+                if "path" in params_dict:
+                    rql = params_dict["path"][0]
 
         # Compute render properties
         lines = rql.splitlines()
