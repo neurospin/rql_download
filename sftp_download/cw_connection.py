@@ -123,13 +123,29 @@ class CWInstanceConnection(object):
         # Debug message
         logger.debug("RQL result: '%s'", rset)
 
-        return rset    
+        return rset
+
+    def execute_with_fuse(self, rql):
+        """ Method that loads the rset from a rql request through the sftp
+        fuse CWSearch mount point.
+
+        Parameters
+        ----------
+        rql: str (mandatory)
+            the rql rquest that will be executed on the cw instance.
+
+        Returns
+        -------
+        rset: list of list of str
+            a list that contains the requested entity parameters.        
+        """
+        
 
     ###########################################################################
     # Private Members
     ###########################################################################
 
-    def _create_cwsearch(rql):
+    def _create_cwsearch(self, rql, export_type="cwsearch"):
         """ Method that creates a CWSearch entity from a rql.
 
         .. note::
@@ -143,12 +159,20 @@ class CWInstanceConnection(object):
         rql: str (mandatory)
             the rql rquest that will be executed on the cw instance.
         """
+        # Debug message
+        logger.debug("Executing rql: '%s'", rql)
+        logger.debug("Exporting in: '%s'", export_type)
+
         # Create a dictionary with the request meta information
+        auto_generated_title = "auto_generated_title_1"
         data = {
             "path": rql,
             "title": auto_generated_title,
-            "vid": export_type + "export"
+            "vid": export_type + "export",
         }
+
+        # Get the result set
+        response = self.opener.open(self.url, urllib.urlencode(data))
 
     def _connect(self, password):
         """ Method to create an object that handle opening of HTTP URLs.
@@ -189,13 +213,21 @@ if __name__ == "__main__":
     logger.addHandler(logging.StreamHandler())
 
     # Create dummy rql
-    rql = ("Any C, G Where X is Subject, X code_in_study C, "
+    rql1 = ("Any C, G Where X is Subject, X code_in_study C, "
            "X handedness 'ambidextrous', X gender G")
+    rql1 = "Any C Where X is Subject, X code_in_study C"
+    rql2 = ("Any S WHERE S is Scan, S r_concerns A, A code_in_study "
+            "'000000001274'")
+    rql2 = ("Any S WHERE S is Scan, S has_data A, A field '7T', "
+            "S in_assessment B, B timepoint 'V1', S format 'NIFTI', "
+            "S in_assessment C, C concerns D, D code_in_study 'ab100207'")
 
     # HTTP test
-    url = "http://mart.intra.cea.fr/imagen"; login = "admin"; password = "alpine"
+    #url = "http://mart.intra.cea.fr/imagen"; login = "admin"; password = "alpine"
+    url = "http://is223527.intra.cea.fr:8080"; login = "admin"; password = "a"
     connection = CWInstanceConnection(url, login, password)
-    connection.execute(rql, export_type="csv")
+    connection.execute(rql1, export_type="csv")
+    connection._create_cwsearch(rql2)
 
     # HTTPS test
     #url = "https://imagen2.cea.fr/database/"; login = "grigis"; password = "password"
