@@ -16,6 +16,8 @@ import json
 import csv
 import logging
 import time
+import paramiko
+import stat
 
 # Define logger
 logger = logging.getLogger(__name__)
@@ -60,7 +62,7 @@ class CWInstanceConnection(object):
         "fuse": json.load,
     }
 
-    def __init__(self, url, login, password, realm=None):
+    def __init__(self, url, login, password, realm=None, port=22):
         """ Initilize the HTTPConnection class.
 
         Parameters
@@ -74,10 +76,15 @@ class CWInstanceConnection(object):
         realm: str (optional default None)
             authentification domain (see firefox -> Outils -> Developpement web
             -> Reseau -> Get)
+        port: int (optional default 22)
+            the sftp port.
         """
         # Class parameters
         self.url = url
         self.login = login
+        self.password = password
+        self.host = self.url.split("/")[2]
+        self.port = port
         self.realm = realm
         self._connect(password)
 
@@ -114,8 +121,6 @@ class CWInstanceConnection(object):
             "rql": rql,
             "vid": export_type + "export",
         }
-        if export_type == "fuse":
-            data.pop("rql")
 
         # Get the result set
         rset = self.importers[export_type](
@@ -176,19 +181,115 @@ class CWInstanceConnection(object):
             # Increment
             try_nb += 1
 
-        # Rsync with the sftp fuse mount point
-        print cwsearch_title
-        self._rsync_fuse(sync_dir, cwsearch_title)
+        # Copy the data with the sftp fuse mount point
+        self._get_fuse(sync_dir, cwsearch_title)
+
+        # Load the rset
+        rset_json_file = os.path.join(
+            sync_dir, cwsearch_title, "request_result.json")
+        logger.debug("Autodetected rset file at location '{0}'".format(
+            rset_json_file))
+        with open(rset_json_file) as json_data:
+            rset = json.load(json_data)
+
+        # Debug message
+        logger.debug("RQL result: '%s'", rset)
+
+        return rset
 
     ###########################################################################
     # Private Members
     ###########################################################################
 
-    def _rsync_fuse(self, sync_dir, cwsearch_title):
-        """
+    def _get_fuse(self, sync_dir, cwsearch_title):
+        """ Download the CWSearch result trough a sftp connection.
+
+        .. note::
+
+            If a folder 'sync_dir' + 'cwsearch_title' is detected on the local
+            machine, no download is run. We assume that the CWSearch has already
+            been downloaded properly.
+
+        Parameters
+        ----------
+        sync_dir: str (mandatory)
+            the destination folder where the rql data are synchronized.
+        cwsearch_title: str (mandatory)
+            the title of the CWSearch that will be downloaded.
         """
         # Get instance parameters
         cw_params = self.execute(rql="", export_type="fuse")
+
+        # Build the fuse mount point
+        mount_point = os.path.join(
+            "/rql_download", cw_params["instance_name"])
+
+        # Get the fuse virtual folder to sync
+        fuse_dir = os.path.join(mount_point, cwsearch_title)
+        logger.debug("Autodetected fuse directory: '%s'", fuse_dir)
+
+        # Get the local folder
+        local_dir = os.path.join(sync_dir, cwsearch_title)
+        if os.path.isdir(local_dir):
+            logger.error("The CWSearch '{0}' has been found at location "
+                         "'{1}'. Do not download the data again.".format(
+                             cwsearch_title, local_dir))
+
+        # Rsync via paramiko and sftp
+        else:
+            transport = paramiko.Transport((self.host, self.port))
+            transport.connect(username=self.login, password=self.password)
+            sftp = paramiko.SFTPClient.from_transport(transport)
+
+            logger.debug("Downloading: '%s' to '%s'", fuse_dir, local_dir)
+            self._sftp_get_recursive(fuse_dir, local_dir, sftp)
+            logger.debug("Downloading done")
+
+            sftp.close()
+            transport.close()
+
+    def _sftp_get_recursive(self, path, dest, sftp):
+        """ Recursive download of the data through a sftp connection.
+
+        Parameters
+        ----------
+        path: str (mandatory)
+            the sftp path to download.
+        dest: str (mandatory)
+            the destination folder on the local machine.
+        sftp: paramiko sftp connection (mandatory)
+        """
+        # Go through the current sftp folder content
+        dir_items = sftp.listdir(path)
+        os.makedirs(dest)
+        for item in dir_items:
+
+            # Construct the item absolute path
+            item_path = os.path.join(path, item)
+            dest_path = os.path.join(dest, item)
+
+            # If a directory is found
+            if self._sftp_isdir(item_path, sftp):
+                self._sftp_get_recursive(item_path, dest_path, sftp)
+
+            # Otherwise transfer the data
+            else:
+                sftp.get(item_path, dest_path)
+
+    def _sftp_isdir(self, path, sftp):
+        """ Check if a distant path is a directory through a sftp connection.
+
+        Parameters
+        ----------
+        path: str (mandatory)
+            the sftp path to download.
+        sftp: paramiko sftp connection (mandatory)
+        """
+        try:
+            return stat.S_ISDIR(sftp.stat(path).st_mode)
+        #Path does not exist, so by definition not a directory
+        except IOError:
+            return False
 
     def _create_cwsearch(self, rql, export_type="cwsearch"):
         """ Method that creates a CWSearch entity from a rql.
@@ -272,7 +373,7 @@ if __name__ == "__main__":
     #url = "http://is223527.intra.cea.fr:8080"; login = "admin"; password = "a"
     connection = CWInstanceConnection(url, login, password)
     connection.execute(rql1, export_type="json")
-    connection.execute_with_fuse(rql2, "/tmp/fuse", timer=1)
+    connection.execute_with_fuse(rql2, "/tmp/agrigis/fuse", timer=1)
 
     # HTTPS test
     #url = "https://imagen2.cea.fr/database/"; login = "grigis"; password = "password"

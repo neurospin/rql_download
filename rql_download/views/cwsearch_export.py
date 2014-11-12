@@ -80,7 +80,7 @@ class FuseConfigView(JsonMixIn, View):
         """ Dumps the fuse configuration.
         """
         rset = {
-            "mountdir": self._cw.vreg.config["mountdir"],
+        #    "mountdir": self._cw.vreg.config["mountdir"],
             "instance_name": self._cw.vreg.config["pyro-instance-id"]
         }
         self.wdata(rset)
