@@ -9,6 +9,7 @@
 
 # CW import
 from cubicweb.view import View
+from cubicweb.web.views.json import JsonMixIn
 
 
 ###############################################################################
@@ -65,6 +66,22 @@ class CWSearchRsetView(View):
 
             # Create the new CWSearch
             self._cw.create_entity("CWSearch",
-                                           title=unique_title,
-                                           path=rql)
+                                   title=unique_title,
+                                   path=rql)
+
+
+class FuseConfigView(JsonMixIn, View):
+    """ Dumps the fuse configuration in JSON format.
+    """
+    __regid__ = "fuseexport"
+    title = _('fuse-export-view')
+
+    def call(self):
+        """ Dumps the fuse configuration.
+        """
+        rset = {
+            "mountdir": self._cw.vreg.config["mountdir"],
+            "instance_name": self._cw.vreg.config["pyro-instance-id"]
+        }
+        self.wdata(rset)
 

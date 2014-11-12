@@ -14,8 +14,8 @@ import urllib2
 import urllib
 import json
 import csv
-import traceback
 import logging
+import time
 
 # Define logger
 logger = logging.getLogger(__name__)
@@ -53,10 +53,11 @@ class CWInstanceConnection(object):
         object that contains the connexion to the cw instance.
     """
     # Global variable that specify the supported export cw formats
-    _EXPORT_TYPES = ["json", "csv"]
+    _EXPORT_TYPES = ["json", "csv", "fuse"]
     importers = {
         "json": json.load,
-        "csv": load_csv
+        "csv": load_csv,
+        "fuse": json.load,
     }
 
     def __init__(self, url, login, password, realm=None):
@@ -79,8 +80,6 @@ class CWInstanceConnection(object):
         self.login = login
         self.realm = realm
         self._connect(password)
-
-        print self.opener
 
     ###########################################################################
     # Public Members
@@ -115,6 +114,8 @@ class CWInstanceConnection(object):
             "rql": rql,
             "vid": export_type + "export",
         }
+        if export_type == "fuse":
+            data.pop("rql")
 
         # Get the result set
         rset = self.importers[export_type](
@@ -125,7 +126,7 @@ class CWInstanceConnection(object):
 
         return rset
 
-    def execute_with_fuse(self, rql):
+    def execute_with_fuse(self, rql, sync_dir, timer=3, nb_of_try=3):
         """ Method that loads the rset from a rql request through the sftp
         fuse CWSearch mount point.
 
@@ -133,18 +134,61 @@ class CWInstanceConnection(object):
         ----------
         rql: str (mandatory)
             the rql rquest that will be executed on the cw instance.
+        sync_dir: str (mandatory)
+            the destination folder where the rql data are synchronized.
+        timer: int (optional default 3)
+            the time in seconds we are waiting for the fuse update.
+        nb_of_try: int (optional default 3)
+            if the fuse update has not been detected after 'nb_of_try' trials
+            raise an exception.
 
         Returns
         -------
         rset: list of list of str
             a list that contains the requested entity parameters.        
         """
-        pass
-        
+        # Create the CWSearch
+        connection._create_cwsearch(rql)
+
+        # Wait for fuse update: use double quote in rql
+        try_nb = 1
+        cwsearch_title = None
+        rql = rql.replace("'", '"')
+        while try_nb <= nb_of_try:
+
+            # Timer
+            logger.debug("Sleeping: '%i sec'", timer)
+            time.sleep(timer)
+
+            # Get all the user CWSearch in the database
+            rset = self.execute(
+                "Any S, T, P Where S is CWSearch, S title T, S path P")
+
+            # Check if the fuse update has been done.
+            # If true, get the associated CWSearch title
+            for item in rset:
+                if item[2].replace("'", '"') == rql:
+                    cwsearch_title = item[1]
+                    break
+            if cwsearch_title is not None:
+                break
+
+            # Increment
+            try_nb += 1
+
+        # Rsync with the sftp fuse mount point
+        print cwsearch_title
+        self._rsync_fuse(sync_dir, cwsearch_title)
 
     ###########################################################################
     # Private Members
     ###########################################################################
+
+    def _rsync_fuse(self, sync_dir, cwsearch_title):
+        """
+        """
+        # Get instance parameters
+        cw_params = self.execute(rql="", export_type="fuse")
 
     def _create_cwsearch(self, rql, export_type="cwsearch"):
         """ Method that creates a CWSearch entity from a rql.
@@ -227,8 +271,8 @@ if __name__ == "__main__":
     url = "http://mart.intra.cea.fr/imagen"; login = "admin"; password = "alpine"
     #url = "http://is223527.intra.cea.fr:8080"; login = "admin"; password = "a"
     connection = CWInstanceConnection(url, login, password)
-    connection.execute(rql1, export_type="csv")
-    connection._create_cwsearch(rql2)
+    connection.execute(rql1, export_type="json")
+    connection.execute_with_fuse(rql2, "/tmp/fuse", timer=1)
 
     # HTTPS test
     #url = "https://imagen2.cea.fr/database/"; login = "grigis"; password = "password"
