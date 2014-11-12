@@ -181,16 +181,28 @@ class CWInstanceConnection(object):
             # Increment
             try_nb += 1
 
+        # Get instance parameters
+        cw_params = self.execute(rql="", export_type="fuse")
+        logger.debug("Autodetected fuse parameters: '%s'", str(cw_params))
+
         # Copy the data with the sftp fuse mount point
-        self._get_fuse(sync_dir, cwsearch_title)
+        self._get_fuse(sync_dir, cwsearch_title, cw_params)
 
         # Load the rset
-        rset_json_file = os.path.join(
-            sync_dir, cwsearch_title, "request_result.json")
+        local_dir = os.path.join(sync_dir, cwsearch_title)
+        rset_json_file = os.path.join(local_dir, "request_result.json")
         logger.debug("Autodetected rset file at location '{0}'".format(
             rset_json_file))
         with open(rset_json_file) as json_data:
             rset = json.load(json_data)
+
+        # Tune the rset files in order to point in the local filesystem
+        if not local_dir.endswith("/"):
+            local_dir += "/"
+        if not cw_params["basedir"].endswith("/"):
+            cw_params["basedir"] += "/"
+        for item in rset:
+            item[0] = item[0].replace(cw_params["basedir"], local_dir)
 
         # Debug message
         logger.debug("RQL result: '%s'", rset)
@@ -201,7 +213,7 @@ class CWInstanceConnection(object):
     # Private Members
     ###########################################################################
 
-    def _get_fuse(self, sync_dir, cwsearch_title):
+    def _get_fuse(self, sync_dir, cwsearch_title, cw_params):
         """ Download the CWSearch result trough a sftp connection.
 
         .. note::
@@ -216,10 +228,9 @@ class CWInstanceConnection(object):
             the destination folder where the rql data are synchronized.
         cwsearch_title: str (mandatory)
             the title of the CWSearch that will be downloaded.
+        cw_params: dict (mandatory)
+            a dictionary containing cw/fuse parameters.
         """
-        # Get instance parameters
-        cw_params = self.execute(rql="", export_type="fuse")
-
         # Build the fuse mount point
         mount_point = os.path.join(
             "/rql_download", cw_params["instance_name"])
@@ -231,7 +242,7 @@ class CWInstanceConnection(object):
         # Get the local folder
         local_dir = os.path.join(sync_dir, cwsearch_title)
         if os.path.isdir(local_dir):
-            logger.error("The CWSearch '{0}' has been found at location "
+            logger.warning("The CWSearch '{0}' has been found at location "
                          "'{1}'. Do not download the data again.".format(
                              cwsearch_title, local_dir))
 
