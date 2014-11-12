@@ -34,7 +34,7 @@ class CWSearchRsetView(View):
                              "and a 'title' attributes.")
 
         # Get all the user CWSearch in the database
-        rset = self._cw.session.execute(
+        rset = self._cw.execute(
             "Any S, T, P Where S is CWSearch, S title T, S path P")
         
         # Unpack the rset: use double quote in rql
@@ -64,8 +64,7 @@ class CWSearchRsetView(View):
             unique_title = u"auto_generated_title_{0}".format(prefix)
 
             # Create the new CWSearch
-            self._cw.session.create_entity("CWSearch",
+            self._cw.create_entity("CWSearch",
                                            title=unique_title,
                                            path=rql)
-            self._cw.session.commit()
 

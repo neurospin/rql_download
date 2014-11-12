@@ -139,6 +139,7 @@ class CWInstanceConnection(object):
         rset: list of list of str
             a list that contains the requested entity parameters.        
         """
+        pass
         
 
     ###########################################################################
@@ -215,16 +216,16 @@ if __name__ == "__main__":
     # Create dummy rql
     rql1 = ("Any C, G Where X is Subject, X code_in_study C, "
            "X handedness 'ambidextrous', X gender G")
-    rql1 = "Any C Where X is Subject, X code_in_study C"
+    #rql1 = "Any C Where X is Subject, X code_in_study C"
     rql2 = ("Any S WHERE S is Scan, S r_concerns A, A code_in_study "
-            "'000000001274'")
-    rql2 = ("Any S WHERE S is Scan, S has_data A, A field '7T', "
-            "S in_assessment B, B timepoint 'V1', S format 'NIFTI', "
-            "S in_assessment C, C concerns D, D code_in_study 'ab100207'")
+            "'000000022453'")
+    #rql2 = ("Any S WHERE S is Scan, S has_data A, A field '3T', "
+    #        "S in_assessment B, B timepoint 'V1', S format 'GIS', "
+    #        "S in_assessment C, C concerns D, D code_in_study 'ab100207'")
 
     # HTTP test
-    #url = "http://mart.intra.cea.fr/imagen"; login = "admin"; password = "alpine"
-    url = "http://is223527.intra.cea.fr:8080"; login = "admin"; password = "a"
+    url = "http://mart.intra.cea.fr/imagen"; login = "admin"; password = "alpine"
+    #url = "http://is223527.intra.cea.fr:8080"; login = "admin"; password = "a"
     connection = CWInstanceConnection(url, login, password)
     connection.execute(rql1, export_type="csv")
     connection._create_cwsearch(rql2)
