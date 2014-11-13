@@ -153,7 +153,7 @@ class CWInstanceConnection(object):
             a list that contains the requested entity parameters.        
         """
         # Create the CWSearch
-        connection._create_cwsearch(rql)
+        self._create_cwsearch(rql)
 
         # Wait for fuse update: use double quote in rql
         try_nb = 1
