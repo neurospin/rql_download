@@ -350,7 +350,7 @@ class CWInstanceConnection(object):
         if self.realm is not None:
             auth_handler = urllib2.HTTPBasicAuthHandler()
             auth_handler.add_password(realm=self.realm,
-                                      uri=url,
+                                      uri=self.url,
                                       user=self.login,
                                       passwd=password)
             self.opener.add_handler(auth_handler)
