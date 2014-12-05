@@ -7,10 +7,10 @@
 # for details.
 ##########################################################################
 
-from cubicweb.predicates import nonempty_rset, anonymous_user
+# CW import 
 from cubicweb.web import component
 from cubicweb.predicates import (
-    is_instance, nonempty_rset, anonymous_user, non_final_entity)
+    is_instance, nonempty_rset, anonymous_user, non_final_entity, nonempty_rset)
 from cubicweb.web.views.facets import (
     facets, FilterBox, FacetFilterMixIn, contextview_selector)
 from logilab.mtconverter import xml_escape
@@ -97,8 +97,11 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         title = self._cw._("--unique title--")
 
         # Create the url to the CWSearch form
-        cls = self._cw.vreg["etypes"].etype_class("CWSearch")
-        add_url = cls.cw_create_url(self._cw, path=path, title=title)
+        cls = self._cw.vreg["etypes"].etype_class("CWSearch")       
+        add_url = cls.cw_create_url(self._cw, path=path, title=title,
+            __message=(u"Please enter a unique title for the search and click "
+                        "on the validate button."))
+
         base_url = cls.cw_create_url(self._cw, title=title)
         link = (u'<a class="btn btn-primary" cubicweb:target="{0}" '
                  'id="facetBkLink" href="{1}">'.format(xml_escape(base_url),
@@ -129,6 +132,30 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
 
 
 ###############################################################################
+# Help for download CW search box
+###############################################################################
+
+class HelpCWSearchBox(component.CtxComponent):
+    """ Class that display a help box to download a cwsearch.
+
+    The global class parameter _message can be tuned to display a custom help
+    message.
+    """
+    __regid__ = "help-cw-search"
+    __select__ = is_instance("CWSearch")
+    context = "right"
+    order = 0
+    title = _("Download Search Help")
+    _message = (u"This is a search result, you can download it via sftp using "
+                 "FileZilla.")
+
+    def render_body(self, w):
+        w(u'<div class="help-cw-search">')
+        w(self._message)
+        w(u'</div>')
+
+
+###############################################################################
 # Registration callback
 ###############################################################################
 
@@ -136,4 +163,5 @@ def registration_callback(vreg):
     vreg.unregister(FilterBox)
     vreg.unregister(BookmarksBox)
     vreg.register(SaveCWSearchFilterBox)
+    vreg.register(HelpCWSearchBox)
 
