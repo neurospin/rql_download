@@ -75,11 +75,13 @@ for m in members:
                  cw_uid, cw_uid)
         os.chown(fuse_home, cw_uid, cw_uid)
     else:
+        cw_meta_uid = cw_uid
         cw_uid = int(ldapobject.search_s(
             options.base, ldap.SCOPE_SUBTREE,
             "(uid={0})".format(m))[0][1]["uidNumber"][0])
         os.chown(os.path.join(options.basedir, "home", m), cw_uid, -1)
         os.chown(os.path.join(options.basedir, "home", m, "rql_download"),
                  cw_uid, -1)
-        os.chown(fuse_home, cw_uid, -1)
+        os.chown(fuse_home, cw_uid, cw_meta_uid)
+        os.chmod(fuse_home, 0771)
         
