@@ -75,7 +75,7 @@ for m in members:
                  cw_uid, cw_uid)
         os.chown(fuse_home, cw_uid, cw_uid)
     else:
-        cw_meta_uid = cw_uid
+        cw_meta_uid = int(options.cw_uid)
         cw_uid = int(ldapobject.search_s(
             options.base, ldap.SCOPE_SUBTREE,
             "(uid={0})".format(m))[0][1]["uidNumber"][0])
