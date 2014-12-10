@@ -67,21 +67,21 @@ for m in members:
                              options.db_name)
     if not os.path.isdir(fuse_home):
         os.makedirs(os.path.dirname(fuse_home), 0751)
-	os.makedirs(fuse_home, 0771)
+	    os.makedirs(fuse_home, 0771)
 
-    if not options.use_ldap:
-        cw_uid = int(options.cw_uid)
-        os.chown(os.path.join(options.basedir, "home", m), -1, cw_uid)
-        os.chown(os.path.join(options.basedir, "home", m, "rql_download"),
-                 cw_uid, cw_uid)
-        os.chown(fuse_home, cw_uid, cw_uid)
-    else:
-        cw_meta_uid = int(options.cw_uid)
-        cw_uid = int(ldapobject.search_s(
-            options.base, ldap.SCOPE_SUBTREE,
-            "(uid={0})".format(m))[0][1]["uidNumber"][0])
-        os.chown(os.path.join(options.basedir, "home", m), cw_uid, -1)
-        os.chown(os.path.join(options.basedir, "home", m, "rql_download"),
-                 cw_uid, -1)
-        os.chown(fuse_home, cw_uid, cw_meta_uid)
-        os.chmod(fuse_home, 0771)
+        if not options.use_ldap:
+            cw_uid = int(options.cw_uid)
+            os.chown(os.path.join(options.basedir, "home", m), -1, cw_uid)
+            os.chown(os.path.join(options.basedir, "home", m, "rql_download"),
+                     cw_uid, cw_uid)
+            os.chown(fuse_home, cw_uid, cw_uid)
+        else:
+            cw_meta_uid = int(options.cw_uid)
+            cw_uid = int(ldapobject.search_s(
+                options.base, ldap.SCOPE_SUBTREE,
+                "(uid={0})".format(m))[0][1]["uidNumber"][0])
+            os.chown(os.path.join(options.basedir, "home", m), cw_uid, -1)
+            os.chown(os.path.join(options.basedir, "home", m, "rql_download"),
+                     cw_uid, -1)
+            os.chown(fuse_home, cw_uid, cw_meta_uid)
+            os.chmod(fuse_home, 0771)
