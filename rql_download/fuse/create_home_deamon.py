@@ -67,7 +67,7 @@ for m in members:
                              options.db_name)
     if not os.path.isdir(fuse_home):
         os.makedirs(os.path.dirname(fuse_home), 0751)
-	    os.makedirs(fuse_home, 0771)
+        os.makedirs(fuse_home, 0771)
 
         if not options.use_ldap:
             cw_uid = int(options.cw_uid)
