@@ -66,8 +66,9 @@ for m in members:
     fuse_home = os.path.join(options.basedir, "home", m, "rql_download",
                              options.db_name)
     if not os.path.isdir(fuse_home):
-        os.makedirs(fuse_home, 0751)
-	
+        os.makedirs(os.path.dirname(fuse_home), 0751)
+	os.makedirs(fuse_home, 0771)
+
     if not options.use_ldap:
         cw_uid = int(options.cw_uid)
         os.chown(os.path.join(options.basedir, "home", m), -1, cw_uid)
@@ -84,4 +85,3 @@ for m in members:
                  cw_uid, -1)
         os.chown(fuse_home, cw_uid, cw_meta_uid)
         os.chmod(fuse_home, 0771)
-        
