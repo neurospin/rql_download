@@ -1,3 +1,3 @@
 Summary
 -------
-Cube to download CWSearch.
+Methods to access information in a CubicWeb database.
