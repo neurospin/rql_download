@@ -111,7 +111,7 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         button = u'<div class="btn-toolbar">'
         button += u'<div class="btn-group-vertical btn-block">'
         button += link
-        button += u'<span class="glyphicon glyphicon-save"> {0}</span>'.format(
+        button += u'<span class="glyphicon glyphicon-save"> </span>{0}'.format(
             self._cw._("Save search"))
         button += u'</a></div></div><br />'
 
