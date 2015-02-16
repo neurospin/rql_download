@@ -2,16 +2,16 @@
 CWBrowser
 =========
 
-.. image:: https://pypip.in/version/capsul/badge.png
-    :target: https://pypi.python.org/pypi/capsul/
+.. image:: https://pypip.in/version/cwbrowser/badge.png
+    :target: https://pypi.python.org/pypi/cwbrowser/
     :alt: Latest Version
     
-.. image:: https://pypip.in/status/capsul/badge.png
-    :target: https://pypi.python.org/pypi/capsul/
+.. image:: https://pypip.in/status/cwbrowser/badge.png
+    :target: https://pypi.python.org/pypi/cwbrowser/
     :alt: Development Status
 
-.. image:: https://pypip.in/license/capsul/badge.png
-    :target: https://pypi.python.org/pypi/capsul/
+.. image:: https://pypip.in/license/cwbrowser/badge.png
+    :target: https://pypi.python.org/pypi/cwbrowser/
     :alt: License
 
 
