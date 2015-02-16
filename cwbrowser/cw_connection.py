@@ -45,6 +45,26 @@ def load_csv(csv_stream, delimiter=";"):
 class CWInstanceConnection(object):
     """ Tool to dump the data stored in a cw instance.
 
+    .. code-block:: python
+
+        # Create dummy rqls
+        rql1 = ("Any C, G Where X is Subject, X code_in_study C, "
+                "X handedness 'ambidextrous', X gender G")
+        rql2 = ("Any S WHERE S is Scan, S has_data A, A field '3T', "
+                "S in_assessment B, B timepoint 'V1', S format 'GIS', "
+                "S in_assessment C, C concerns D, D code_in_study 'ab100207'")
+
+        # HTTP test
+        url = @HTTPURL; login = @LOGIN; password = @PWD
+        connection = CWInstanceConnection(url, login, password)
+        connection.execute(rql1, export_type="json")
+        connection.execute_with_fuse(rql2, "/tmp/fuse", timer=1)
+
+        # HTTPS test
+        url = @HTTPSURL; login = @LOGIN; password = @PWD
+        connection = CWInstanceConnection(url, login, password, realm="Imagen")
+        connection.execute(rql)
+
     Attributes
     ----------
     url : str
@@ -361,32 +381,3 @@ class CWInstanceConnection(object):
             "__password": password,
         }
         self.opener.open(self.url, urllib.urlencode(data))
-
-
-if __name__ == "__main__":
-
-    # Set logging level
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.StreamHandler())
-
-    # Create dummy rql
-    rql1 = ("Any C, G Where X is Subject, X code_in_study C, "
-           "X handedness 'ambidextrous', X gender G")
-    #rql1 = "Any C Where X is Subject, X code_in_study C"
-    rql2 = ("Any S WHERE S is Scan, S r_concerns A, A code_in_study "
-            "'000000022453'")
-    #rql2 = ("Any S WHERE S is Scan, S has_data A, A field '3T', "
-    #        "S in_assessment B, B timepoint 'V1', S format 'GIS', "
-    #        "S in_assessment C, C concerns D, D code_in_study 'ab100207'")
-
-    # HTTP test
-    url = "http://mart.intra.cea.fr/imagen"; login = "admin"; password = "alpine"
-    #url = "http://is223527.intra.cea.fr:8080"; login = "admin"; password = "a"
-    connection = CWInstanceConnection(url, login, password)
-    connection.execute(rql1, export_type="json")
-    connection.execute_with_fuse(rql2, "/tmp/agrigis/fuse", timer=1)
-
-    # HTTPS test
-    #url = "https://imagen2.cea.fr/database/"; login = "grigis"; password = "password"
-    #connection = CWInstanceConnection(url, login, password, realm="Imagen")
-    #connection.execute(rql)
