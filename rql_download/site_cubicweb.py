@@ -40,7 +40,8 @@ options = (
       {"type": "yn",
       "default": False,
       "help": "if true cubicweb will start automatically sftp server "
-              "(configured with it is config file, see also README)",
+              "(you need to set properly the configuration file: see the "
+              "documentation)",
       "group": "rql_download", "level": 0,
       }),
     ("start_user_fuse",

@@ -12,6 +12,24 @@ search result sets of a cubicweb instance.
 User Guide
 ==========
 
+During the rql download instanciation or in your instance all-in-one.conf file,
+set the following options to activate the Twister SFTP server that will expose
+the content of each CW searche:
+
+::
+
+    [RQL_DOWNLOAD]
+    # specifies expiration delay of CWSearch (in days)
+    default_expiration_delay=1
+
+    # base directory in which files are stored (this option is given to the ftp
+    # server and fuse processes)
+    basedir=/tmp
+
+    # if true cubicweb will start automatically sftp server (you need to set
+    # properly the configuration file: see the documentation)
+    start_sftp_server=yes
+
 Execute the 'main.py' script of the 'twistedserver' module. This script can
 be parametrized from the command line or from a file with the following synthax:
 
