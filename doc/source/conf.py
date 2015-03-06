@@ -14,6 +14,11 @@
 import sys, os
 
 # Doc generation depends on being able to import nsap and nipype
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+try:
+    import rql_download
+except ImportError:
+    raise RuntimeError("Cannot import 'rql_download', please investigate.")
 try:
     import cwbrowser
 except ImportError:

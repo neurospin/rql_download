@@ -208,15 +208,43 @@ class CWSearchAdd(hook.Hook):
 
 
 class CWSearchExpirationDateHook(hook.Hook):
-    __regid__ = 'rsetftp.search_add_expiration_hook'
-    __select__ = hook.Hook.__select__ & is_instance('CWSearch')
-    events = ('before_add_entity', )
+    """ On startup, register a task to add an expiration date to each CWSearch.
+    """
+    __regid__ = "rsetftp.search_add_expiration_hook"
+    __select__ = hook.Hook.__select__ & is_instance("CWSearch")
+    events = ("before_add_entity", )
 
     def __call__(self):
-        if 'expiration_date' not in self.entity.cw_edited:
-            delay = self._cw.vreg.config['default_expiration_delay']
-            self.entity.cw_edited['expiration_date'] = (
+        if "expiration_date" not in self.entity.cw_edited:
+            delay = self._cw.vreg.config["default_expiration_delay"]
+            self.entity.cw_edited["expiration_date"] = (
                 datetime.date.today() + datetime.timedelta(delay))
+
+
+class CWSearchDelete(hook.Hook):
+    """ On startup, register a task to delete old CWSearch entities.
+    """
+    __regid__ = "rqldownload.search_delete_hook"
+    events = ("server_startup",)
+
+    def __call__(self):
+        """ Method to execute the 'CWSearchDelete' hook.
+        """
+        def cleaning_old_cwsearch(repo):
+            """ Delete all CWSearch entities that have expired.
+            """
+            with repo.internal_session() as cnx:
+                cnx.execute(
+                    "DELETE CWSearch S WHERE S expiration_date < today")
+                cnx.commit()
+
+        # Set the cleaning event loop
+        dt = datetime.timedelta(0.5)  # 12h
+        self.repo.looping_task(
+            dt.total_seconds(), cleaning_old_cwsearch, self.repo)
+
+        # Call the clean function manually on the startup
+        cleaning_old_cwsearch(self.repo)
 
 
 ###############################################################################
@@ -323,42 +351,16 @@ class ServerStartupFuseZombiesLoop(hook.Hook):
 # CW search twisted hook
 ###############################################################################
 
-class ServerStartupHook(hook.Hook):
-    """ On startup, register a task to delete old CWSearch entities.
+class LaunchTwistedFTPServer(hook.Hook):
+    """ On startup launch the twisted ftp server.
     """
-    __regid__ = "rqldownload.search_delete_hook"
-    events = ("server_startup",)
-
-    def __call__(self):
-        """ Method to execute the 'ServerStartupHook' hook.
-        """
-        def cleaning_old_cwsearch(repo):
-            """ Delete all CWSearch entities that have expired.
-            """
-            with repo.internal_session() as cnx:
-                cnx.execute(
-                    "DELETE CWSearch S WHERE S expiration_date < today")
-                cnx.commit()
-
-        # Set the cleaning event loop
-        dt = datetime.timedelta(0.5)  # 12h
-        self.repo.looping_task(
-            dt.total_seconds(), cleaning_old_cwsearch, self.repo)
-
-        # Call the clean function manually on the startup
-        cleaning_old_cwsearch(self.repo)
-
-
-class LaunchFTPServer(hook.Hook):
-    """ On startup launch ftp server.
-    """
-    __regid__ = "rqldownload.launch_server"
+    __regid__ = "rqldownload.launch_twisted_server"
     events = ("server_startup",)
 
     def __call__(self):
         if self.repo.vreg.config["start_sftp_server"]:
             cube_path = osp.dirname(osp.abspath(__file__))
-            ftpserver_path = osp.join(cube_path, "ftpserver/main.py")
+            ftpserver_path = osp.join(cube_path, "twistedserver/main.py")
             basedir_opt = ""
             sftp_server_basedir = self.repo.vreg.config["basedir"]
             if sftp_server_basedir:
