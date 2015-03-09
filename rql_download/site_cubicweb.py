@@ -33,7 +33,7 @@ options = (
       {"type": "string",
       "default": "/home/",
       "help": "base directory in which fuse will mount the user virtual "
-              "directoies ",
+              "directories ",
       "group": "rql_download", "level": 0,
       }),
     ("start_sftp_server",

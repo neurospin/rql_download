@@ -82,7 +82,8 @@ class CWSearchAdd(hook.Hook):
         When an 'EntityAdaptor' is used, no file are then attached in
         the 'result.json' file.
 
-        .. note::
+        .. warning::
+
             For the moment we consider the first result entity only, we
             consider the first declared action, and we assume the database
             intergrity (ie. all file pathes inserted in the db exist on the
@@ -116,14 +117,14 @@ class CWSearchAdd(hook.Hook):
             raise ValidationError(
                 "CWSearch", {
                     "rql": _('cannot find entity description in the request '
-                             '{0}. Expect somethinh like "Any X Where X is '
+                             '{0}. Expect something like "Any X Where X is '
                              '{1}, ..."'.format(rql, etype))})
 
         # Get the associated rql parameter name: current context
         parameter_name = rql_etypes[etype][0]
 
         # Get all the rqldownload declared adaptors
-        possible_actions = self._cw.vreg["actions"]["rqldownload-adaptors"]
+        possible_actions = self._cw.vreg["actions"]["rqldownload-adapters"]
 
         # Keep only actions that respect the current context
         for action in possible_actions:
@@ -215,6 +216,8 @@ class CWSearchExpirationDateHook(hook.Hook):
     events = ("before_add_entity", )
 
     def __call__(self):
+        """ Method to execute the 'CWSearchExpirationDateHook' hook.
+        """
         if "expiration_date" not in self.entity.cw_edited:
             delay = self._cw.vreg.config["default_expiration_delay"]
             self.entity.cw_edited["expiration_date"] = (

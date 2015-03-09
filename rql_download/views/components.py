@@ -28,9 +28,11 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
     """ Class that enables us to display a 'Save search' box when the selected
     entities fulfill the '__select__' requirements.
 
-    The global parameter 'RQL_DOWNLOAD_SEARCH_ENTITIES' specify with entities
-    can be downloaded.
-    The filter items are found dynamically.
+    * This component shows up if the current rset is adaptable.
+    * This component is integrated in the CW facet component
+    * The global parameters 'RQL_DOWNLOAD_SEARCH_ENTITIES' and
+      'RQL_DOWNLOAD_EXPORT_ENTITIES' specify which entities can be downloaded
+      (ie. are adaptable).
     """
     __regid__ = "facet.filterbox"
     __select__ = ((non_final_entity() & nonempty_rset())
@@ -45,9 +47,10 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         """ Method that generates the html elements to display the 'Save search'
         box.
 
-        ..note::
-            This method only consider the first registered 'ns-save-search'
-            action to generate the new CWSearch form.
+        .. note::
+
+            This method only consider the first registered 'rqldownload-adapters'
+            action to generate the resources associated with the current search.
         """
 
         # Get the component context
@@ -80,7 +83,7 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
                                hiddens={}, **self.cw_extra_kwargs)
 
     def search_link(self, rset):
-        """ Method that generates a the url of the CWSearch form we want to save.
+        """ Method that generates the url of the CWSearch form we want to save.
         """
         # Construct the form path
         # > get rql as url parameter
@@ -138,8 +141,8 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
 class HelpCWSearchBox(component.CtxComponent):
     """ Class that display a help box to download a cwsearch.
 
-    The global class parameter _message can be tuned to display a custom help
-    message.
+    A message is displayed when a new CWSearch is created. The global class
+    parameter '_message' can be tuned to display a custom help message.
     """
     __regid__ = "help-cw-search"
     __select__ = is_instance("CWSearch")
@@ -150,6 +153,8 @@ class HelpCWSearchBox(component.CtxComponent):
                  "FileZilla.")
 
     def render_body(self, w):
+        """ Display the help message in the web page.
+        """
         w(u'<div class="help-cw-search">')
         w(self._message)
         w(u'</div>')

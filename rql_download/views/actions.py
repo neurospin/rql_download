@@ -19,6 +19,7 @@ from cubicweb import ValidationError
 
 # Define global adaptor variables
 RQL_DOWNLOAD_EXPORT_ENTITIES = ["Subject"]
+RQL_DOWNLOAD_FSET_ENTITIES = ["Scan", "ProcessingRun"]
 
 
 ###############################################################################
@@ -27,9 +28,12 @@ RQL_DOWNLOAD_EXPORT_ENTITIES = ["Subject"]
 
 class FSetAdaptor(Action):
     """ Action to download entity objects related through a FileSet entity.
+
+    Add items in the global list 'RQL_DOWNLOAD_FSET_ENTITIES' to activate
+    such actions.
     """
-    __regid__ = "rqldownload-adaptors"
-    __select__ = Action.__select__ & is_instance("Scan", "ProcessingRun")
+    __regid__ = "rqldownload-adapters"
+    __select__ = Action.__select__ & is_instance(*RQL_DOWNLOAD_FSET_ENTITIES)
     __rset_type__ = "jsonexport"
 
     def rql(self, rql, parameter_name):
@@ -66,7 +70,7 @@ class EntityAdaptor(Action):
     Add items in the global list 'RQL_DOWNLOAD_EXPORT_ENTITIES' to activate
     such actions.
     """
-    __regid__ = "rqldownload-adaptors"
+    __regid__ = "rqldownload-adapters"
     __select__ = Action.__select__ & is_instance(*RQL_DOWNLOAD_EXPORT_ENTITIES)
     __rset_type__ = "ecsvexport"
 
@@ -81,5 +85,6 @@ class EntityAdaptor(Action):
 ###############################################################################
 
 def registration_callback(vreg):
-    vreg.register(FSetAdaptor)
-    vreg.register(EntityAdaptor)
+    pass
+    ##vreg.register(FSetAdaptor)
+    #vreg.register(EntityAdaptor)

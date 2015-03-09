@@ -4,10 +4,12 @@
 API
 ######
 
+.. _cwbrowser_ref:
+
 The exact API of the module that can be use to access information in a CubicWeb
 database.
 
-.. _cwbrowser_ref:
+.. _cwbrowser_api:
 
 :mod:`cwbrowser`: cw_connection
 ===============================

@@ -17,7 +17,7 @@ from cubicweb.web.views.json import JsonMixIn
 ###############################################################################
 
 class CWSearchRsetView(View):
-    """ Create a new CWSearch entity.
+    """ Create a new CWSearch entity by calling this view.
     """
     __regid__ = "cwsearchexport"
     title = _("cwsearch-export-view")
@@ -27,6 +27,10 @@ class CWSearchRsetView(View):
 
         Check if the request has already been registered and create a unique
         title.
+
+        .. note::
+
+            Expect a 'path' parameter and a 'title' parameter.
         """
         # Get the CWSearch entity parameters from the url 'path'
         params_dict = self._cw.form

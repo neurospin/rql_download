@@ -4,6 +4,13 @@
 Twisted SFTP server
 ###################
 
+.. _twisted_ref:
+
+Description
+-----------
+Then another process (which can be started automatically by cubicweb)  can
+retrieve these CWSearch entities and show the stored filepaths via sftp
+protocol. The authentification in this process is delegated to cubicweb.
 The exact API of the modules that can be used to create a SFTP server to access
 search result sets of a cubicweb instance.
 
@@ -57,7 +64,7 @@ All the script options are:
 The user who lunch the 'main.py' script needs to have at least the read access
 on the files we want to transfer through the ftp server.
 
-.. _twisted_ref:
+.. _twisted_api:
 
 :mod:`rql_download.twistedserver`: SFTP server
 ===============================================

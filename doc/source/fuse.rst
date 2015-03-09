@@ -4,6 +4,8 @@
 Fuse virtual folders
 ####################
 
+.. _fuse_ref:
+
 The exact API of the modules that can be used to create virtual folders exposing
 search result sets of a cubicweb instance.
 
@@ -48,7 +50,7 @@ Each CW user have to be unix user too (you can use ldap with CW to simplify this
 step). 
 
 
-.. _fuse_ref:
+.. _fuse_api:
 
 :mod:`rql_download.fuse`: Fuse virtual folders
 ==============================================
