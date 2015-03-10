@@ -11,22 +11,23 @@ database.
 
 .. _cwbrowser_api:
 
-:mod:`cwbrowser`: cw_connection
-===============================
 
 .. currentmodule:: cwbrowser
 
-Coonection Definition
----------------------
+:mod:`cwbrowser`: cw_connection
+-------------------------------
+
+Connection definition
+~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated/cwbrowser/
-    :template: class.rst
+    :template: class_private.rst
 
     cw_connection.CWInstanceConnection
 
 Exporter
---------
+~~~~~~~~
 
 .. autosummary::
     :toctree: generated/cwbrowser/

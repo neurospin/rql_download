@@ -6,14 +6,19 @@ Fuse virtual folders
 
 .. _fuse_ref:
 
-The exact API of the modules that can be used to create virtual folders exposing
-search result sets of a cubicweb instance.
+Description
+-----------
+
+In order to expose the content of CWSearch entities, a process (which can be 
+started  automatically by cubicweb) can create a virtual folder with the the
+content of the result set associated to the search. The creation of such a
+virtual folder requires the cubicweb and system accounts to be the same
+(to ease this step, cubicweb is able to work with LDAP).
 
 .. _fuse_how_to:
 
-User Guide
-==========
-
+How to use
+----------
 
 During the rql download instanciation or in your instance all-in-one.conf file,
 set the following options to activate the Fuse virtual folders creation from
@@ -46,48 +51,26 @@ In the 'mountdir' you have to create a hierarchy for each cw user of the form:
                     |
                     -- instance_name
 
-Each CW user have to be unix user too (you can use ldap with CW to simplify this
-step). 
+.. warning::
+
+    Each CW user have to be unix user too (you can use LDAP with CW to
+    simplify this step). 
 
 
 .. _fuse_api:
 
 :mod:`rql_download.fuse`: Fuse virtual folders
-==============================================
+----------------------------------------------
 
 
-.. currentmodule:: rql_download
-
-Hooks
-------
-
-.. autosummary::
-    :toctree: generated/twisted/
-    :template: class.rst
-
-    hooks.CWSearchFuseMount
-    hooks.ServerStartupFuseMount
-    hooks.ServerStartupFuseZombiesLoop
-
-
-Operations
-----------
-
-.. autosummary::
-    :toctree: generated/twisted/
-    :template: class.rst
-
-    hooks.PostCommitFuseOperation
-
+Fuse
+~~~~
 
 .. currentmodule:: rql_download.fuse
 
-Fuse
-----
-
 .. autosummary::
     :toctree: generated/twisted/
-    :template: class.rst
+    :template: class_private.rst
 
     fuse_mount.VirtualDirectory
     fuse_mount.FuseRset
@@ -98,5 +81,29 @@ Fuse
 
     fuse_mount.get_cw_connection
     fuse_mount.get_cw_option
+
+
+Hooks
+~~~~~
+
+.. currentmodule:: rql_download
+
+.. autosummary::
+    :toctree: generated/twisted/
+    :template: class_private.rst
+
+    hooks.CWSearchFuseMount
+    hooks.ServerStartupFuseMount
+    hooks.ServerStartupFuseZombiesLoop
+
+
+Operations
+~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated/twisted/
+    :template: class_private.rst
+
+    hooks.PostCommitFuseOperation
 
 

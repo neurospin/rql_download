@@ -9,6 +9,7 @@
     :members:
     :private-members:
     :special-members:
+    :undoc-members:
     {% block methods %}
     .. automethod:: __init__
     {% if methods %}

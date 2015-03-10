@@ -355,12 +355,18 @@ class ServerStartupFuseZombiesLoop(hook.Hook):
 ###############################################################################
 
 class LaunchTwistedFTPServer(hook.Hook):
-    """ On startup launch the twisted ftp server.
+    """ On startup launch the twisted sftp server.
+
+    If the option 'start_sftp_server' is set to True in the configuration file
+    execute the the 'twistedserver/main.py' script to start the sftp server.
     """
     __regid__ = "rqldownload.launch_twisted_server"
     events = ("server_startup",)
 
     def __call__(self):
+        """ Start the sftp server when starting the instance if the
+        'start_sftp_server' option is set to True.
+        """
         if self.repo.vreg.config["start_sftp_server"]:
             cube_path = osp.dirname(osp.abspath(__file__))
             ftpserver_path = osp.join(cube_path, "twistedserver/main.py")

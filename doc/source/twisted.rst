@@ -8,20 +8,21 @@ Twisted SFTP server
 
 Description
 -----------
-Then another process (which can be started automatically by cubicweb)  can
-retrieve these CWSearch entities and show the stored filepaths via sftp
-protocol. The authentification in this process is delegated to cubicweb.
-The exact API of the modules that can be used to create a SFTP server to access
-search result sets of a cubicweb instance.
+In order to expose the content of CWSearch entities, a process (which can be 
+started  automatically by cubicweb) can shows the stored file paths via sftp
+protocol. The authentication in this process is delegated to cubicweb.
+
 
 .. _twisted_how_to:
 
-User Guide
-==========
+How to use
+----------
+To use this cube implement an :ref:`adapter <views_api>` derived from the
+'BaseIDownloadAdapter' for the entity you want to expose via the sftp server. 
 
 During the rql download instanciation or in your instance all-in-one.conf file,
 set the following options to activate the Twister SFTP server that will expose
-the content of each CW searche:
+the content of each CW search:
 
 ::
 
@@ -37,19 +38,25 @@ the content of each CW searche:
     # properly the configuration file: see the documentation)
     start_sftp_server=yes
 
-Execute the 'main.py' script of the 'twistedserver' module. This script can
-be parametrized from the command line or from a file with the following synthax:
+Execute the 'main.py' script of the 'twistedserver' module if you decide to
+start the server manually. 
+
+This latter can be parametrized from the command line or from a file with the
+following syntax:
 
 ::
 
     [rsetftp]
     cubicweb-instance=instance_name1:instance_name2
     port=9191
+    private−key=$HOME/ssh/idrsa
+    public−key=$HOME/ssh/idrsa.pub
+    unix−username=me
 
 This configuration file default location is '~/.config/rsetftp' but can be
-tuned via the 'config-file' option.
+set explicitely via the 'config-file' option.
 
-All the script options are:
+All the 'main.py' script options are:
 
 - cubicweb-instance: the name of the instance (or instances separated by ':')
   the ftp server will connect. This instance must inherit from the rql_download
@@ -62,34 +69,32 @@ All the script options are:
 - config-file: the path to a configuration file.
 
 The user who lunch the 'main.py' script needs to have at least the read access
-on the files we want to transfer through the ftp server.
+on the files he wants to transfer through the sftp server.
+
 
 .. _twisted_api:
 
 :mod:`rql_download.twistedserver`: SFTP server
-===============================================
-
-
-.. currentmodule:: rql_download
-
-Hooks
-------
-
-.. autosummary::
-    :toctree: generated/twisted/
-    :template: class.rst
-
-    hooks.LaunchTwistedFTPServer
+----------------------------------------------
 
 
 .. currentmodule:: rql_download.twistedserver
 
-Twisted
---------
+Main
+~~~~
 
 .. autosummary::
     :toctree: generated/twisted/
-    :template: class.rst
+    :template: class_private.rst
+
+    main.RsetSFTPCommand
+
+Twisted
+~~~~~~~
+
+.. autosummary::
+    :toctree: generated/twisted/
+    :template: class_private.rst
 
     server.VirtualPathTranslator
     server.CubicWebConchUser
@@ -99,3 +104,18 @@ Twisted
     server.CubicWebSSHdFactory
     server.CubicWebProxiedSFTPServer
     server.CubicwebFile
+
+
+.. currentmodule:: rql_download
+
+Hooks
+~~~~~
+
+.. autosummary::
+    :toctree: generated/twisted/
+    :template: class_private.rst
+
+    hooks.LaunchTwistedFTPServer
+
+
+

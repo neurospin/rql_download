@@ -47,7 +47,8 @@ VirtualPath = namedtuple('VirtualPath', ('search_name', 'search_relpath',
 class VirtualPathTranslator(object):
     """ Responsible to translate virtual path into real one.
 
-    Suppose to be called from CubicWebConchUser through the following methods:
+    Suppose to be called from 'CubicWebConchUser' through the following methods:
+
     * openDirectory
     * getAttrs
     * realPath
@@ -60,9 +61,39 @@ class VirtualPathTranslator(object):
     file_entity_re = re.compile(r'(rset)|.+_(\d+)$')
 
     def __init__(self, search_request):
+        """ Initialize the 'VirtualPathTranslator' class.
+
+        Parameters
+        ----------
+        search_request: Search (mandatory)
+            An in memory user CWSearch.
+        """
         self.search_request = search_request
 
     def list_directory(self, path):
+        """ Method to list a virtual folder.
+
+        Virtual folders have a common root organization:
+        
+        ::
+
+            instance name
+                |
+                ---- CWSearch name
+                            |
+                            ---- ...
+
+        Parameters
+        ----------
+        path: string (mandatory)
+            the virtual path we want to access.
+
+        Returns
+        -------
+        out: iterator
+            an iterator containing virtual folder description. Each iterator
+            item is a 3-uplet of the form (basename, longname, stat). 
+        """
 
         # Create an association between cw rset and db name
         self.rset_map = dict((key.lstrip("/"), value) for key, value in zip(
@@ -95,9 +126,7 @@ class VirtualPathTranslator(object):
         elif (self.INSTANCE_NAMES is not None and
               path.lstrip("/") in self.INSTANCE_NAMES):
             # Get the proper rset
-            print self.rset_map
             rset = self.rset_map[path.lstrip("/")]
-            print rset
             cw_search_names = [r[0].encode("utf-8") for r in rset]
             for name in cw_search_names:
                 s = self.stat('/%s' % name)
@@ -126,9 +155,36 @@ class VirtualPathTranslator(object):
                 yield (basename, longname, self.attrs_from_stat(s))
 
     def real_path(self, virtpath):
+        """ Get the real path from a virtual path.
+
+        Simply concatenate the search basedir set in the configuration file
+        with the search relpath.
+
+        Parameters
+        ----------
+        virtpath: VirtualPath (mandatory)
+            a virtual path.
+
+        Returns
+        -------
+        out: string
+            the real path on the server.
+        """
         return osp.join(virtpath.search_basedir, virtpath.search_relpath)
 
     def get_attrs(self, path, followlinks=0):
+        """ Return the file state.
+
+        Parameters
+        ----------
+        binary_len: int (mandatory)
+            the size of the file.
+
+        Returns
+        -------
+        out: stat_result
+            the same structure returned by a stat or lstat.
+        """
         virtpath = self.split_virtual_path(path)
         if self.is_file_entity(virtpath):
             s = self.stat_file_entity()
@@ -137,6 +193,18 @@ class VirtualPathTranslator(object):
         return self.attrs_from_stat(s)
 
     def stat_file_entity(self, binary_len=0):
+        """ Return the file state.
+
+        Parameters
+        ----------
+        binary_len: int (mandatory)
+            the size of the file.
+
+        Returns
+        -------
+        out: posix.stat_result
+            the same structure returned by a stat or lstat.
+        """
         return posix.stat_result((
             self.file_perm,
             0,  # st_ino
@@ -151,10 +219,37 @@ class VirtualPathTranslator(object):
         ))
 
     def get_attrs_file_entity(self, binary):
+        """ Get statistical information of a Binary field.
+
+        Parameters
+        ----------
+        binary: a Binary entity field (mandatory)
+            a Binary object.
+
+        Returns
+        -------
+        out: dict
+            a dictionary summarizing the input statistic structure: size -
+            uid - gid - mtime - atime - permissions.
+        """
         s = self.stat_file_entity(binary.len)
         return self.attrs_from_stat(s)
 
     def is_file_entity(self, virtpath):
+        """ Check if the file is virtual, ie. a Binary cubicweb file.
+
+        Parameters
+        ----------
+        virtpath: VirtualPath  (mandatory)
+            a virtual path of the form (search name, search relpath,
+            search basedir, search instance).
+
+        Returns
+        -------
+        out: bool
+            True if the virtualpath point to a cubicweb file,
+            False otherwise.
+        """
         m = self.file_entity_re.search(virtpath.search_relpath)
         if m:
             self.matched_entity_file_eid = None
@@ -167,6 +262,19 @@ class VirtualPathTranslator(object):
         return False
 
     def open_cw_file(self, virtpath):
+        """ Method used to open a virtual cubicweb file.
+
+        Parameters
+        ----------
+        virtpath: VirtualPath  (mandatory)
+            a virtual path of the form (search name, search relpath,
+            search basedir, search instance).
+
+        Returns
+        -------
+        out: CubicwebFile
+            a virtual file containing the Binary field data.
+        """
         session_index = self.INSTANCE_NAMES.index(virtpath.search_instance)
         data = self.search_request.get_file_data(
             file_eid=self.matched_entity_file_eid,
@@ -177,6 +285,25 @@ class VirtualPathTranslator(object):
         return CubicwebFile(data, attrs)
 
     def stat(self, path, followlinks=0, path_is_real=False):
+        """ Method to access a path state.
+
+        Parameters
+        ----------
+        path: str (mandatory)
+            a path from which we want to get the associated statistics.
+        followlinks: int (optional, default 0)
+            if True the system will follow the symbolic links with the 'os.stat'
+            method,
+            otherwise the 'os.lstat' method is used.
+        path_is_real: bool (optional, default False)
+            if True the path really exists on the file system,
+            otherwise we have a virtual cubicweb path.
+
+        Returns
+        -------
+        out: posix.stat_result
+            the same structure returned by a stat or lstat.     
+        """
         if not path_is_real:
             virtpath = self.split_virtual_path(path)
             if (virtpath.search_name != '' and
@@ -211,6 +338,19 @@ class VirtualPathTranslator(object):
         return posix.stat_result((mode,) + s[1:])
 
     def attrs_from_stat(self, s):
+        """ Convert a 'posix.stat_result' to python dictionary.
+
+        Parameters
+        ----------
+        s: posix.stat_result (mandatory)
+            the same structure returned by a stat or lstat.
+
+        Returns
+        -------
+        out: dict
+            a dictionary summarizing the input statistic structure: size -
+            uid - gid - mtime - atime - permissions.
+        """
         return {'size': s.st_size,
                 'uid': s.st_uid,
                 'gid': s.st_gid,
@@ -219,8 +359,20 @@ class VirtualPathTranslator(object):
                 'permissions': s.st_mode}
 
     def dir_content(self, virtpath, session_index):
-        """ Get complete filepath  of files located in
-        virtual directory (i.e. starting with a search name) defined by path.
+        """ Get complete file paths of files located in a virtual directory.
+
+        Parameters
+        ----------
+        virtpath: VirtualPath  (mandatory)
+            a virtual path of the form (search name, search relpath,
+            search basedir, search instance).
+        session_index: int (mandatory)
+            an index pointing to the instance of interest.
+
+        Returns
+        -------
+        out: iterator
+            each item is 2-uplet of the form (file path, associated rset).        
         """
         print "--", virtpath
 
@@ -237,7 +389,18 @@ class VirtualPathTranslator(object):
         """ Extract the name of a Search Entity from path.
 
         This name is expected to be the first part of path if no instance name
-        are given, second one otherwise
+        are given, second one otherwise.
+
+        Parameters
+        ----------
+        path: string (mandatory)
+            the virtual path we want to split.
+
+        Returns
+        -------
+        out: VirtualPath
+            the virtual path built from the input path, ie. a 4-uplet of the
+            form (search name, search relpath, search basedir, search instance).
         """
         # Check we are dealing with a path
         assert path.startswith(os.path.sep)
@@ -256,9 +419,22 @@ class VirtualPathTranslator(object):
                 parts[1], "/".join(parts[2:]), self.BASE_REAL_DIR, parts[0])
 
     def filter_files(self, files, path):
-        """ Extract files which are located in a directory defined by path. """
-        if not path.endswith('/'):
-            path += '/'
+        """ Extract files which are located in a directory defined by path.
+
+        Parameters
+        ----------
+        files: list of 2-uplet (mandatory)
+            a list of files formated in a 2-uplet of the form (path, is_virtual).
+        path: string (mandatory)
+            the associated dir real path.
+
+        Returns
+        -------
+        out: iterator
+            each item is 2-uplet of the form (file path, associated rset).
+        """
+        if not path.endswith(os.path.sep):
+            path += os.path.sep
         res = set()
         for f, rset_file in files:
             if f.startswith(path):
@@ -277,12 +453,21 @@ class CubicWebConchUser(UnixConchUser):
 
         Parameters
         ----------
+        unix_username: str (mandatory)
+            the sftp server will read file system with the permission
+            associated to this user.            
         cw_session_ids: list of str (mandatory)
-            the sessions identifiers
+            the cubicweb sessions identifiers.
+        login: str (mandatory)
+            the cubicweb user login.
         cw_instance_names: list of str (mandatory)
-            the instance names
+            the cubicweb instance names.
         cw_repositories: cubicweb.server.repository.Repository (mandatory)
-            internal connections
+            internal cubicweb connections.
+        base_dir: str (mandatory)
+            base directory in which file are stored (it acts as
+            mask, so every files outside this base_dir will be
+            invisible).
         """
         # Inheritance
         UnixConchUser.__init__(self, unix_username)
@@ -334,6 +519,8 @@ class CubicWebConchUser(UnixConchUser):
         logger.info("'{0}' logout!".format(self.login))
 
     def _runAsUser(self, f, *args, **kw):
+        """ Method to logged-in a user.
+        """
         user_is_root = os.getuid() == 0  # for tests
         if user_is_root:
             euid = os.geteuid()
@@ -366,32 +553,38 @@ class CubicWebConchUser(UnixConchUser):
 
 
 class Search(object):
-    """ Class to access all the file pathes associated to specific user
-    CWSearch.
+    """ Class to access all the file paths associated to a specific user
+    CWSearch searches.
     """
     def __init__(self, sessions, cwusers):
         """ Initilaize the Search class.
 
         Parameters
         ----------
-        sessions: (mandatory)
-        cwusers: (mandatory)
+        sessions: list of cubicweb sessions (mandatory)
+            a list of cubicweb sessions.
+        cwusers: list of int (mandatory)
+            a list of user eids.
         """
         self.cwsessions = sessions
         self.cwusers = cwusers
 
     def get_files(self, virtpath, session_index):
-        """ Return a list of file associated to CWSearch named ``search_name``
-        including ``rset`` file.
+        """ Return a list of file associated to CWSearch named 'search_name'
+        including 'rset' file which is a pure virtual file.
 
         Parameters
         ----------
-        virtpath: (mandatory)
-        session_index: (mandatory)
+        virtpath: VirtualPath  (mandatory)
+            a virtual path of the form (search name, search relpath,
+            search basedir, search instance).
+        session_index: int (mandatory)
+            an index pointing to the instance of interest.
 
         Returns
         -------
-        filepaths: (mandatory)
+        filepaths: list of 2-uplet (mandatory)
+            a list of files formated in a 2-uplet of the form (path, is_virtual).
         """
         # Get the selected session and user
         session = self.cwsessions[session_index]
@@ -414,6 +607,14 @@ class Search(object):
         return filepaths
 
     def get_searches(self):
+        """ Method to get for each user the result set with the name of the
+        associated CWSearch entities.
+
+        Returns
+        -------
+        rsets: list of rset
+            the search names related to each user.
+        """
         rsets = []
         for cwsession, cwuser in zip(self.cwsessions, self.cwusers):
             rsets.append(
@@ -424,6 +625,25 @@ class Search(object):
 
     def get_file_data(self, file_eid, rset_file, session_index,
                       search_name=None):
+        """ Get the Binary data contain in an entity.
+
+        Parameters
+        ----------
+        file_eid: int (mandatory)
+            the eid of the entity containing a 'data' Binary attribute.
+        rset_file: bool (mandatory)
+            True if we want the rset virtual file associated to the CWSearch,
+            False otherwise.
+        session_index: int (mandatory)
+            an index pointing to the instance of interest.
+        search_name: string (optional, default None)
+            
+
+        Returns
+        -------
+        out: Binary or None
+            the desired Binary data object.
+        """
         # Get the selected session and user
         session = self.cwsessions[session_index]
         cwuser = self.cwusers[session_index]
@@ -444,15 +664,38 @@ class Search(object):
 
 
 class CubicWebCredentialsChecker:
-    """check user credentials on a cubicweb instance
+    """ Check user credentials on a cubicweb instance
     """
     credentialInterfaces = IUsernamePassword,
     implements(ICredentialsChecker)
 
     def __init__(self, cw_repositories):
+        """ Initialize the 'CubicWebCredentialsChecker' class.
+
+        Parameters
+        ----------
+        cw_repositories: cubicweb.server.repository.Repository (mandatory)
+            internal cubicweb connections.
+        """
         self.cw_repositories = cw_repositories
 
     def requestAvatarId(self, credentials):
+        """ Get the avatar id.
+
+        Parameters
+        ----------
+        credentials: (mandatory)
+            something which implements one of the interfaces in
+            self.credentialInterfaces.
+
+        Returns
+        -------
+        out:
+            a Deferred which will fire a string which identifies an avatar,
+            an empty tuple to specify an authenticated anonymous user
+            (provided as checkers.ANONYMOUS) or fire a
+            Failure(UnauthorizedLogin). Alternatively, return the result itself. 
+        """
         try:
             session_ids = []
             for repo in self.cw_repositories:
@@ -476,14 +719,14 @@ class CubicWebSFTPRealm:
     implements(IRealm)
 
     def __init__(self, cw_instance_names, cw_repositories, conf):
-        """ Initilaize the CubicWebSFTPRealm class.
+        """ Initilaize the 'CubicWebSFTPRealm' class.
 
         Parameters
         ----------
         cw_instance_names: list of str (mandatory)
-            the instance names
+            the cubicweb instance names.
         cw_repositories: cubicweb.server.repository.Repository (mandatory)
-            internal connections
+            the internal cubicweb connections.
         conf: logilab.common.configuration.Configuration (mandatory)
             the server configuration options.
         """
@@ -494,7 +737,17 @@ class CubicWebSFTPRealm:
     def requestAvatar(self, identity, mind, *interfaces):
         """ This method will typically be called from 'Portal.login'.
 
-        The identity is the one returned by a CredentialChecker.
+        The 'identity' is the one returned by a CredentialChecker.
+
+        Parameters
+        ----------
+        identity, mind, interfaces: objects (mandatory)
+            see 'twisted.cred.portal.IRealm.requestAvatar'.
+
+        Returns
+        -------
+        out: tuple
+            a 3-uplet of the form (interface, avatarAspect, logout).
         """
         print "INNNN::", identity, self.cw_repositories
         cw_session_ids = identity[1]
@@ -509,8 +762,16 @@ class CubicWebSFTPRealm:
 
 
 class CubicWebSSHdFactory(factory.SSHFactory):
-
+    """ Define a factory for SSH servers.
+    """
     def __init__(self, conf):
+        """ Initialize the 'CubicWebSSHdFactory' class.
+
+        Parameters
+        ----------
+        conf: logilab.common.configuration.Configuration (mandatory)
+            the server configuration options.
+        """
         self._init_keys(conf)
 
         # Deal with multiple instances
@@ -529,6 +790,17 @@ class CubicWebSSHdFactory(factory.SSHFactory):
         self.portal = portal
 
     def _init_keys(self, config):
+        """ Method to set the public and private keys (as generated by
+        ssh-keygen).
+
+        The pass phrase and the path to the public/private key files are
+        defined in the instance configuration file.
+
+        Parameters
+        ----------
+        config: logilab.common.configuration.Configuration (mandatory)
+            the server configuration options.
+        """
         passwd = config.get('passphrase')
         self.publicKeys = {
             'ssh-rsa': keys.Key.fromFile(config.get('public-key'))
@@ -549,38 +821,45 @@ def unauthorized(func):
 
 
 class CubicWebProxiedSFTPServer(SFTPServerForUnixConchUser):
+    """ Implements the authorized actions on the sftp server.
+    """
     implements(ISFTPServer)
 
     def openFile(self, filename, flags, attrs):
-        """
-        Called when the clients asks to open a file.
+        """ Called when the clients asks to open a file.
 
-        @param filename: a string representing the file to open.
+        .. note::
 
-        @param flags: an integer of the flags to open the file with, ORed
-        together.
-        The flags and their values are listed at the bottom of this file.
+            There is no way to indicate text or binary files. It is up
+            to the SFTP client to deal with this.
 
-        @param attrs: a list of attributes to open the file with.  It is a
-        dictionary, consisting of 0 or more keys.  The possible keys are::
+        Parameters
+        ----------
+        filename: str (mandatory)
+            a string representing the file to open.
+        flags: int (mandatory)
+            an integer of the flags to open the file with, ORed together.
+            The flags and their values are listed at the bottom of this file.
+        attrs: list (mandatory)
+            a list of attributes to open the file with.  It is a dictionary,
+            consisting of 0 or more keys. The possible keys are:
 
-            size: the size of the file in bytes
-            uid: the user ID of the file as an integer
-            gid: the group ID of the file as an integer
-            permissions: the permissions of the file with as an integer.
-            the bit representation of this field is defined by POSIX.
-            atime: the access time of the file as seconds since the epoch.
-            mtime: the modification time of the file as seconds since the
-            epoch.
-            ext_*: extended attributes.  The server is not required to
-            understand this, but it may.
+            * size: the size of the file in bytes
+            * uid: the user ID of the file as an integer
+            * gid: the group ID of the file as an integer
+            * permissions: the permissions of the file with as an integer.
+            * the bit representation of this field is defined by POSIX.
+            * atime: the access time of the file as seconds since the epoch.
+            * mtime: the modification time of the file as seconds since the
+              epoch.
+            * ext_*: extended attributes.  The server is not required to
+              understand this, but it may.
 
-        NOTE: there is no way to indicate text or binary files.  it is up
-        to the SFTP client to deal with this.
-
-        This method returns an object that meets the ISFTPFile interface.
-        Alternatively, it can return a L{Deferred} that will be called back
-        with the object.
+        Returns
+        -------
+        out: object
+            an object that meets the ISFTPFile interface. Alternatively,
+            it can return a L{Deferred} that will be called back with the object.
         """
         t = self.avatar.path_translator
         virtpath = t.split_virtual_path(filename)
@@ -592,45 +871,60 @@ class CubicWebProxiedSFTPServer(SFTPServerForUnixConchUser):
 
     @unauthorized
     def removeFile(self, filename):
-        """
-        Remove the given file.
+        """ Remove the given file.
 
         This method returns when the remove succeeds, or a Deferred that is
         called back when it succeeds.
 
-        @param filename: the name of the file as a string.
+        .. warning::
+
+            Unauthorized method.
+
+        Parameters
+        ----------
+        filename: str (mandatory)
+            the name of the file as a string.
         """
 
     @unauthorized
     def renameFile(self, oldpath, newpath):
-        """
-        Rename the given file.
+        """ Rename the given file.
 
         This method returns when the rename succeeds, or a L{Deferred} that is
         called back when it succeeds. If the rename fails, C{renameFile} will
         raise an implementation-dependent exception.
 
-        @param oldpath: the current location of the file.
-        @param newpath: the new file name.
+        .. warning::
+
+            Unauthorized method.
+
+        Parameters
+        ----------
+        oldpath: str  (mandatory)
+            the current location of the file.
+        newpath: str  (mandatory)
+            the new file name.
         """
 
     @unauthorized
     def makeDirectory(self, path, attrs):
-        """
-        Make a directory.
+        """ Make a directory.
 
         This method returns when the directory is created, or a Deferred that
         is called back when it is created.
 
-        @param path: the name of the directory to create as a string.
-        @param attrs: a dictionary of attributes to create the directory with.
-        Its meaning is the same as the attrs in the L{openFile} method.
+        Parameters
+        ----------
+        path: str  (mandatory)
+            the name of the directory to create as a string.
+        attrs: dict  (mandatory)
+            a dictionary of attributes to create the directory with.
+            Its meaning is the same as the attrs in the L{openFile} method.
         """
 
     @unauthorized
     def removeDirectory(self, path):
-        """
-        Remove a directory (non-recursively)
+        """ Remove a directory (non-recursively).
 
         It is an error to remove a directory that has files or directories in
         it.
@@ -638,12 +932,18 @@ class CubicWebProxiedSFTPServer(SFTPServerForUnixConchUser):
         This method returns when the directory is removed, or a Deferred that
         is called back when it is removed.
 
-        @param path: the directory to remove.
+        .. warning::
+
+            Unauthorized method.
+
+        Parameters
+        ----------
+        path: str  (mandatory)
+            the directory to remove.
         """
 
     def openDirectory(self, path):
-        """
-        Open a directory for scanning.
+        """ Open a directory for scanning.
 
         This method returns an iterable object that has a close() method,
         or a Deferred that is called back with same.
@@ -658,7 +958,7 @@ class CubicWebProxiedSFTPServer(SFTPServerForUnixConchUser):
         'sequence-like' object.
 
         filename is the name of the file relative to the directory.
-        logname is an expanded format of the filename.  The recommended format
+        logname is an expanded format of the filename. The recommended format
         is:
         -rwxr-xr-x   1 mjos     staff      348911 Mar 25 14:29 t-filexfer
         1234567890 123 12345678 12345678 12345678 123456789012
@@ -669,59 +969,90 @@ class CubicWebProxiedSFTPServer(SFTPServerForUnixConchUser):
 
         attrs is a dictionary in the format of the attrs argument to openFile.
 
-        @param path: the directory to open.
+        Parameters
+        ----------
+        path: str  (mandatory)
+            the directory to open.
         """
         return self.avatar.path_translator.list_directory(path)
 
     def getAttrs(self, path, followLinks):
-        """
-        Return the attributes for the given path.
+        """ Return the attributes for the given path.
 
         This method returns a dictionary in the same format as the attrs
         argument to openFile or a Deferred that is called back with same.
 
-        @param path: the path to return attributes for as a string.
-        @param followLinks: a boolean.  If it is True, follow symbolic links
-        and return attributes for the real path at the base.  If it is False,
-        return attributes for the specified path.
+        Parameters
+        ----------
+        path: str  (mandatory)
+            the path to return attributes for as a string.
+        followLinks: bool  (mandatory)
+            If it is True, follow symbolic links.
+
+        Returns
+        -------
+        out: dict
+            If it 'followLinks' is True, follow symbolic links and return
+            attributes for the real path at the base.
+            If it is False, return attributes for the specified path.
         """
         # path parameter comes from realPath method
         return self.avatar.path_translator.get_attrs(path, followLinks)
 
     @unauthorized
     def setAttrs(self, path, attrs):
-        """
-        Set the attributes for the path.
+        """ Set the attributes for the path.
 
         This method returns when the attributes are set or a Deferred that is
         called back when they are.
 
-        @param path: the path to set attributes for as a string.
-        @param attrs: a dictionary in the same format as the attrs argument to
-        L{openFile}.
+        .. warning::
+
+            Unauthorized method.
+
+        Parameters
+        ----------
+        path: str  (mandatory)
+            the path to set attributes for as a string.
+        attrs: dict  (mandatory)
+            a dictionary in the same format as the attrs argument to
+            L{openFile}.
         """
 
     @unauthorized
     def readLink(self, path):
-        """
-        Find the root of a set of symbolic links.
+        """ Find the root of a set of symbolic links.
 
         This method returns the target of the link, or a Deferred that
         returns the same.
 
-        @param path: the path of the symlink to read.
+        .. warning::
+
+            Unauthorized method.
+
+        Parameters
+        ----------
+        path: str  (mandatory)
+            the path of the symlink to read.
         """
 
     @unauthorized
     def makeLink(self, linkPath, targetPath):
-        """
-        Create a symbolic link.
+        """ Create a symbolic link.
 
         This method returns when the link is made, or a Deferred that
         returns the same.
 
-        @param linkPath: the pathname of the symlink as a string.
-        @param targetPath: the path of the target of the link as a string.
+        .. warning::
+
+            Unauthorized method.
+
+        Parameters
+        ----------
+        linkPath: str  (mandatory)
+            the pathname of the symlink as a string.
+        targetPath: str  (mandatory)
+            the path of the target of the link as a string.
         """
 
     def realPath(self, path):
@@ -731,7 +1062,10 @@ class CubicWebProxiedSFTPServer(SFTPServerForUnixConchUser):
         This method returns the absolute path as a string, or a Deferred
         that returns the same.
 
-        @param path: the path to convert as a string.
+        Parameters
+        ----------
+        path: str  (mandatory)
+            the path to convert as a string.
         """
         if path == '.':
             return '/'
@@ -739,9 +1073,8 @@ class CubicWebProxiedSFTPServer(SFTPServerForUnixConchUser):
 
     @unauthorized
     def extendedRequest(self, extendedName, extendedData):
-        """
-        This is the extension mechanism for SFTP.  The other side can send us
-        arbitrary requests.
+        """ This is the extension mechanism for SFTP.  The other side can send
+        us arbitrary requests.
 
         If we don't implement the request given by extendedName, raise
         NotImplementedError.
@@ -749,13 +1082,22 @@ class CubicWebProxiedSFTPServer(SFTPServerForUnixConchUser):
         The return value is a string, or a Deferred that will be called
         back with a string.
 
-        @param extendedName: the name of the request as a string.
-        @param extendedData: the data the other side sent with the request,
-        as a string.
+        .. warning::
+
+            Unauthorized method.
+
+        Parameters
+        ----------
+        extendedName: str  (mandatory)
+            the name of the request as a string.
+        extendedData: str  (mandatory)
+            the data the other side sent with the request
         """
 
 
 class CubicwebFile:
+    """ A virtual cubicweb file.
+    """
     implements(ISFTPFile)
 
     def __init__(self, cw_binary, attrs):
@@ -763,8 +1105,7 @@ class CubicwebFile:
         self.attrs = attrs
 
     def close(self):
-        """
-        Close the file.
+        """ Close the file.
 
         This method returns nothing if the close succeeds immediately, or a
         Deferred that is called back when the close succeeds.
@@ -772,32 +1113,47 @@ class CubicwebFile:
         self.binary.close()
 
     def readChunk(self, offset, length):
-        """
-        Read from the file.
+        """ Read from the file.
 
         If EOF is reached before any data is read, raise EOFError.
 
         This method returns the data as a string, or a Deferred that is
         called back with same.
 
-        @param offset: an integer that is the index to start from in the file.
-        @param length: the maximum length of data to return.  The actual amount
-        returned may less than this.  For normal disk files, however,
-        this should read the requested number (up to the end of the file).
+        Parameters
+        ----------
+        offset: int
+            an integer that is the index to start from in the file.
+        length: int:
+            the maximum length of data to return. The actual amount
+            returned may be less than this. For normal disk files, however,
+            this should read the requested number (up to the end of the file).
+
+        Returns
+        -------
+        data: object
+            the requested chunk of data.
         """
         self.binary.seek(offset)
         return self.binary.read(length)
 
     @unauthorized
     def writeChunk(self, offset, data):
-        """
-        Write to the file.
+        """ Write to the file.
 
         This method returns when the write completes, or a Deferred that is
         called when it completes.
 
-        @param offset: an integer that is the index to start from in the file.
-        @param data: a string that is the data to write.
+        .. warning::
+
+            Unauthorized method.
+
+        Parameters
+        ----------
+        offset: int
+            an integer that is the index to start from in the file.
+        data: str
+            a string that is the data to write.
         """
 
     def getAttrs(self):
@@ -806,6 +1162,12 @@ class CubicwebFile:
 
         This method returns a dictionary in the same format as the attrs
         argument to L{openFile} or a L{Deferred} that is called back with same.
+
+        Returns
+        -------
+        out: object
+            a dictionary in the same format as the attrs argument to
+            L{openFile} or a L{Deferred} that is called back with same.
         """
         return self.attrs
 
@@ -817,8 +1179,15 @@ class CubicwebFile:
         This method returns when the attributes are set or a Deferred that is
         called back when they are.
 
-        @param attrs: a dictionary in the same format as the attrs argument to
-        L{openFile}.
+        .. warning::
+
+            Unauthorized method.
+
+        Parameters
+        ----------
+        attrs: dict
+            a dictionary in the same format as the attrs argument to
+            L{openFile}.
         """
 
 

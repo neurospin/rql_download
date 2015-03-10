@@ -19,7 +19,7 @@ from logilab.common.configuration import Configuration
 from cubes.rql_download.twistedserver.server import CubicWebSSHdFactory
 
 
-class RsetFTPCommand(object):
+class RsetSFTPCommand(object):
     """ Run SFTP server which will connect to a Cubicweb instance to expose
     all the CWSearch entities.
     """
@@ -72,7 +72,7 @@ class RsetFTPCommand(object):
     ]
 
     def run(self):
-        """ Run the SFTP server.
+        """ Start the SFTP server.
         """
         config = Configuration(options=self.options, name="twistedsftp")
         config.load_command_line_configuration()
@@ -83,4 +83,4 @@ class RsetFTPCommand(object):
 
 
 if __name__ == "__main__":
-    RsetFTPCommand().run()
+    RsetSFTPCommand().run()

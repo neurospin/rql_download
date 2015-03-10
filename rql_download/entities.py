@@ -7,6 +7,9 @@
 # for details.
 ##########################################################################
 
+# System import
+import re
+
 # Cubicweb import
 from cubicweb.web.action import Action
 from cubicweb.predicates import is_instance

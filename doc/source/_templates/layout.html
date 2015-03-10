@@ -35,7 +35,7 @@
 {% endblock %}
 
 <!-- page title -->
-    {% set title = 'CWBrowser' %}
+    {% set title = 'RQL DOWNLOAD' %}
 
 <!-- header -->
 {% block header %}
@@ -60,10 +60,12 @@
 		      <span class="caret"></span>
 		    </a>
 		    <ul class="dropdown-menu">
-	          <li class="link-title">CAPSUL</li>
+	          <li class="link-title">RQL DOWNLOAD</li>
 			  <li><a href="{{ pathto('cwbrowser') }}">CWBrowser</a></li>
-			  <li><a href="{{ pathto('schema') }}">CWSchema</a></li>
-			  <li><a href="{{ pathto('views') }}">CWViews</a></li>
+			  <li><a href="{{ pathto('fuse') }}">Fuse virual folders</a></li>
+			  <li><a href="{{ pathto('twisted') }}">Twisted SFTP server</a></li>
+			  <li><a href="{{ pathto('schema') }}">Schema modifications</a></li>
+			  <li><a href="{{ pathto('views') }}">The search mechanism</a></li>
 			  <li class="divider"></li>
 		      <li><a href="{{ pathto('developer_tree/index') }}">Development</a></li>
 		    </ul>
