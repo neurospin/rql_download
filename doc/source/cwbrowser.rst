@@ -1,13 +1,25 @@
 :orphan:
 
-######
-API
-######
+#########
+CWBROWSER
+#########
 
 .. _cwbrowser_ref:
 
-The exact API of the module that can be use to access information in a CubicWeb
-database.
+A Python module is proposed to script the RQL requests. It enables us to
+access information stored in a CubicWeb database, through two methods 'execute'
+and 'execute_with_sync'. The first method simply execute a RQL from the script
+while the second one create a :ref:`search <views_ref>`, and then contact the
+server where the CW instance is running through the sftp protocol using
+paramiko in order to download the search associated dataset. This second method
+assumes that the :ref:`Twisted server <twisted_ref>` solution or the
+:ref:`Fuse virtual folders <fuse_ref>` solution has been deployed on the server.
+
+.. warning::
+
+    If you use fuse to retrieve the search associated dataset (using the
+    'execute_with_sync' method), the CW user must have specific rights
+    (ie. must be a simple user).
 
 .. _cwbrowser_api:
 

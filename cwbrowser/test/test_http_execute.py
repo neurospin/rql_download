@@ -17,8 +17,8 @@ import unittest
 from cwbrowser.cw_connection import CWInstanceConnection
 
 
-class TestHTTPEXECUTE(unittest.TestCase):
-    """ Class to test http/https execute method.
+class TestHTTPExecuteTwisted(unittest.TestCase):
+    """ Class to test http execute method with twisted server.
     """
     def setUp(self):
         """ Define some rql and create a connection.
@@ -50,7 +50,6 @@ class TestHTTPEXECUTE(unittest.TestCase):
         self.connection = CWInstanceConnection(http_url, login, password,
                                                port=9191)
 
-
     def test_execute(self):
         """ Method to test if we can interogate the server from the script.
         """
@@ -60,22 +59,73 @@ class TestHTTPEXECUTE(unittest.TestCase):
     def test_execute_with_sync(self):
         """ Method to test if we can create/download a search from the script.
         """
-        rset = self.connection.execute_with_sync(self.rql3, "/tmp/sync",
+        # Check twisted server
+        rset = self.connection.execute_with_sync(self.rql3, "/tmp/sync_twisted",
                                                  timer=1)
         for item in rset:
             self.assertTrue(os.path.isfile(item[0]))
 
-        rset = self.connection.execute_with_sync(self.rql2, "/tmp/sync",
-                                                 timer=1)        
+        rset = self.connection.execute_with_sync(self.rql2, "/tmp/sync_twisted",
+                                                 timer=1)
 
-
-def test():
-    """ Function to execute unitest.
+class TestHTTPExecuteFuse(unittest.TestCase):
+    """ Class to test http execute method with fuse virtual folders and
+    sftp.
     """
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestHTTPEXECUTE)
+    def setUp(self):
+        """ Define some rql and create a connection.
+        """
+        # Set logging level
+        logging.basicConfig(level=logging.DEBUG)
+
+        # Ask for url & login information
+        http_url = raw_input(
+            "\nEnter the http url [default: http://localhost:8080/]: ")
+        if not http_url:
+            http_url = "http://localhost:8080/"
+        login = raw_input("\nEnter the login: ")
+        password = getpass.getpass("Enter the password: ")
+
+        # Create dummy rqls
+        self.rql1 = ("Any S WHERE S is Subject")
+        self.rql2 = ("Any S WHERE S is Scan, S has_data A, A field '3T', "
+                     "S in_assessment B, B timepoint 'V0', B concerns D, "
+                     "D code_in_study 'subject2'")
+
+        # HTTP test
+        self.connection = CWInstanceConnection(http_url, login, password,
+                                               port=22)
+
+    def test_execute_with_sync(self):
+        """ Method to test if we can create/download a search from the script.
+        """
+        # Test Fuse virtual folders + sftp
+        rset = self.connection.execute_with_sync(self.rql2, "/tmp/sync_fuse",
+                                                 timer=1)
+        for item in rset:
+            self.assertTrue(os.path.isfile(item[0]))
+
+        rset = self.connection.execute_with_sync(self.rql1, "/tmp/sync_fuse",
+                                                 timer=1)             
+            
+
+
+def test_twisted():
+    """ Function to execute unitest associated to twisted server.
+    """
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestHTTPExecuteTwisted)
+    runtime = unittest.TextTestRunner(verbosity=2).run(suite)
+    return runtime.wasSuccessful()
+
+
+def test_fuse():
+    """ Function to execute unitest associated to fuse virtual folders.
+    """
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestHTTPExecuteFuse)
     runtime = unittest.TextTestRunner(verbosity=2).run(suite)
     return runtime.wasSuccessful()
 
 
 if __name__ == "__main__":
-    test()
+    test_twisted()
+    test_fuse()

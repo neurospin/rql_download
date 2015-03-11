@@ -65,3 +65,4 @@ Cwbrowser utilities
     :template: class_private.rst
 
     cwsearch_export.CWSearchRsetView
+    cwsearch_export.CubicwebConfigView

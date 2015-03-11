@@ -15,8 +15,8 @@ import unittest
 from collections import namedtuple
 
 # Cubicweb import
-from cubes.rql_download.twistedftpserver.server import VirtualPathTranslator
-from cubes.rql_download.twistedftpserver.server import VirtualPath
+from cubes.rql_download.twistedserver.server import VirtualPathTranslator
+from cubes.rql_download.twistedserver.server import VirtualPath
 
 # Rql Download import
 from testlib import Search

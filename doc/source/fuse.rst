@@ -35,7 +35,7 @@ CW searches:
     basedir=/tmp
 
     # base directory in which fuse will mount the user virtual directoies
-    mountdir=/home/toto/tmp/fuse
+    mountdir=/chroot
 
     # if true cubicweb will start automatically a fuse mount per user when the user
     # has some CWSearch entities.
@@ -45,7 +45,7 @@ In the 'mountdir' you have to create a hierarchy for each cw user of the form:
 
 ::
 
-    -- cw user name
+    -- cw_user_name
             |
             -- instance_name
 
@@ -54,10 +54,43 @@ In the 'mountdir' you have to create a hierarchy for each cw user of the form:
     Each CW user have to be unix user too (you can use LDAP with CW to
     simplify this step).
 
-.. warning::
+Then change the mountdir directory rights, in our example:
 
-    In order to use the 'cwbrowser' package with fuse virtual folders, the user
-    has to be chrooted in the parent directory of the 'mountdir' folder.
+::
+
+    sudo chown root:root /chroot
+    sudo chown root:root /chroot/cw_user_name
+    sudo chmod 755 /chroot
+    sudo chown 755 /chroot/cw_user_name
+
+Configure the ssh service of your machine by editing the '/etc/ssh/sshd_config'
+configuration file:
+
+::
+
+    Subsystem sftp internal-sftp #/usr/lib/openssh/sftp-server
+    Match Group sftp
+        ChrootDirectory /chroot/%u
+        ForceCommand internal-sftp
+        AllowTcpForwarding no
+        X11Forwarding no
+
+.. warning::
+    
+    Sshd will reject SFTP connections to accounts that are set to chroot into
+    any directory that has ownership/permissions that sshd considers insecure.
+
+Restart the ssh service:
+
+::
+
+    sudo service ssh restart
+
+If you experience any login issue, check the logs:
+
+::
+
+    tail -20 /var/log/auth.log
 
 
 .. _fuse_api:
