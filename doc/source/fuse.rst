@@ -47,14 +47,17 @@ In the 'mountdir' you have to create a hierarchy for each cw user of the form:
 
     -- cw user name
             |
-            -- rql_download
-                    |
-                    -- instance_name
+            -- instance_name
 
 .. warning::
 
     Each CW user have to be unix user too (you can use LDAP with CW to
-    simplify this step). 
+    simplify this step).
+
+.. warning::
+
+    In order to use the 'cwbrowser' package with fuse virtual folders, the user
+    has to be chrooted in the parent directory of the 'mountdir' folder.
 
 
 .. _fuse_api:

@@ -186,13 +186,14 @@ class CWSearchAdd(hook.Hook):
             self.entity.cw_edited["rset"] = f_eid
 
             # Get all the files attached to the current request
-            # Note: we assume the database intergrity (ie. all file pathes
+            # Note: we assume the database intergrity (ie. all file paths
             # inserted in the db exist on the file system) and thus do not
             # check to speed up this process.
             files_set = set()
             non_existent_files_set = set()
             if action.__name__ != "EntityAdaptor":
-                files_set = tuple([row[0] for row in rset.rows])
+                files_set = tuple([row[0] for row in rset.rows
+                                   if isinstance(row[0], basestring)])
 
             # Update the result structure
             result["files"] = list(files_set)

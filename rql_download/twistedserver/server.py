@@ -40,6 +40,15 @@ from cubicweb.server.repository import Repository
 from cubicweb.server.utils import TasksManager
 
 
+# Define a mapping between cw export vid and file extension
+VID_TO_EXT = {
+    "csvexport": ".csv",
+    "jsonexport": ".json",
+    "ecsvexport": ".csv",
+    "ejsonexport": ".json"
+}
+
+# Define the virtual path structure
 VirtualPath = namedtuple('VirtualPath', ('search_name', 'search_relpath',
                                          'search_basedir', 'search_instance'))
 
@@ -58,7 +67,7 @@ class VirtualPathTranslator(object):
     BASE_REAL_DIR = '/'
     file_perm = 0b1000000100100100
     dir_perm = 0b100001101101101
-    file_entity_re = re.compile(r'(rset)|.+_(\d+)$')
+    file_entity_re = re.compile(r'(request_result)|.+_(\d+)$')
 
     def __init__(self, search_request):
         """ Initialize the 'VirtualPathTranslator' class.
@@ -495,11 +504,8 @@ class CubicWebConchUser(UnixConchUser):
                 "Any X WHERE X is CWUser, X login '{0}'".format(login))
             self.cw_users.append(login_eid[0][0])
 
-            # Create a unique instance name
-            # Since we are dealing with virtualenv, need to prefix the instance
-            # name in order to garantee unicity.
-            self.instance_names.append(
-                "{0}_{1}".format(cnt + 1, instance_name))
+            # Store the instance name: assume the name is unique
+            self.instance_names.append(instance_name)
 
         # Create a Search object that provides tools to filter the CWSearch
         # elements
@@ -571,7 +577,7 @@ class Search(object):
 
     def get_files(self, virtpath, session_index):
         """ Return a list of file associated to CWSearch named 'search_name'
-        including 'rset' file which is a pure virtual file.
+        including rset file which is a pure virtual file.
 
         Parameters
         ----------
@@ -597,12 +603,18 @@ class Search(object):
                                {'title': virtpath.search_name,
                                 'cwuser': cwuser})
 
-        # Reorganize the file pathes
+        # Reorganize the file paths
         filepaths = map(lambda x: (x, False),
                         json.loads(rset[0][0].getvalue())["files"])
 
-        # Add the rset file
-        filepaths.append((osp.join(virtpath.search_basedir, u"rset"), True))
+        # Add the rset to the build tree, add the appropriate
+        # file extension
+        rset = session.execute('Any T WHERE S is CWSearch, S title %(title)s, '
+                               'S rset_type T',
+                               {'title': virtpath.search_name})
+        fext = VID_TO_EXT[rset[0][0]]
+        filepaths.append((osp.join(virtpath.search_basedir,
+                          u"request_result" + fext), True))
 
         return filepaths
 

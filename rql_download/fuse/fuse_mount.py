@@ -33,7 +33,7 @@ from cubes.rql_download.fuse.fuse import (FUSE,
                                           EROFS,
                                           ENOTSUP)
 
-# Define a maping between cw export vid and file extension
+# Define a mapping between cw export vid and file extension
 VID_TO_EXT = {
     "csvexport": ".csv",
     "jsonexport": ".json",
@@ -734,7 +734,7 @@ if __name__ == "__main__":
     instance_name = sys.argv[1]
     login = sys.argv[2]
     mount_base = get_cw_option(instance_name, "mountdir")
-    mount_point = os.path.join(mount_base, login, "rql_download", instance_name)
+    mount_point = os.path.join(mount_base, login, instance_name)
     logger.debug("Command line parameters: instance name = {0}, login = {1} fuse "
                  "mount point = {2}".format(instance_name, login, mount_point))
 

@@ -18,6 +18,7 @@ import logging
 import time
 import paramiko
 import stat
+import glob
 
 # Define logger
 logger = logging.getLogger(__name__)
@@ -75,11 +76,11 @@ class CWInstanceConnection(object):
         object that contains the connexion to the cw instance.
     """
     # Global variable that specify the supported export cw formats
-    _EXPORT_TYPES = ["json", "csv", "fuse"]
+    _EXPORT_TYPES = ["json", "csv", "cw"]
     importers = {
         "json": json.load,
         "csv": load_csv,
-        "fuse": json.load,
+        "cw": json.load,
     }
 
     def __init__(self, url, login, password, realm=None, port=22):
@@ -103,7 +104,7 @@ class CWInstanceConnection(object):
         self.url = url
         self.login = login
         self.password = password
-        self.host = self.url.split("/")[2]
+        self.host = self.url.split("/")[2].split(":")[0]
         self.port = port
         self.realm = realm
         self._connect(password)
@@ -112,7 +113,7 @@ class CWInstanceConnection(object):
     # Public Members
     ###########################################################################
 
-    def execute(self, rql, export_type="json"):
+    def execute(self, rql, export_type="json", nb_tries=2, timeout=300):
         """ Method that loads the rset from a rql request.
 
         Parameters
@@ -121,6 +122,11 @@ class CWInstanceConnection(object):
             the rql rquest that will be executed on the cw instance.
         export_type: str (optional default 'json')
             the result set export format: one defined in '_EXPORT_TYPES'.
+        nb_tries: int (optional default 2)
+            number of times a request will be repeated if it fails.
+        timeout: int (optional, default 300)
+            number of seconds to wait for server response before considering
+            that the request failed.
 
         Returns
         -------
@@ -141,19 +147,33 @@ class CWInstanceConnection(object):
             "rql": rql,
             "vid": export_type + "export",
         }
-
-        # Get the result set
-        rset = self.importers[export_type](
-            self.opener.open(self.url, urllib.urlencode(data)))
+        
+        try_count = 0
+        while True:
+            try: # Get the result set, it will always try at least once
+                try_count += 1
+                response = self.opener.open(self.url, urllib.urlencode(data),
+                                                             timeout=timeout)
+                rset = self.importers[export_type](response)
+                break
+            except Exception as e:
+                if try_count >= nb_tries:
+                    # keep original message of e and add infos
+                    e.message += ("\nFailed to get data after {} tries.\n"
+                                 "Timeout was set to: {} seconds\n"
+                                 "Request: {}").format(nb_tries, timeout,
+                                                                data['rql'])
+                    raise e
+                time.sleep(1) # wait 1 second before retrying
 
         # Debug message
         logger.debug("RQL result: '%s'", rset)
 
         return rset
 
-    def execute_with_fuse(self, rql, sync_dir, timer=3, nb_of_try=3):
-        """ Method that loads the rset from a rql request through the sftp
-        fuse CWSearch mount point.
+    def execute_with_sync(self, rql, sync_dir, timer=3, nb_tries=3):
+        """ Method that loads the rset from a rql request through sftp protocol
+        using the CWSearch mechanism.
 
         Parameters
         ----------
@@ -162,24 +182,27 @@ class CWInstanceConnection(object):
         sync_dir: str (mandatory)
             the destination folder where the rql data are synchronized.
         timer: int (optional default 3)
-            the time in seconds we are waiting for the fuse update.
-        nb_of_try: int (optional default 3)
-            if the fuse update has not been detected after 'nb_of_try' trials
+            the time in seconds we are waiting for the fuse or twisted
+            server update.
+        nb_tries: int (optional default 3)
+            if the update has not been detected after 'nb_of_try' trials
             raise an exception.
 
         Returns
         -------
-        rset: list of list of str
-            a list that contains the requested entity parameters.        
+        rset: list of list or list of dict
+            a list that contains the requested cubicweb database parameters
+            when a json rset is generated, a list of dictionaries if a csv
+            rset is generated.       
         """
         # Create the CWSearch
         self._create_cwsearch(rql)
 
-        # Wait for fuse update: use double quote in rql
+        # Wait for the update: use double quote in rql
         try_nb = 1
         cwsearch_title = None
         rql = rql.replace("'", '"')
-        while try_nb <= nb_of_try:
+        while try_nb <= nb_tries:
 
             # Timer
             logger.debug("Sleeping: '%i sec'", timer)
@@ -189,7 +212,7 @@ class CWInstanceConnection(object):
             rset = self.execute(
                 "Any S, T, P Where S is CWSearch, S title T, S path P")
 
-            # Check if the fuse update has been done.
+            # Check if the cubicweb update has been done.
             # If true, get the associated CWSearch title
             for item in rset:
                 if item[2].replace("'", '"') == rql:
@@ -201,28 +224,49 @@ class CWInstanceConnection(object):
             # Increment
             try_nb += 1
 
+        # If the search is not created
+        if try_nb == (nb_tries + 1):
+            raise IOError("The search has not been created properly.")
+
         # Get instance parameters
-        cw_params = self.execute(rql="", export_type="fuse")
-        logger.debug("Autodetected fuse parameters: '%s'", str(cw_params))
+        cw_params = self.execute(rql="", export_type="cw")
+        logger.debug("Autodetected sync parameters: '%s'", str(cw_params))
 
         # Copy the data with the sftp fuse mount point
-        self._get_fuse(sync_dir, cwsearch_title, cw_params)
+        self._get_server_dataset(sync_dir, cwsearch_title, cw_params)
 
         # Load the rset
         local_dir = os.path.join(sync_dir, cwsearch_title)
-        rset_json_file = os.path.join(local_dir, "request_result.json")
-        logger.debug("Autodetected rset file at location '{0}'".format(
-            rset_json_file))
-        with open(rset_json_file) as json_data:
-            rset = json.load(json_data)
+        rset_file = glob.glob(os.path.join(local_dir, "request_result.*"))
+        logger.debug("Autodetected json rset file at location '{0}'".format(
+            rset_file))
+        if len(rset_file) != 1:
+            raise IOError("'{0}' rset file not supported, expect a single "
+                          "rset file.".format(rset_json_file))
+        rset_file = rset_file[0]
+        filext = os.path.splitext(rset_file)[1]
+        # > deal with jso file
+        if filext == ".json":
+            with open(rset_file) as json_data:
+                rset = json.load(json_data)
 
-        # Tune the rset files in order to point in the local filesystem
-        if not local_dir.endswith("/"):
-            local_dir += "/"
-        if not cw_params["basedir"].endswith("/"):
-            cw_params["basedir"] += "/"
-        for item in rset:
-            item[0] = item[0].replace(cw_params["basedir"], local_dir)
+            # Tune the rset files in order to point in the local filesystem
+            if not local_dir.endswith(os.path.sep):
+                local_dir += os.path.sep
+            if not cw_params["basedir"].endswith(os.path.sep):
+                cw_params["basedir"] += os.path.sep
+            for item in rset:
+                item[0] = item[0].replace(cw_params["basedir"], local_dir)
+
+        # > deal with csv file
+        elif filext == ".csv":
+            with open(rset_file) as csv_data:
+                data = csv.DictReader(csv_data, delimiter=";", quotechar="|")
+                rset = [item for item in data]      
+
+        # > raise an error when the file extension is not supported
+        else:
+            raise IOError("Unknown '{0}' rset extension.".format(rset_file))
 
         # Debug message
         logger.debug("RQL result: '%s'", rset)
@@ -233,7 +277,7 @@ class CWInstanceConnection(object):
     # Private Members
     ###########################################################################
 
-    def _get_fuse(self, sync_dir, cwsearch_title, cw_params):
+    def _get_server_dataset(self, sync_dir, cwsearch_title, cw_params):
         """ Download the CWSearch result trough a sftp connection.
 
         .. note::
@@ -251,20 +295,20 @@ class CWInstanceConnection(object):
         cw_params: dict (mandatory)
             a dictionary containing cw/fuse parameters.
         """
-        # Build the fuse mount point
+        # Build the mount point
         mount_point = os.path.join(
-            "/rql_download", cw_params["instance_name"])
+            os.path.sep, cw_params["instance_name"])
 
-        # Get the fuse virtual folder to sync
-        fuse_dir = os.path.join(mount_point, cwsearch_title)
-        logger.debug("Autodetected fuse directory: '%s'", fuse_dir)
+        # Get the virtual folder to sync
+        virtual_dir_to_sync = os.path.join(mount_point, cwsearch_title)
+        logger.debug("Autodetected sync directory: '%s'", virtual_dir_to_sync)
 
         # Get the local folder
         local_dir = os.path.join(sync_dir, cwsearch_title)
         if os.path.isdir(local_dir):
             logger.warning("The CWSearch '{0}' has been found at location "
-                         "'{1}'. Do not download the data again.".format(
-                             cwsearch_title, local_dir))
+                           "'{1}'. Do not download the data again.".format(
+                                cwsearch_title, local_dir))
 
         # Rsync via paramiko and sftp
         else:
@@ -272,8 +316,9 @@ class CWInstanceConnection(object):
             transport.connect(username=self.login, password=self.password)
             sftp = paramiko.SFTPClient.from_transport(transport)
 
-            logger.debug("Downloading: '%s' to '%s'", fuse_dir, local_dir)
-            self._sftp_get_recursive(fuse_dir, local_dir, sftp)
+            logger.debug("Downloading: '%s' to '%s'", virtual_dir_to_sync,
+                         local_dir)
+            self._sftp_get_recursive(virtual_dir_to_sync, local_dir, sftp)
             logger.debug("Downloading done")
 
             sftp.close()
@@ -341,10 +386,8 @@ class CWInstanceConnection(object):
         logger.debug("Exporting in: '%s'", export_type)
 
         # Create a dictionary with the request meta information
-        auto_generated_title = "auto_generated_title_1"
         data = {
             "path": rql,
-            "title": auto_generated_title,
             "vid": export_type + "export",
         }
 
@@ -352,13 +395,7 @@ class CWInstanceConnection(object):
         response = self.opener.open(self.url, urllib.urlencode(data))
 
     def _connect(self, password):
-        """ Method to create an object that handle opening of HTTP URLs.
-
-        .. notes::
-
-            If the Python installation has SSL support
-            (i.e., if the ssl module can be imported),
-            HTTPSHandler will also be added?
+        """ Method to create an object that handle opening of HTTP/HTTPS URLs.
 
         Parameters
         ----------
