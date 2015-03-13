@@ -17,17 +17,17 @@ Description
 -----------
 This cube provides an :ref:`action button <views_ref>` which shows up if current
 rset is adaptable in IFSetAdapter or IEntityAdapter (adpaters also provided by this cube).
-This button allows to create a :ref:`CWSearch <schema_ref>` entity responsible to store filepath 
-computed by the adapter from the entities in rset.
+This button creates a :ref:`CWSearch <schema_ref>` entity to store filepath 
+computed by the adapter from the entities in result set.
 
-Then another process (which can be started automatically by cubicweb) can
+Then another process (that can be started automatically by Cubicweb) can
 retrieve these CWSearch entities and show the stored filepaths via :ref:`sftp
 protocol and twisted server <twisted_ref>`. The authentication in this
-process is delegated to cubicweb.
+process is delegated to Cubicweb.
 
-An other strategy consists in creating :ref:`Fuse virtual folders <fuse_ref>`
-to retrieve these CWSearch entities and show the stored filepaths. after some
-system administration, Such virtual folders can be accessed through classical
+Another strategy consists of :ref:`Fuse virtual folders's <fuse_ref>` creation
+to retrieve these CWSearch entities and show the stored filepaths. After some
+system administration, such virtual folders can be accessed through a classical
 server SFTP service. The authentication in this case is delegated to the
 system.
 

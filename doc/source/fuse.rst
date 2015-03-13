@@ -51,7 +51,7 @@ In the 'mountdir' you have to create a hierarchy for each cw user of the form:
 
 .. warning::
 
-    Each CW user have to be unix user too (you can use LDAP with CW to
+    Each CW user has to be unix user too (you can use LDAP with CW to
     simplify this step).
 
 Then change the mountdir directory rights, in our example:
@@ -77,8 +77,8 @@ configuration file:
 
 .. warning::
     
-    Sshd will reject SFTP connections to accounts that are set to chroot into
-    any directory that has ownership/permissions that sshd considers insecure.
+    Sshd will reject SFTP connections from accounts that are set to chroot into
+    any directory where ownership/permissions are considered insecure by sshd.
 
 Restart the ssh service:
 

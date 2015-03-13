@@ -8,10 +8,10 @@ The search mechanism
 
 Description
 -----------
-This cube provides an action button which shows up if current rset is adaptable in
+This cube provides an action button that shows up if current rset is adaptable in
 IFSetAdapter or IEntityAdapter (adpaters also provided by this cube). This button
-allows to create a CWSearch entity responsible to store filepath computed by
-the adapter from the entities in rset.
+allows to create a CWSearch entity to store filepath computed by
+the adapter from the entities in result set.
 
 .. _views_api:
 
