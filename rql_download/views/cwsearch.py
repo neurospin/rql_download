@@ -29,7 +29,7 @@ class CWSearchPathWidget(FieldWidget):
         # Get the path form value
         values, attrs = self.values_and_attributes(form, field)
         attrs.setdefault("onkeyup", "autogrow(this)")
-        
+
         # Check the inputs
         if not values:
             value = u""
@@ -50,7 +50,7 @@ class CWSearchPathWidget(FieldWidget):
         # Get unquoted rql value
         if rql != "":
             rql = [v for k, v in form._cw.url_parse_qsl(rql)][0]
-            rql = rql.replace("DISTINCT ","")
+            rql = rql.replace("DISTINCT ", "")
 
         # If no rql is specified by the script, check the url 'path' parameter
         if rql == "":

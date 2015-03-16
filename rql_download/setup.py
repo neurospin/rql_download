@@ -29,7 +29,7 @@ from os.path import isdir, exists, join, walk
 
 try:
     if os.environ.get('NO_SETUPTOOLS'):
-        raise ImportError() # do as there is no setuptools
+        raise ImportError()  # do as there is no setuptools
     from setuptools import setup
     from setuptools.command import install_lib
     USE_SETUPTOOLS = True
@@ -52,7 +52,7 @@ else:
 import __pkginfo__
 if USE_SETUPTOOLS:
     requires = {}
-    for entry in ("__depends__",): # "__recommends__"):
+    for entry in ("__depends__",):  # "__recommends__"):
         requires.update(getattr(__pkginfo__, entry, {}))
     install_requires = [("%s %s" % (d, v and v or "")).strip()
                        for d, v in requires.iteritems()]
@@ -150,13 +150,13 @@ if USE_SETUPTOOLS:
             old_install_data.run(self)
             self.install_dir = _old_install_dir
     try:
-        import setuptools.command.easy_install # only if easy_install available
+        import setuptools.command.easy_install  # only if easy_install available
         # monkey patch: Crack SandboxViolation verification
         from setuptools.sandbox import DirectorySandbox as DS
         old_ok = DS._ok
         def _ok(self, path):
             """Return True if ``path`` can be written during installation."""
-            out = old_ok(self, path) # here for side effect from setuptools
+            out = old_ok(self, path)  # here for side effect from setuptools
             realpath = os.path.normcase(os.path.realpath(path))
             allowed_path = os.path.normcase(sys.prefix)
             if realpath.startswith(allowed_path):
@@ -181,21 +181,21 @@ def install(**kwargs):
         kwargs['zip_safe'] = False
         cmdclass['install_data'] = MyInstallData
 
-    return setup(name = distname,
-                 version = version,
-                 license = license,
-                 description = description,
-                 long_description = long_description,
-                 author = author,
-                 author_email = author_email,
-                 url = web,
-                 scripts = ensure_scripts(scripts),
-                 data_files = data_files,
-                 ext_modules = ext_modules,
-                 cmdclass = cmdclass,
-                 classifiers = classifiers,
+    return setup(name=distname,
+                 version=version,
+                 license=license,
+                 description=description,
+                 long_description=long_description,
+                 author=author,
+                 author_email=author_email,
+                 url=web,
+                 scripts=ensure_scripts(scripts),
+                 data_files=data_files,
+                 ext_modules=ext_modules,
+                 cmdclass=cmdclass,
+                 classifiers=classifiers,
                  **kwargs
                  )
 
-if __name__ == '__main__' :
+if __name__ == '__main__':
     install()

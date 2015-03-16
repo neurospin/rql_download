@@ -86,15 +86,15 @@ class VirtualPathTranslator(object):
     def stat_file_entity(self, binary_len=0):
         return posix.stat_result((
             self.file_perm,
-            0, # st_ino
-            0, # st_dev
-            0, # st_nlink
-            0, # st_uid
-            0, # st_gid
-            binary_len, # st_size
-            0, # st_atime
-            0, # st_mtime
-            0, # st_ctime
+            0,  # st_ino
+            0,  # st_dev
+            0,  # st_nlink
+            0,  # st_uid
+            0,  # st_gid
+            binary_len,  # st_size
+            0,  # st_atime
+            0,  # st_mtime
+            0,  # st_ctime
         ))
 
 
@@ -132,15 +132,15 @@ class VirtualPathTranslator(object):
             if virtpath.search_relpath == '/' or virtpath.search_relpath == '':
                 return posix.stat_result((
                     self.dir_perm,
-                    0, # st_ino
-                    0, # st_dev
-                    0, # st_nlink
-                    0, # st_uid
-                    0, # st_gid
-                    4096, # st_size
-                    0, # st_atime
-                    0, # st_mtime
-                    0, # st_ctime
+                    0,  # st_ino
+                    0,  # st_dev
+                    0,  # st_nlink
+                    0,  # st_uid
+                    0,  # st_gid
+                    4096,  # st_size
+                    0,  # st_atime
+                    0,  # st_mtime
+                    0,  # st_ctime
                 ))
             real_path = self.real_path(virtpath)
         else:
@@ -208,7 +208,7 @@ class CubicWebConchUser(UnixConchUser):
         print 'logout !'
 
     def _runAsUser(self, f, *args, **kw):
-        user_is_root = os.getuid() == 0 # for tests
+        user_is_root = os.getuid() == 0  # for tests
         if user_is_root:
             euid = os.geteuid()
             egid = os.getegid()
@@ -226,8 +226,8 @@ class CubicWebConchUser(UnixConchUser):
         try:
             for i in f:
                 func = i[0]
-                args = len(i)>1 and i[1] or ()
-                kw = len(i)>2 and i[2] or {}
+                args = len(i) > 1 and i[1] or ()
+                kw = len(i) > 2 and i[2] or {}
                 r = func(*args, **kw)
         finally:
             if user_is_root:
@@ -299,6 +299,7 @@ class CubicWebCredentialsChecker:
             return defer.fail(UnauthorizedLogin("invalid password"))
         else:
             return defer.succeed((credentials.username, sessionid))
+
 
 class CubicWebSFTPRealm:
     implements(IRealm)
@@ -485,7 +486,6 @@ class CubicWebProxiedSFTPServer(SFTPServerForUnixConchUser):
         # path parameter comes from realPath method
         return self.avatar.path_translator.get_attrs(path, followLinks)
 
-
     @unauthorized
     def setAttrs(self, path, attrs):
         """
@@ -551,6 +551,7 @@ class CubicWebProxiedSFTPServer(SFTPServerForUnixConchUser):
         @param extendedData: the data the other side sent with the request,
         as a string.
         """
+
 
 class CubicwebFile:
     implements(ISFTPFile)
@@ -621,4 +622,3 @@ class CubicwebFile:
 
 components.registerAdapter(CubicWebProxiedSFTPServer, CubicWebConchUser, ISFTPServer)
 components.registerAdapter(SSHSessionForUnixConchUser, CubicWebConchUser, session.ISession)
-

@@ -32,6 +32,3 @@ class Search(object):
 
     def get_file_data(self, file_eid, rset_file, search_name=None):
         return Binary('nothing in %s' % file_eid)
-
-
-

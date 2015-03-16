@@ -46,11 +46,14 @@ try:
 except NameError:
     basestring = str
 
+
 class c_timespec(Structure):
     _fields_ = [('tv_sec', c_long), ('tv_nsec', c_long)]
 
+
 class c_utimbuf(Structure):
     _fields_ = [('actime', c_timespec), ('modtime', c_timespec)]
+
 
 class c_stat(Structure):
     pass    # Platform dependent
@@ -59,7 +62,7 @@ _system = system()
 _machine = machine()
 
 if _system == 'Darwin':
-    _libiconv = CDLL(find_library('iconv'), RTLD_GLOBAL) # libfuse dependency
+    _libiconv = CDLL(find_library('iconv'), RTLD_GLOBAL)  # libfuse dependency
     _libfuse_path = (find_library('fuse4x') or find_library('osxfuse') or
                      find_library('fuse'))
 else:
@@ -226,6 +229,7 @@ if _system == 'FreeBSD':
             ('f_flag', c_ulong),
             ('f_frsize', c_ulong)]
 
+
 class fuse_file_info(Structure):
     _fields_ = [
         ('flags', c_int),
@@ -237,6 +241,7 @@ class fuse_file_info(Structure):
         ('padding', c_uint, 29),
         ('fh', c_uint64),
         ('lock_owner', c_uint64)]
+
 
 class fuse_context(Structure):
     _fields_ = [
@@ -316,6 +321,7 @@ class fuse_operations(Structure):
 
 def time_of_timespec(ts):
     return ts.tv_sec + ts.tv_nsec / 10 ** 9
+
 
 def set_st_attrs(st, attrs):
     for key, val in attrs.items():
@@ -408,7 +414,8 @@ class FUSE(object):
     def _normalize_fuse_options(**kargs):
         for key, value in kargs.items():
             if isinstance(value, bool):
-                if value is True: yield key
+                if value is True:
+                    yield key
             else:
                 yield '%s=%s' % (key, value)
 
@@ -495,14 +502,15 @@ class FUSE(object):
 
     def read(self, path, buf, size, offset, fip):
         if self.raw_fi:
-          fh = fip.contents
+            fh = fip.contents
         else:
-          fh = fip.contents.fh
+            fh = fip.contents.fh
 
         ret = self.operations('read', path.decode(self.encoding), size,
                                       offset, fh)
 
-        if not ret: return 0
+        if not ret:
+            return 0
 
         retsize = len(ret)
         assert retsize <= size, \
@@ -542,9 +550,9 @@ class FUSE(object):
 
     def release(self, path, fip):
         if self.raw_fi:
-          fh = fip.contents
+            fh = fip.contents
         else:
-          fh = fip.contents.fh
+            fh = fip.contents.fh
 
         return self.operations('release', path.decode(self.encoding), fh)
 
@@ -568,10 +576,12 @@ class FUSE(object):
 
         retsize = len(ret)
         # allow size queries
-        if not value: return retsize
+        if not value:
+            return retsize
 
         # do not truncate
-        if retsize > size: return -ERANGE
+        if retsize > size:
+            return -ERANGE
 
         buf = create_string_buffer(ret, retsize)    # Does not add trailing 0
         memmove(value, buf, retsize)
@@ -584,10 +594,12 @@ class FUSE(object):
 
         retsize = len(ret)
         # allow size queries
-        if not namebuf: return retsize
+        if not namebuf:
+            return retsize
 
         # do not truncate
-        if retsize > size: return -ERANGE
+        if retsize > size:
+            return -ERANGE
 
         buf = create_string_buffer(ret, retsize)
         memmove(namebuf, buf, retsize)

@@ -36,4 +36,3 @@ class CWSearch(EntityType):
                            composite="subject")
     # view regid to show rset
     rset_type = String(required=True, default="jsonexport", maxsize=50)
-

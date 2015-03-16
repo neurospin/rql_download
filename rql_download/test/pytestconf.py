@@ -23,6 +23,7 @@ import sys
 
 from logilab.common.pytest import PyTester
 
+
 def getlogin():
     """avoid usinng os.getlogin() because of strange tty / stdin problems
     (man 3 getlogin)

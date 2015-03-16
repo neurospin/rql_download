@@ -125,7 +125,7 @@ class CWInstanceConnection(object):
         Returns
         -------
         rset: list of list of str
-            a list that contains the requested entity parameters.        
+            a list that contains the requested entity parameters.
         """
         # Debug message
         logger.debug("Executing rql: '%s'", rql)
@@ -170,7 +170,7 @@ class CWInstanceConnection(object):
         Returns
         -------
         rset: list of list of str
-            a list that contains the requested entity parameters.        
+            a list that contains the requested entity parameters.
         """
         # Create the CWSearch
         self._create_cwsearch(rql)
@@ -326,7 +326,7 @@ class CWInstanceConnection(object):
         """ Method that creates a CWSearch entity from a rql.
 
         .. note::
-        
+
             The CWSearch title has to be unique, build automatically title
             of the form 'auto_generated_title_x' where x is incremented
             each time an element is inserted in the data base.
@@ -363,7 +363,7 @@ class CWInstanceConnection(object):
         Parameters
         ----------
         password: str (mandatory)
-            the cw user password.       
+            the cw user password.
         """
         # Create the handlers and the associated opener
         self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())

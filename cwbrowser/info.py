@@ -34,7 +34,7 @@ CLASSIFIERS = [
 description = "CWBROWSER"
 long_description = """
 =========
-CWBROWSER 
+CWBROWSER
 =========
 
 Summary

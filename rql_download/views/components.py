@@ -7,7 +7,7 @@
 # for details.
 ##########################################################################
 
-# CW import 
+# CW import
 from cubicweb.web import component
 from cubicweb.predicates import (
     is_instance, nonempty_rset, anonymous_user, non_final_entity, nonempty_rset)
@@ -61,11 +61,11 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         try:
             entity_name = rset.entities().next().__class__.__name__
             if entity_name in RQL_DOWNLOAD_SEARCH_ENTITIES:
-               can_save_search = True
+                can_save_search = True
         except:
             pass
         # Can't download if not logged
-        can_save_search = (can_save_search and 
+        can_save_search = (can_save_search and
                            not self._cw.session.anonymous_session)
 
         # Check we have a none empty rset and a valid vid
@@ -97,7 +97,7 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         title = self._cw._("--unique title--")
 
         # Create the url to the CWSearch form
-        cls = self._cw.vreg["etypes"].etype_class("CWSearch")       
+        cls = self._cw.vreg["etypes"].etype_class("CWSearch")
         add_url = cls.cw_create_url(self._cw, path=path, title=title,
             __message=(u"Please enter a unique title for the search and click "
                         "on the validate button."))
@@ -164,4 +164,3 @@ def registration_callback(vreg):
     vreg.unregister(BookmarksBox)
     vreg.register(SaveCWSearchFilterBox)
     vreg.register(HelpCWSearchBox)
-

@@ -37,7 +37,7 @@ class CWSearchRsetView(View):
         # Get all the user CWSearch in the database
         rset = self._cw.execute(
             "Any S, T, P Where S is CWSearch, S title T, S path P")
-        
+
         # Unpack the rset: use double quote in rql
         titles = []
         rqls = []
@@ -51,7 +51,7 @@ class CWSearchRsetView(View):
         # If not, create a new CWSearch
         rql = unicode(params_dict["path"].replace("'", '"'))
         if rql not in rqls:
-            
+
             # Create a unique name of the form 'auto_generated_title_x' where
             # x is incremented
             auto_gen_increments = [x.split("_")[-1] for x in titles
@@ -85,4 +85,3 @@ class FuseConfigView(JsonMixIn, View):
             "instance_name": self._cw.vreg.config["pyro-instance-id"]
         }
         self.wdata(rset)
-

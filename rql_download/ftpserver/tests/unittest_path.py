@@ -127,13 +127,6 @@ class PathTC(unittest2.TestCase):
         self.assertEqual(result, expected)
 
 
-
-
-
 if __name__ == '__main__':
     from logilab.common.testlib import unittest_main
     unittest_main()
-
-
-
-

@@ -42,7 +42,7 @@ parser.add_option("-r", "--ldapbase", dest="base",
 parser.add_option("-p", "--ldappwd", dest="password",
                   help="the ldap user password.")
 parser.add_option("-i", "--cwuser", dest="cw_uid",
-                  help="the cw instance user id.")                  
+                  help="the cw instance user id.")
 (options, args) = parser.parse_args()
 
 
