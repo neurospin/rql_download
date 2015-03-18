@@ -8,10 +8,9 @@
 .. autoclass:: {{ objname }}
     :members:
     :private-members:
-    :special-members:
+    :special-members: __module__, __regid__, __call__
     :undoc-members:
     {% block methods %}
-    .. automethod:: __init__
     {% if methods %}
     .. rubric:: Methods
     .. autosummary::

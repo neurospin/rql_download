@@ -14,8 +14,8 @@ responsible to store filepath computed by the adapter from the entities in rset.
 
 .. _schema_api:
 
-:mod:`rql_download.twistedftpserver`: Schema
---------------------------------------------
+:mod:`rql_download`: Schema
+---------------------------
 
 .. currentmodule:: rql_download
 

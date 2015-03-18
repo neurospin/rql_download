@@ -11,7 +11,8 @@ This tutorial will walk you through the process of intalling Rql Download:
     * **rql_download**: a cube that can only be instanciated
       if `cubicweb is installed <https://docs.cubicweb.org/admin/setup>`_.
 
-Have a look at the :ref:`twisted SFTP server <twisted_how_to>` and :ref:`fuse virtual folders <fuse_how_to>` configurations 
+Have a look at the :ref:`twisted SFTP server <twisted_how_to>` and
+:ref:`fuse virtual folders <fuse_how_to>` configurations.
 
 
 .. _install_cwbrowser:
@@ -73,6 +74,32 @@ Install from *github*
 **Update your CW_CUBES_PATH**
 
 >>> export CW_CUBES_PATH=$CLONE_DIR/rql_download:$CW_CUBES_PATH
+
+Make sure the cube is in CubicWeb's path
+----------------------------------------
+
+>>> cubicweb-ctl list
+
+Create an instance of the cube
+------------------------------
+
+>>> cubicweb-ctl create rql_download toy_instance
+
+You can then run the instance in debug mode:
+
+>>> cubicweb-ctl start -D toy_instance
+
+The last line of the prompt will indicate which url the 
+instance can be reached by:
+
+>>> (cubicweb.twisted) INFO: instance started on http://url:port/
+
+Change configuration
+--------------------
+
+The configuration file is stored on your system:
+
+>>> ...etc/cubicweb.d/toy_instance/all-in-one.conf
 
 
 
