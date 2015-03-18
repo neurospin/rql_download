@@ -245,7 +245,7 @@ class CWInstanceConnection(object):
                           "rset file.".format(rset_json_file))
         rset_file = rset_file[0]
         filext = os.path.splitext(rset_file)[1]
-        # > deal with jso file
+        # > deal with json file
         if filext == ".json":
             with open(rset_file) as json_data:
                 rset = json.load(json_data)
@@ -255,8 +255,13 @@ class CWInstanceConnection(object):
                 local_dir += os.path.sep
             if not cw_params["basedir"].endswith(os.path.sep):
                 cw_params["basedir"] += os.path.sep
-            for item in rset:
-                item[0] = item[0].replace(cw_params["basedir"], local_dir)
+            for rset_items in rset:
+                for item_index in range(len(rset_items)):
+                    item = rset_items[item_index]
+                    if (isinstance(item, basestring) and 
+                       item.startswith(cw_params["basedir"])):
+                        rset_items[item_index] = item.replace(
+                            cw_params["basedir"], local_dir)
 
         # > deal with csv file
         elif filext == ".csv":
