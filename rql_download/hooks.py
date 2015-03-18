@@ -73,22 +73,21 @@ class CWSearchAdd(hook.Hook):
                 self._find_constant_nodes(node.children, constant_nodes)
 
     def __call__(self):
-        """ Before adding the CWSearch entity, create a 'rset' and a 'result.json'
-        File entities that contain all the filepath attached to the current
-        rql request.
+        """ Before adding the CWSearch entity, create a 'rset' and a 
+        'result.json' File entities that contain all the filepath attached
+        to the current rql request.
         Filepath are found by patching the rql request with the declared
         'rqldownload-adaptors' actions.
         The '__rset_type__' adaptor attribute is used to export the rset.
 
-        When an 'EntityAdaptor' is used, no file are then attached in
+        When an 'ecsvexport' is used, no file are then attached in
         the 'result.json' file.
 
         .. warning::
 
-            For the moment we consider the first result entity only, we
-            consider the first declared action, and we assume the database
-            intergrity (ie. all file pathes inserted in the db exist on the
-            file system) and thus do not check to speed up the hook.
+            For the moment we assume the database intergrity (ie. all file
+            paths inserted in the db exist on the file system) and thus do not
+            check to speed up the hook.
         """
         # Get the rql/export type from the CWSearch form
         rql = self.entity.cw_edited.get("path")
@@ -135,6 +134,7 @@ class CWSearchAdd(hook.Hook):
 
         # Keep only actions that respect the current context
         actions = {}
+        export_vids = set()
         for index, etype in entities.items():
             entity_label = rql_etypes[etype][0]
             for action in possible_actions:
@@ -143,6 +143,7 @@ class CWSearchAdd(hook.Hook):
                        etype in selector.expected_etypes):
                         actions.setdefault(etype, []).append(
                             (action, entity_label))
+                        export_vids.add(unicode(action.__rset_type__))
         print actions
 
         # Check that at least one action has been found for this request
@@ -152,24 +153,38 @@ class CWSearchAdd(hook.Hook):
                     "actions": _('cannot find an action for this request '
                                  '{0}'.format(rql))})
 
-        print stop
+        # Check that the export types are homogeneous
+        if len(export_vids) != 1:
+            raise ValidationError(
+                "CWSearch", {
+                    "actions": _('cannot deal with different action export '
+                                 'types: {0}'.format(export_vids))})
+        export_vid = export_vids.pop()
 
         # Create an empty result structure
-        result = {"rql": rql, "files": [], "nonexistent-files": []}
+        result = {"rql": rql, "files": [], "nonexistent-files": [],
+                  "upper_file_index": 0}
 
         # Here we want to execute rql request with user permissions: user who
         # is creating this entity
         with self._cw.security_enabled(read=True, write=True):
 
-            # Create the global rql from the first declared action
-            # For the moment do not consider the others
-            action, parameter_name = actions[0]
-
-            # Get the adaptor rset type
-            export_vid = unicode(action.__rset_type__)
+            # Set the adaptor rset type
             self.entity.cw_edited["rset_type"] = export_vid
 
-            global_rql = action(self._cw).rql(rql, parameter_name)
+            # Create the global rql from the declared actions
+            global_rql = rql
+            cnt = 1
+            upper_file_index = 0
+            for etype, action_item in actions.items():
+                for action, entity_label in action_item:
+                    global_rql, nb_files = action(self._cw).rql(
+                        global_rql, entity_label, cnt)
+                    upper_file_index += nb_files
+                    cnt += 1
+            result["upper_file_index"] = upper_file_index
+
+            # Execute the global rql
             rset = self._cw.execute(global_rql)
             result["rql"] = global_rql
 
@@ -205,9 +220,10 @@ class CWSearchAdd(hook.Hook):
             # check to speed up this process.
             files_set = set()
             non_existent_files_set = set()
-            if action.__name__ != "EntityAdaptor":
-                files_set = tuple([row[0] for row in rset.rows
-                                   if isinstance(row[0], basestring)])
+            if export_vid != "ecsvexport":
+                for rset_row in rset.rows:
+                    for rset_index in range(upper_file_index):
+                        files_set.add(rset_row[rset_index])
 
             # Update the result structure
             result["files"] = list(files_set)

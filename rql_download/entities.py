@@ -55,33 +55,60 @@ class IFSetAdapter(Action):
     __select__ = Action.__select__ & is_instance(*RQL_DOWNLOAD_FSET_ENTITIES)
     __rset_type__ = "jsonexport"
 
-    def rql(self, rql, parameter_name):
+    def rql(self, rql, parameter_name, identifier=1):
         """ Method that patch the rql.
 
         .. note::
 
             * The patched rql returned first elements are then the file pathes.
-            * Reserved keys are 'PATH', 'FENTRIES', 'FILES'.
+            * Reserved keys are 'PATH', 'FENTRIES', 'FILES' postfixed with the
+              identifier number.
+            * returned files are necessary at the begining of the adapted rql.
+
+        Parameters
+        ----------
+        rql: str (mandatory)
+            the request to adapt.
+        parameter_name: str (mandatory)
+            the label of the entity to adapt.
+        identifier: int (optional)
+            postfix the reserved keys with this identifier.
+
+        Returns
+        -------
+        global_rql: str
+            the adapted rql.
+        nb_files: int
+            the position in the rset of the adapted files.        
         """
+        # Define reserved labels
+        reserved_labels = [
+            "PATH{0}".format(identifier),
+            "FILES{0}".format(identifier),
+            "FENTRIES{0}".format(identifier)
+        ]
+
         # Check that reserved keys are not used
         split_rql = re.split(r"[ ,]", rql)
-        for revered_key in ["PATH", "FENTRIES", "FILES"]:
-            if revered_key in split_rql:
+        for resered_key in reserved_labels:
+            if resered_key in split_rql:
                 raise ValidationError(
                     "CWSearch", {
                         "rql": _(
                             'cannot edit the rql "{0}", "{1}" is a reserved key, '
-                            'choose another name'.format(rql, revered_key))})
+                            'choose another name.'.format(rql, resered_key))})
 
         # Remove the begining of the rql in order to complete it
         formated_rql = " ".join(rql.split()[1:])
 
         # Complete the rql in order to access file pathes
-        global_rql = ("Any PATH, {0}, {1} results_files FILES, FILES "
-                      "file_entries FENTRIES, FENTRIES filepath "
-                      "PATH".format(formated_rql, parameter_name))
+        global_rql = (
+            "Any {0}, {1}, {2} results_files {3}, {3} file_entries {4}, "
+            "{4} filepath {0}".format(reserved_labels[0], formated_rql, 
+                                      parameter_name, reserved_labels[1],
+                                      reserved_labels[2]))
 
-        return global_rql
+        return global_rql, 1
 
 
 class IEntityAdapter(BaseIDownloadAdapter):
