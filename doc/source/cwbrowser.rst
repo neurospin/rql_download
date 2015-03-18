@@ -8,8 +8,8 @@ CWBROWSER
 
 A Python module is proposed to script the RQL requests. It enables us to
 access information stored in a CubicWeb database, through two methods 'execute'
-and 'execute_with_sync'. The first method simply execute a RQL from the script
-while the second one create a :ref:`search <views_ref>`, and then contact the
+and 'execute_with_sync'. The first method simply executes a RQL from the script
+while the second one creates a :ref:`search <views_ref>`, then it contacts the
 server where the CW instance is running through the sftp protocol using
 paramiko in order to download the search associated dataset. This second method
 assumes that the :ref:`Twisted server <twisted_ref>` solution or the

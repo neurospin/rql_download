@@ -8,16 +8,16 @@ Twisted SFTP server
 
 Description
 -----------
-In order to expose the content of CWSearch entities, a process (which can be 
-started  automatically by cubicweb) can shows the stored file paths via sftp
-protocol. The authentication in this process is delegated to cubicweb.
+In order to expose the content of CWSearch entities, a process (can be 
+started  automatically by Cubicweb) can show the stored file paths via sftp
+protocol. In this process, the authentication is delegated to Cubicweb.
 
 
 .. _twisted_how_to:
 
 How to use
 ----------
-To use this cube implement an :ref:`adapter <views_api>` derived from the
+To use this cube, implement an :ref:`adapter <views_api>` derived from the
 'BaseIDownloadAdapter' for the entity you want to expose via the sftp server. 
 
 During the rql download instanciation or in your instance all-in-one.conf file,
@@ -34,8 +34,8 @@ the content of each CW search:
     # server and fuse processes)
     basedir=/tmp
 
-    # if true cubicweb will start automatically sftp server (you need to set
-    # properly the configuration file: see the documentation)
+    # if true Cubicweb will automatically start sftp server (you need to properly set
+    # the configuration file: see documentation)
     start_sftp_server=yes
 
 Execute the 'main.py' script of the 'twistedserver' module if you decide to
@@ -58,18 +58,18 @@ set explicitely via the 'config-file' option.
 
 All the 'main.py' script options are:
 
-- cubicweb-instance: the name of the instance (or instances separated by ':')
+- cubicweb-instance: name of the instance (or instances separated by ':')
   the ftp server will connect. This instance must inherit from the rql_download
   schema.
-- unix-username: the name of a valid unix user.
-- private-key: the path to a private key file as generated with ssh-keygen.
-- public-key: the path to a public key file as generated with ssh-keygen.
-- passphrase: the password associated with the previous public/provate key.
-- port: the server listening port.
-- config-file: the path to a configuration file.
+- unix-username: name of a valid unix user.
+- private-key: path to a private key file as generated with ssh-keygen.
+- public-key: path to a public key file as generated with ssh-keygen.
+- passphrase: password associated with the previous public/provate key.
+- port: server listening port.
+- config-file: path to a configuration file.
 
-The user who lunch the 'main.py' script needs to have at least the read access
-on the files he wants to transfer through the sftp server.
+The user who launches the 'main.py' script needs to have at least read access rights
+on the files he/she wants to transfer through the sftp server.
 
 
 .. _twisted_api:

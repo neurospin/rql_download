@@ -9,7 +9,7 @@ This tutorial will walk you through the process of intalling Rql Download:
    
     * **CWBrowser**: a pure Python module.
     * **rql_download**: a cube that can only be instanciated
-      if `cubicweb is installed <https://docs.cubicweb.org/admin/setup>`_.
+      if `Cubicweb is installed <https://docs.cubicweb.org/admin/setup>`_.
 
 Have a look at the :ref:`twisted SFTP server <twisted_how_to>` and
 :ref:`fuse virtual folders <fuse_how_to>` configurations.
