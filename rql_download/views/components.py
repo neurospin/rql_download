@@ -7,17 +7,28 @@
 # for details.
 ##########################################################################
 
-# CW import 
+# CW import
+from cubicweb import NotAnEntity
 from cubicweb.web import component
-from cubicweb.predicates import (
-    is_instance, nonempty_rset, anonymous_user, non_final_entity, nonempty_rset)
-from cubicweb.web.views.facets import (
-    facets, FilterBox, FacetFilterMixIn, contextview_selector)
+from cubicweb.predicates import is_instance
+from cubicweb.predicates import nonempty_rset
+from cubicweb.predicates import anonymous_user
+from cubicweb.predicates import non_final_entity
+from cubicweb.predicates import nonempty_rset
+from cubicweb.web.views.facets import facets
+from cubicweb.web.views.facets import FilterBox
+from cubicweb.web.views.facets import FacetFilterMixIn
+from cubicweb.web.views.facets import contextview_selector
 from logilab.mtconverter import xml_escape
 from cubicweb.web.views.bookmark import BookmarksBox
 
+# RQL download import
+from cubes.rql_download.entities import RQL_DOWNLOAD_EXPORT_ENTITIES
+from cubes.rql_download.entities import RQL_DOWNLOAD_FSET_ENTITIES
+
 # Define global search variables
-RQL_DOWNLOAD_SEARCH_ENTITIES = ["Scan", "ProcessingRun", "Subject"]
+RQL_DOWNLOAD_SEARCH_ENTITIES = (
+    RQL_DOWNLOAD_EXPORT_ENTITIES + RQL_DOWNLOAD_FSET_ENTITIES)
 
 
 ###############################################################################
@@ -30,13 +41,12 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
 
     * This component shows up if the current rset is adaptable.
     * This component is integrated in the CW facet component
-    * The global parameters 'RQL_DOWNLOAD_SEARCH_ENTITIES' and
-      'RQL_DOWNLOAD_EXPORT_ENTITIES' specify which entities can be downloaded
+    * The global parameters 'RQL_DOWNLOAD_EXPORT_ENTITIES' and
+      'RQL_DOWNLOAD_FSET_ENTITIES' specify which entities can be downloaded
       (ie. are adaptable).
     """
     __regid__ = "facet.filterbox"
-    __select__ = ((non_final_entity() & nonempty_rset())
-                  | contextview_selector())
+    __select__ = (nonempty_rset() | contextview_selector())
     context = "left"
     order = 0
     title = _("Filter")
@@ -61,17 +71,24 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
 
         # Check if the view information can be downloaded
         can_save_search = False
-        try:
-            entity_name = rset.entities().next().__class__.__name__
-            if entity_name in RQL_DOWNLOAD_SEARCH_ENTITIES:
-               can_save_search = True
-        except:
-            pass
+        if rset.rowcount > 0:
+            for rowindex in range(len(rset[0])):
+                try:
+                    entity = rset.get_entity(0, rowindex)
+                    entity_name = entity.__class__.__name__
+                    if entity_name in RQL_DOWNLOAD_SEARCH_ENTITIES:
+                        can_save_search = True
+                        break
+                except NotAnEntity:
+                    pass
+                except:
+                    raise
+
         # Can't download if not logged
         can_save_search = (can_save_search and 
                            not self._cw.session.anonymous_session)
 
-        # Check we have a none empty rset and a valid vid
+        # Check we have a valid vid
         if vid is None:
             vid = self._cw.form.get("vid")
 

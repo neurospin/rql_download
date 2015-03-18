@@ -17,7 +17,7 @@ from cubicweb import ValidationError
 
 # Define global adaptor variables
 RQL_DOWNLOAD_EXPORT_ENTITIES = ["Subject"]
-RQL_DOWNLOAD_FSET_ENTITIES = ["Scan", "ProcessingRun"]
+RQL_DOWNLOAD_FSET_ENTITIES = ["Scan", "ProcessingRun", "GenomicMeasure"]
 
 
 class BaseIDownloadAdapter(Action):

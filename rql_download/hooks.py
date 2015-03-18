@@ -18,6 +18,7 @@ import datetime
 from rql.nodes import Constant, Function
 
 # CW import
+from cubicweb import NotAnEntity
 from cubicweb import Binary, ValidationError
 from cubicweb.server import hook
 from cubicweb.selectors import is_instance
@@ -97,41 +98,52 @@ class CWSearchAdd(hook.Hook):
         rset = self._cw.execute(rql)
 
         # Get all the entities
-        entities = [e for e in rset.entities()]
+        entities = {}
+        if rset.rowcount > 0:
+            for rowindex in range(len(rset[0])):
+                try:
+                    entity = rset.get_entity(0, rowindex)
+                    entity_type = entity.__class__.__name__
+                    entities[rowindex] = entity_type
+                except NotAnEntity:
+                    pass
+                except:
+                    raise
         if len(entities) == 0:
             raise ValidationError(
                 "CWSearch", {
                     "entities": _('cannot find any entity for the request '
                                   '{0}'.format(rql))})
-        etype = entities[0].__class__.__name__
 
-        # Find constant nodes
+        # Find the constant nodes
         constant_nodes = {}
         self._find_constant_nodes(rset._rqlst.children, constant_nodes)
 
-        # Select the appropriate action
-        # We consider only one the first rql entity
+        # Check we can associated rset entities with their rql labels
         actions = []
         rql_etypes = constant_nodes.get("etype", {})
-        if etype not in rql_etypes or len(rql_etypes[etype]) != 1:
-            raise ValidationError(
-                "CWSearch", {
-                    "rql": _('cannot find entity description in the request '
-                             '{0}. Expect something like "Any X Where X is '
-                             '{1}, ..."'.format(rql, etype))})
+        for etype in entities.values():
+            if etype not in rql_etypes or len(rql_etypes[etype]) != 1:
+                raise ValidationError(
+                    "CWSearch", {
+                        "rql": _('cannot find entity description in the request '
+                                 '{0}. Expect something like "Any X Where X is '
+                                 '{1}, ..."'.format(rql, etype))})
 
-        # Get the associated rql parameter name: current context
-        parameter_name = rql_etypes[etype][0]
-
-        # Get all the rqldownload declared adaptors
+        # Get all the rqldownload declared adapters
         possible_actions = self._cw.vreg["actions"]["rqldownload-adapters"]
 
         # Keep only actions that respect the current context
-        for action in possible_actions:
-            for selector in action.__select__.selectors:
-                if (isinstance(selector, is_instance) and
-                   etype in selector.expected_etypes):
-                    actions.append((action, parameter_name))
+        actions = {}
+        for index, etype in entities.items():
+            entity_label = rql_etypes[etype][0]
+            for action in possible_actions:
+                for selector in action.__select__.selectors:
+                    if (isinstance(selector, is_instance) and
+                       etype in selector.expected_etypes):
+                        actions.setdefault(etype, []).append(
+                            (action, entity_label))
+        print actions
 
         # Check that at least one action has been found for this request
         if actions == []:
@@ -139,6 +151,8 @@ class CWSearchAdd(hook.Hook):
                 "CWSearch", {
                     "actions": _('cannot find an action for this request '
                                  '{0}'.format(rql))})
+
+        print stop
 
         # Create an empty result structure
         result = {"rql": rql, "files": [], "nonexistent-files": []}
