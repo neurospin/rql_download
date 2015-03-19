@@ -60,10 +60,9 @@ class IFSetAdapter(Action):
 
         .. note::
 
-            * The patched rql returned first elements are then the file pathes.
-            * Reserved keys are 'PATH', 'FENTRIES', 'FILES' postfixed with the
+            * reserved keys are 'PATH', 'FENTRIES', 'FILES' postfixed with the
               identifier number.
-            * returned files are necessary at the begining of the adapted rql.
+            * returned files are necessary at the beginning of the adapted rql.
 
         Parameters
         ----------
@@ -79,7 +78,7 @@ class IFSetAdapter(Action):
         global_rql: str
             the adapted rql.
         nb_files: int
-            the position in the rset of the adapted files.        
+            the number of files returned at the beginning of the result set.        
         """
         # Define reserved labels
         reserved_labels = [
