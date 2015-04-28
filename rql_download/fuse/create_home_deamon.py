@@ -9,7 +9,7 @@
 
 """
 > ldpa exemple:
-    python create_home_deamon.py -g OPEN_FU1 -l -b /chroot_fuse -n imagen2 -p mypwd
+    python create_home_deamon.py -g OPEN_FU1 -l -b /chroot_fuse -n imagen2 -p mypwd -i 503
 """
 # System import
 import grp
