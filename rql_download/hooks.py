@@ -342,7 +342,7 @@ class ServerStartupFuseMount(hook.Hook):
         if use_fuse:
 
             # Execute a rql to get all the CWSearch owner logins
-            with self.repo.internal_session() as cnx:
+            with self.repo.internal_cnx() as cnx:
                 rql = "Any L Where S is CWSearch, S owned_by U, U login L"
                 rset = cnx.execute(rql)
                 logins = set([x[0] for x in rset])
