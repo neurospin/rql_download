@@ -267,7 +267,7 @@ class CWSearchDelete(hook.Hook):
         def cleaning_old_cwsearch(repo):
             """ Delete all CWSearch entities that have expired.
             """
-            with repo.internal_session() as cnx:
+            with repo.internal_cnx() as cnx:
                 cnx.execute(
                     "DELETE CWSearch S WHERE S expiration_date < today")
                 cnx.commit()
