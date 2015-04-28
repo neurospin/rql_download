@@ -387,6 +387,7 @@ class FuseRset(Operations):
         self.instance = instance
         self.login = login
         self.vdir = None  # the virtual directory object
+        self.data_root_dir = get_cw_option(self.instance, "basedir")
 
         # Get the directory where to generate the user acces log
         # Check the permissions
@@ -429,7 +430,7 @@ class FuseRset(Operations):
 
             # From the cw configuration file, get the mask we will apply
             # on the virtual tree
-            data_root_dir = get_cw_option(self.instance, "basedir")
+            data_root_dir = self.data_root_dir
 
             # Create an empty virtual directory
             self.vdir = VirtualDirectory(data_root_dir)
@@ -591,9 +592,10 @@ class FuseRset(Operations):
         logger.debug("open {0}".format(path))
         # Update the log file if requested
         if self.generate_log:
+            abspath = os.path.join(self.data_root_dir, path)
             self.log_file.write(" ".join(
                 [str(datetime.datetime.now()), self.instance, self.login,
-                 path, str(os.path.isfile(path))]))
+                 abspath, str(os.path.isfile(abspath))]))
             self.log_file.write("\n")
             self.log_file.flush()
 
