@@ -592,9 +592,8 @@ class FuseRset(Operations):
         logger.debug("open {0}".format(path))
         # Update the log file if requested
         if self.generate_log:
-            if path.startswith(os.sep):
-                path = path[1:]
-            abspath = os.path.join(self.data_root_dir, path)
+            realpath = os.sep.join(path.split(os.sep)[1:])
+            abspath = os.path.join(self.data_root_dir, realpath)
             self.log_file.write(" ".join(
                 [str(datetime.datetime.now()), self.instance, self.login,
                  abspath, str(os.path.isfile(abspath))]))
