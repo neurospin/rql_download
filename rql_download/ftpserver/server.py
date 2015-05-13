@@ -97,7 +97,6 @@ class VirtualPathTranslator(object):
             0,  # st_ctime
         ))
 
-
     def get_attrs_file_entity(self, binary):
         s = self.stat_file_entity(binary.len)
         return self.attrs_from_stat(s)
@@ -156,12 +155,12 @@ class VirtualPathTranslator(object):
         return posix.stat_result((mode,) + s[1:])
 
     def attrs_from_stat(self, s):
-        return  {'size': s.st_size,
-                 'uid': s.st_uid,
-                 'gid': s.st_gid,
-                 'mtime': s.st_mtime,
-                 'atime': s.st_atime,
-                 'permissions': s.st_mode}
+        return {'size': s.st_size,
+                'uid': s.st_uid,
+                'gid': s.st_gid,
+                'mtime': s.st_mtime,
+                'atime': s.st_atime,
+                'permissions': s.st_mode}
 
     def dir_content(self, virtpath):
         """get complete filepath  of files located in
@@ -195,7 +194,7 @@ class CubicWebConchUser(UnixConchUser):
 
     def __init__(self, unix_username, cw_sessionid, login, repo, base_dir):
         UnixConchUser.__init__(self, unix_username)
-        self.session = repo._get_session(cw_sessionid) # XXX private method
+        self.session = repo._get_session(cw_sessionid)  # XXX private method
         self.session.set_cnxset()
         login_eid = self.session.execute('Any X WHERE X is CWUser, '
                                          'X login %(login)s', {'login': login})
@@ -316,7 +315,6 @@ class CubicWebSFTPRealm:
                                  repo=self.repo,
                                  base_dir=self.conf.get('base-dir'))
         return interfaces[0], user, user.logout
-
 
 
 class CubicWebSSHdFactory(factory.SSHFactory):
@@ -533,7 +531,7 @@ class CubicWebProxiedSFTPServer(SFTPServerForUnixConchUser):
         """
         if path == '.':
             return '/'
-        return osp.abspath(path) # handle /toto/..
+        return osp.abspath(path)  # handle /toto/..
 
     @unauthorized
     def extendedRequest(self, extendedName, extendedData):

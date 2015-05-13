@@ -238,9 +238,9 @@ class CWInstanceConnection(object):
 
         .. note::
 
-            If a folder 'sync_dir' + 'cwsearch_title' is detected on the local
-            machine, no download is run. We assume that the CWSearch has already
-            been downloaded properly.
+            If a folder 'sync_dir' + 'cwsearch_title' is detected on the
+            local machine, no download is run. We assume that the CWSearch
+            has already been downloaded properly.
 
         Parameters
         ----------
@@ -263,8 +263,8 @@ class CWInstanceConnection(object):
         local_dir = os.path.join(sync_dir, cwsearch_title)
         if os.path.isdir(local_dir):
             logger.warning("The CWSearch '{0}' has been found at location "
-                         "'{1}'. Do not download the data again.".format(
-                             cwsearch_title, local_dir))
+                           "'{1}'. Do not download the data again."
+                           .format(cwsearch_title, local_dir))
 
         # Rsync via paramiko and sftp
         else:
@@ -318,7 +318,7 @@ class CWInstanceConnection(object):
         """
         try:
             return stat.S_ISDIR(sftp.stat(path).st_mode)
-        #Path does not exist, so by definition not a directory
+        # Path does not exist, so by definition not a directory
         except IOError:
             return False
 
