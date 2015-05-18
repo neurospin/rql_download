@@ -31,8 +31,8 @@ class PathTC(unittest2.TestCase):
     def test_dir_content(self):
         t = self.path_translator
         expected = [
-                ('/tmp/brainomics/subdir1/fichier1', False),
-                ('/tmp/brainomics/subdir1/fichier4', False),
+            ('/tmp/brainomics/subdir1/fichier1', False),
+            ('/tmp/brainomics/subdir1/fichier4', False),
         ]
         test = VirtualPath('search1', '/tmp/brainomics/subdir1', '/')
         self.assertEqual(list(t.dir_content(test)), expected)
