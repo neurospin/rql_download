@@ -78,7 +78,7 @@ class IFSetAdapter(Action):
         global_rql: str
             the adapted rql.
         nb_files: int
-            the number of files returned at the beginning of the result set.        
+            the number of files returned at the begining of the result set.        
         """
         # Define reserved labels
         reserved_labels = [
@@ -120,7 +120,7 @@ class IEntityAdapter(BaseIDownloadAdapter):
         *RQL_DOWNLOAD_EXPORT_ENTITIES)
     __rset_type__ = "ecsvexport"
 
-    def rql(self, rql, parameter_name):
+    def rql(self, rql, parameter_name, identifier=None):
         """ Method that simply return the input rql.
         """
-        return rql
+        return rql, 1
