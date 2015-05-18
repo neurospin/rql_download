@@ -89,13 +89,13 @@ class IFSetAdapter(Action):
 
         # Check that reserved keys are not used
         split_rql = re.split(r"[ ,]", rql)
-        for resered_key in reserved_labels:
-            if resered_key in split_rql:
+        for reserved_key in reserved_labels:
+            if reserved_key in split_rql:
                 raise ValidationError(
                     "CWSearch", {
                         "rql": _(
                             'cannot edit the rql "{0}", "{1}" is a reserved key, '
-                            'choose another name.'.format(rql, resered_key))})
+                            'choose another name.'.format(rql, reserved_key))})
 
         # Remove the begining of the rql in order to complete it
         formated_rql = " ".join(rql.split()[1:])
