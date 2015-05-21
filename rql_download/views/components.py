@@ -8,16 +8,27 @@
 ##########################################################################
 
 # CW import
+from cubicweb import NotAnEntity
 from cubicweb.web import component
-from cubicweb.predicates import (
-    is_instance, nonempty_rset, anonymous_user, non_final_entity, nonempty_rset)
-from cubicweb.web.views.facets import (
-    facets, FilterBox, FacetFilterMixIn, contextview_selector)
+from cubicweb.predicates import is_instance
+from cubicweb.predicates import nonempty_rset
+from cubicweb.predicates import anonymous_user
+from cubicweb.predicates import non_final_entity
+from cubicweb.predicates import nonempty_rset
+from cubicweb.web.views.facets import facets
+from cubicweb.web.views.facets import FilterBox
+from cubicweb.web.views.facets import FacetFilterMixIn
+from cubicweb.web.views.facets import contextview_selector
 from logilab.mtconverter import xml_escape
 from cubicweb.web.views.bookmark import BookmarksBox
 
+# RQL download import
+from cubes.rql_download.entities import RQL_DOWNLOAD_EXPORT_ENTITIES
+from cubes.rql_download.entities import RQL_DOWNLOAD_FSET_ENTITIES
+
 # Define global search variables
-RQL_DOWNLOAD_SEARCH_ENTITIES = ["Scan", "ProcessingRun", "Subject"]
+RQL_DOWNLOAD_SEARCH_ENTITIES = (
+    RQL_DOWNLOAD_EXPORT_ENTITIES + RQL_DOWNLOAD_FSET_ENTITIES)
 
 
 ###############################################################################
@@ -28,13 +39,14 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
     """ Class that enables us to display a 'Save search' box when the selected
     entities fulfill the '__select__' requirements.
 
-    The global parameter 'RQL_DOWNLOAD_SEARCH_ENTITIES' specify with entities
-    can be downloaded.
-    The filter items are found dynamically.
+    * This component shows up if the current rset is adaptable.
+    * This component is integrated in the CW facet component
+    * The global parameters 'RQL_DOWNLOAD_EXPORT_ENTITIES' and
+      'RQL_DOWNLOAD_FSET_ENTITIES' specify which entities can be downloaded
+      (ie. are adaptable).
     """
     __regid__ = "facet.filterbox"
-    __select__ = ((non_final_entity() & nonempty_rset())
-                  | contextview_selector())
+    __select__ = (nonempty_rset() | contextview_selector())
     context = "left"
     order = 0
     title = _("Filter")
@@ -45,9 +57,10 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         """ Method that generates the html elements to display the 'Save search'
         box.
 
-        ..note::
-            This method only consider the first registered 'ns-save-search'
-            action to generate the new CWSearch form.
+        .. note::
+
+            This method only consider the first registered 'rqldownload-adapters'
+            action to generate the resources associated with the current search.
         """
 
         # Get the component context
@@ -58,17 +71,24 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
 
         # Check if the view information can be downloaded
         can_save_search = False
-        try:
-            entity_name = rset.entities().next().__class__.__name__
-            if entity_name in RQL_DOWNLOAD_SEARCH_ENTITIES:
-                can_save_search = True
-        except:
-            pass
+        if rset.rowcount > 0:
+            for rowindex in range(len(rset[0])):
+                try:
+                    entity = rset.get_entity(0, rowindex)
+                    entity_name = entity.__class__.__name__
+                    if entity_name in RQL_DOWNLOAD_SEARCH_ENTITIES:
+                        can_save_search = True
+                        break
+                except NotAnEntity:
+                    pass
+                except:
+                    raise
+
         # Can't download if not logged
-        can_save_search = (can_save_search and
+        can_save_search = (can_save_search and 
                            not self._cw.session.anonymous_session)
 
-        # Check we have a none empty rset and a valid vid
+        # Check we have a valid vid
         if vid is None:
             vid = self._cw.form.get("vid")
 
@@ -80,7 +100,7 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
                                hiddens={}, **self.cw_extra_kwargs)
 
     def search_link(self, rset):
-        """ Method that generates a the url of the CWSearch form we want to save.
+        """ Method that generates the url of the CWSearch form we want to save.
         """
         # Construct the form path
         # > get rql as url parameter
@@ -97,7 +117,7 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         title = self._cw._("--unique title--")
 
         # Create the url to the CWSearch form
-        cls = self._cw.vreg["etypes"].etype_class("CWSearch")
+        cls = self._cw.vreg["etypes"].etype_class("CWSearch")       
         add_url = cls.cw_create_url(self._cw, path=path, title=title,
             __message=(u"Please enter a unique title for the search and click "
                         "on the validate button."))
@@ -111,7 +131,7 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         button = u'<div class="btn-toolbar">'
         button += u'<div class="btn-group-vertical btn-block">'
         button += link
-        button += u'<span class="glyphicon glyphicon-save"></span> {0}'.format(
+        button += u'<span class="glyphicon glyphicon-save"> {0}</span>'.format(
             self._cw._("Save search"))
         button += u'</a></div></div><br />'
 
@@ -138,8 +158,8 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
 class HelpCWSearchBox(component.CtxComponent):
     """ Class that display a help box to download a cwsearch.
 
-    The global class parameter _message can be tuned to display a custom help
-    message.
+    A message is displayed when a new CWSearch is created. The global class
+    parameter '_message' can be tuned to display a custom help message.
     """
     __regid__ = "help-cw-search"
     __select__ = is_instance("CWSearch")
@@ -150,6 +170,8 @@ class HelpCWSearchBox(component.CtxComponent):
                  "FileZilla.")
 
     def render_body(self, w):
+        """ Display the help message in the web page.
+        """
         w(u'<div class="help-cw-search">')
         w(self._message)
         w(u'</div>')
@@ -164,3 +186,4 @@ def registration_callback(vreg):
     vreg.unregister(BookmarksBox)
     vreg.register(SaveCWSearchFilterBox)
     vreg.register(HelpCWSearchBox)
+

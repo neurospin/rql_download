@@ -17,7 +17,7 @@ from cubicweb.web.views.json import JsonMixIn
 ###############################################################################
 
 class CWSearchRsetView(View):
-    """ Create a new CWSearch entity.
+    """ Create a new CWSearch entity by calling this view.
     """
     __regid__ = "cwsearchexport"
     title = _("cwsearch-export-view")
@@ -27,12 +27,16 @@ class CWSearchRsetView(View):
 
         Check if the request has already been registered and create a unique
         title.
+
+        .. note::
+
+            Expect a 'path' parameter.
         """
         # Get the CWSearch entity parameters from the url 'path'
         params_dict = self._cw.form
-        if "path" not in params_dict or "title" not in params_dict:
+        if "path" not in params_dict:
             raise ValueError("A CWSearch entity is composed of a 'path' "
-                             "and a 'title' attributes.")
+                             "attribute.")
 
         # Get all the user CWSearch in the database
         rset = self._cw.execute(
@@ -70,14 +74,14 @@ class CWSearchRsetView(View):
                                    path=rql)
 
 
-class FuseConfigView(JsonMixIn, View):
+class CubicwebConfigView(JsonMixIn, View):
     """ Dumps the fuse configuration in JSON format.
     """
-    __regid__ = "fuseexport"
-    title = _('fuse-export-view')
+    __regid__ = "cwexport"
+    title = _("cubicweb-export-view")
 
     def call(self):
-        """ Dumps the fuse configuration.
+        """ Dumps some items of the cubicweb configuration.
         """
         rset = {
         #    "mountdir": self._cw.vreg.config["mountdir"],

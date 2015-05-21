@@ -18,6 +18,7 @@ import datetime
 from rql.nodes import Constant, Function
 
 # CW import
+from cubicweb import NotAnEntity
 from cubicweb import Binary, ValidationError
 from cubicweb.server import hook
 from cubicweb.selectors import is_instance
@@ -72,21 +73,21 @@ class CWSearchAdd(hook.Hook):
                 self._find_constant_nodes(node.children, constant_nodes)
 
     def __call__(self):
-        """ Before adding the CWSearch entity, create a 'rset' and a 'result.json'
-        File entities that contain all the filepath attached to the current
-        rql request.
+        """ Before adding the CWSearch entity, create a 'rset' and a 
+        'result.json' File entities that contain all the filepath attached
+        to the current rql request.
         Filepath are found by patching the rql request with the declared
         'rqldownload-adaptors' actions.
         The '__rset_type__' adaptor attribute is used to export the rset.
 
-        When an 'EntityAdaptor' is used, no file are then attached in
+        When an 'ecsvexport' is used, no file are then attached in
         the 'result.json' file.
 
-        .. note::
-            For the moment we consider the first result entity only, we
-            consider the first declared action, and we assume the database
-            intergrity (ie. all file pathes inserted in the db exist on the
-            file system) and thus do not check to speed up the hook.
+        .. warning::
+
+            For the moment we assume the database intergrity (ie. all file
+            paths inserted in the db exist on the file system) and thus do not
+            check to speed up the hook.
         """
         # Get the rql/export type from the CWSearch form
         rql = self.entity.cw_edited.get("path")
@@ -96,41 +97,54 @@ class CWSearchAdd(hook.Hook):
         rset = self._cw.execute(rql)
 
         # Get all the entities
-        entities = [e for e in rset.entities()]
+        entities = {}
+        if rset.rowcount > 0:
+            for rowindex in range(len(rset[0])):
+                try:
+                    entity = rset.get_entity(0, rowindex)
+                    entity_type = entity.__class__.__name__
+                    entities[rowindex] = entity_type
+                except NotAnEntity:
+                    pass
+                except:
+                    raise
         if len(entities) == 0:
             raise ValidationError(
                 "CWSearch", {
                     "entities": _('cannot find any entity for the request '
                                   '{0}'.format(rql))})
-        etype = entities[0].__class__.__name__
 
-        # Find constant nodes
+        # Find the constant nodes
         constant_nodes = {}
         self._find_constant_nodes(rset._rqlst.children, constant_nodes)
 
-        # Select the appropriate action
-        # We consider only one the first rql entity
+        # Check we can associated rset entities with their rql labels
         actions = []
         rql_etypes = constant_nodes.get("etype", {})
-        if etype not in rql_etypes or len(rql_etypes[etype]) != 1:
-            raise ValidationError(
-                "CWSearch", {
-                    "rql": _('cannot find entity description in the request '
-                             '{0}. Expect somethinh like "Any X Where X is '
-                             '{1}, ..."'.format(rql, etype))})
+        for etype in entities.values():
+            if etype not in rql_etypes or len(rql_etypes[etype]) != 1:
+                raise ValidationError(
+                    "CWSearch", {
+                        "rql": _('cannot find entity description in the request '
+                                 '{0}. Expect something like "Any X Where X is '
+                                 '{1}, ..."'.format(rql, etype))})
 
-        # Get the associated rql parameter name: current context
-        parameter_name = rql_etypes[etype][0]
-
-        # Get all the rqldownload declared adaptors
-        possible_actions = self._cw.vreg["actions"]["rqldownload-adaptors"]
+        # Get all the rqldownload declared adapters
+        possible_actions = self._cw.vreg["actions"]["rqldownload-adapters"]
 
         # Keep only actions that respect the current context
-        for action in possible_actions:
-            for selector in action.__select__.selectors:
-                if (isinstance(selector, is_instance) and
-                   etype in selector.expected_etypes):
-                    actions.append((action, parameter_name))
+        actions = {}
+        export_vids = set()
+        for index, etype in entities.items():
+            entity_label = rql_etypes[etype][0]
+            for action in possible_actions:
+                for selector in action.__select__.selectors:
+                    if (isinstance(selector, is_instance) and
+                       etype in selector.expected_etypes):
+                        actions.setdefault(etype, []).append(
+                            (action, entity_label))
+                        export_vids.add(unicode(action.__rset_type__))
+        print actions
 
         # Check that at least one action has been found for this request
         if actions == []:
@@ -139,22 +153,38 @@ class CWSearchAdd(hook.Hook):
                     "actions": _('cannot find an action for this request '
                                  '{0}'.format(rql))})
 
+        # Check that the export types are homogeneous
+        if len(export_vids) != 1:
+            raise ValidationError(
+                "CWSearch", {
+                    "actions": _('cannot deal with different action export '
+                                 'types: {0}'.format(export_vids))})
+        export_vid = export_vids.pop()
+
         # Create an empty result structure
-        result = {"rql": rql, "files": [], "nonexistent-files": []}
+        result = {"rql": rql, "files": [], "nonexistent-files": [],
+                  "upper_file_index": 0}
 
         # Here we want to execute rql request with user permissions: user who
         # is creating this entity
         with self._cw.security_enabled(read=True, write=True):
 
-            # Create the global rql from the first declared action
-            # For the moment do not consider the others
-            action, parameter_name = actions[0]
-
-            # Get the adaptor rset type
-            export_vid = unicode(action.__rset_type__)
+            # Set the adaptor rset type
             self.entity.cw_edited["rset_type"] = export_vid
 
-            global_rql = action(self._cw).rql(rql, parameter_name)
+            # Create the global rql from the declared actions
+            global_rql = rql
+            cnt = 1
+            upper_file_index = 0
+            for etype, action_item in actions.items():
+                for action, entity_label in action_item:
+                    global_rql, nb_files = action(self._cw).rql(
+                        global_rql, entity_label, cnt)
+                    upper_file_index += nb_files
+                    cnt += 1
+            result["upper_file_index"] = upper_file_index
+
+            # Execute the global rql
             rset = self._cw.execute(global_rql)
             result["rql"] = global_rql
 
@@ -185,13 +215,15 @@ class CWSearchAdd(hook.Hook):
             self.entity.cw_edited["rset"] = f_eid
 
             # Get all the files attached to the current request
-            # Note: we assume the database intergrity (ie. all file pathes
+            # Note: we assume the database intergrity (ie. all file paths
             # inserted in the db exist on the file system) and thus do not
             # check to speed up this process.
             files_set = set()
             non_existent_files_set = set()
-            if action.__name__ != "EntityAdaptor":
-                files_set = tuple([row[0] for row in rset.rows])
+            if export_vid != "ecsvexport":
+                for rset_row in rset.rows:
+                    for rset_index in range(upper_file_index):
+                        files_set.add(rset_row[rset_index])
 
             # Update the result structure
             result["files"] = list(files_set)
@@ -208,15 +240,45 @@ class CWSearchAdd(hook.Hook):
 
 
 class CWSearchExpirationDateHook(hook.Hook):
-    __regid__ = 'rsetftp.search_add_expiration_hook'
-    __select__ = hook.Hook.__select__ & is_instance('CWSearch')
-    events = ('before_add_entity', )
+    """ On startup, register a task to add an expiration date to each CWSearch.
+    """
+    __regid__ = "rsetftp.search_add_expiration_hook"
+    __select__ = hook.Hook.__select__ & is_instance("CWSearch")
+    events = ("before_add_entity", )
 
     def __call__(self):
-        if 'expiration_date' not in self.entity.cw_edited:
-            delay = self._cw.vreg.config['default_expiration_delay']
-            self.entity.cw_edited['expiration_date'] = (
+        """ Method to execute the 'CWSearchExpirationDateHook' hook.
+        """
+        if "expiration_date" not in self.entity.cw_edited:
+            delay = self._cw.vreg.config["default_expiration_delay"]
+            self.entity.cw_edited["expiration_date"] = (
                 datetime.date.today() + datetime.timedelta(delay))
+
+
+class CWSearchDelete(hook.Hook):
+    """ On startup, register a task to delete old CWSearch entities.
+    """
+    __regid__ = "rqldownload.search_delete_hook"
+    events = ("server_startup",)
+
+    def __call__(self):
+        """ Method to execute the 'CWSearchDelete' hook.
+        """
+        def cleaning_old_cwsearch(repo):
+            """ Delete all CWSearch entities that have expired.
+            """
+            with repo.internal_cnx() as cnx:
+                cnx.execute(
+                    "DELETE CWSearch S WHERE S expiration_date < today")
+                cnx.commit()
+
+        # Set the cleaning event loop
+        dt = datetime.timedelta(0.5)  # 12h
+        self.repo.looping_task(
+            dt.total_seconds(), cleaning_old_cwsearch, self.repo)
+
+        # Call the clean function manually on the startup
+        cleaning_old_cwsearch(self.repo)
 
 
 ###############################################################################
@@ -280,7 +342,7 @@ class ServerStartupFuseMount(hook.Hook):
         if use_fuse:
 
             # Execute a rql to get all the CWSearch owner logins
-            with self.repo.internal_session() as cnx:
+            with self.repo.internal_cnx() as cnx:
                 rql = "Any L Where S is CWSearch, S owned_by U, U login L"
                 rset = cnx.execute(rql)
                 logins = set([x[0] for x in rset])
@@ -323,42 +385,22 @@ class ServerStartupFuseZombiesLoop(hook.Hook):
 # CW search twisted hook
 ###############################################################################
 
-class ServerStartupHook(hook.Hook):
-    """ On startup, register a task to delete old CWSearch entities.
+class LaunchTwistedFTPServer(hook.Hook):
+    """ On startup launch the twisted sftp server.
+
+    If the option 'start_sftp_server' is set to True in the configuration file
+    execute the the 'twistedserver/main.py' script to start the sftp server.
     """
-    __regid__ = "rqldownload.search_delete_hook"
+    __regid__ = "rqldownload.launch_twisted_server"
     events = ("server_startup",)
 
     def __call__(self):
-        """ Method to execute the 'ServerStartupHook' hook.
+        """ Start the sftp server when starting the instance if the
+        'start_sftp_server' option is set to True.
         """
-        def cleaning_old_cwsearch(repo):
-            """ Delete all CWSearch entities that have expired.
-            """
-            with repo.internal_session() as cnx:
-                cnx.execute(
-                    "DELETE CWSearch S WHERE S expiration_date < today")
-                cnx.commit()
-
-        # Set the cleaning event loop
-        dt = datetime.timedelta(0.5)  # 12h
-        self.repo.looping_task(
-            dt.total_seconds(), cleaning_old_cwsearch, self.repo)
-
-        # Call the clean function manually on the startup
-        cleaning_old_cwsearch(self.repo)
-
-
-class LaunchFTPServer(hook.Hook):
-    """ On startup launch ftp server.
-    """
-    __regid__ = "rqldownload.launch_server"
-    events = ("server_startup",)
-
-    def __call__(self):
         if self.repo.vreg.config["start_sftp_server"]:
             cube_path = osp.dirname(osp.abspath(__file__))
-            ftpserver_path = osp.join(cube_path, "ftpserver/main.py")
+            ftpserver_path = osp.join(cube_path, "twistedserver/main.py")
             basedir_opt = ""
             sftp_server_basedir = self.repo.vreg.config["basedir"]
             if sftp_server_basedir:

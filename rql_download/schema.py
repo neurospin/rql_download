@@ -7,11 +7,30 @@
 # for details.
 ##########################################################################
 
+# Cubicweb import
 from cubicweb.schema import ERQLExpression, RQLUniqueConstraint
 from yams.buildobjs import EntityType, SubjectRelation, String, Date
 
 
 class CWSearch(EntityType):
+    """ An entity used to save a search which may contains resources on the 
+    server file system.
+
+    Attributes
+    ----------
+    title: String (mandatory)
+        a short description of the file.
+    path: String (mandatory)
+        the rql request that will be saved.
+    expiration_data: Date (mandatory)
+        the expiration date of the current search.
+    result: SubjectRelation (mandatory)
+        a json file with all the server resources associated with the current search - {"rql": rql, "files": [], "nonexistent-files": []}
+    rset: SubjectRelation (mandatory)
+        the result set associated with the current search.
+    rset_type: String (optional, default 'jsonexport')
+        the type of the rset.
+    """
     __permissions__ = {
         "read":   ("managers", ERQLExpression("X owned_by U"),),
         "add":    ("managers", "users"),
