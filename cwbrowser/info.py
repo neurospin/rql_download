@@ -8,8 +8,8 @@
 ##########################################################################
 
 # cwbrowser current version
-_version_major = 0
-_version_minor = 2
+_version_major = 1
+_version_minor = 0
 _version_micro = 0
 
 
