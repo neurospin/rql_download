@@ -13,7 +13,8 @@ from cubicweb.web.views.uicfg import autoform_field_kwargs as affk
 
 
 uicfg.autoform_section.hide_fields("CWSearch", ("rset", "result",
-                                                "expiration_date", "rset_type"))
+                                                "expiration_date", "rset_type",
+                                                "path"))
 
 
 def rset_type_choices(form, field, **kw):

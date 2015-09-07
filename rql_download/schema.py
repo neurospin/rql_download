@@ -43,7 +43,8 @@ class CWSearch(EntityType):
                           "X title N, S title N, X owned_by U, X is CWSearch",
                           mainvars="X",
                           msg=_("this name is already used"))
-                  ])
+                  ],
+                   description=_("Please set a unique subset name."))
     path = String(required=True,
                   description=_("the rql request we will save (do not edit "
                                 "this field)."))

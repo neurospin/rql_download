@@ -118,9 +118,7 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
 
         # Create the url to the CWSearch form
         cls = self._cw.vreg["etypes"].etype_class("CWSearch")       
-        add_url = cls.cw_create_url(self._cw, path=path, title=title,
-            __message=(u"Please enter a unique title for the search and click "
-                        "on the validate button."))
+        add_url = cls.cw_create_url(self._cw, path=path, title=title)
 
         base_url = cls.cw_create_url(self._cw, title=title)
         link = (u'<a class="btn btn-primary" cubicweb:target="{0}" '
@@ -132,7 +130,7 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         button += u'<div class="btn-group-vertical btn-block">'
         button += link
         button += u'<span class="glyphicon glyphicon-save"></span> {0}'.format(
-            self._cw._("Save search"))
+            self._cw._("Add subset to my repository"))
         button += u'</a></div></div><br />'
 
         return self.linkbox_template.format(button)
