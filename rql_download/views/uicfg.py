@@ -10,10 +10,11 @@
 from cubicweb.web import formwidgets as fwdgs
 from cubicweb.web.views import uicfg
 from cubicweb.web.views.uicfg import autoform_field_kwargs as affk
-
+from cwsearch import CWSearchPathWidget
 
 uicfg.autoform_section.hide_fields("CWSearch", ("rset", "result",
-                                                "expiration_date", "rset_type"))
+                                                "expiration_date", "rset_type",
+                                                ))
 
 
 def rset_type_choices(form, field, **kw):
@@ -29,3 +30,5 @@ affk.set_field_kwargs("CWSearch", "rset_type",
                       widget=fwdgs.Select(),
                       choices=("jsonexport", ))
                       #choices=rset_type_choices)
+affk.set_field_kwargs("CWSearch", "path",
+                      widget=CWSearchPathWidget)

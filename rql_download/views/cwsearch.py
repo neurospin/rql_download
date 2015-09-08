@@ -75,5 +75,5 @@ class CWSearchPathWidget(FieldWidget):
 
 
 # Associate the CWSearch form widget
-_affk = uicfg.autoform_field_kwargs
-_affk.tag_attribute(("CWSearch", "path"), {"widget": CWSearchPathWidget})
+# _affk = uicfg.autoform_field_kwargs
+# _affk.tag_attribute(("CWSearch", "path"), {"widget": CWSearchPathWidget})
