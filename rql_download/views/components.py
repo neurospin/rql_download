@@ -129,8 +129,9 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         button = u'<div class="btn-toolbar">'
         button += u'<div class="btn-group-vertical btn-block">'
         button += link
-        button += u'<span class="glyphicon glyphicon-save"></span> {0}'.format(
-            self._cw._("Add subset to my repository"))
+        button += u'<span class="glyphicon glyphicon-save" ' \
+                  u'style="width: 25px;"></span>{0}'.format(
+            self._cw._("Add to cart"))
         button += u'</a></div></div><br />'
 
         return self.linkbox_template.format(button)
@@ -164,8 +165,8 @@ class HelpCWSearchBox(component.CtxComponent):
     context = "right"
     order = 0
     title = _("Download Search Help")
-    _message = (u"This is a search result, you can download it via sftp using "
-                 "FileZilla.")
+    _message = (u"This is the content of your cart. You can download each "
+                u"subset using your favorite SFTP client (e.g. FileZilla)")
 
     def render_body(self, w):
         """ Display the help message in the web page.
