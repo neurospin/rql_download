@@ -144,7 +144,6 @@ class CWSearchAdd(hook.Hook):
                         actions.setdefault(etype, []).append(
                             (action, entity_label))
                         export_vids.add(unicode(action.__rset_type__))
-        print actions
 
         # Check that at least one action has been found for this request
         if actions == []:
