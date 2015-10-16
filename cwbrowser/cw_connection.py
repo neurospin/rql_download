@@ -83,7 +83,8 @@ class CWInstanceConnection(object):
         "cw": json.load,
     }
 
-    def __init__(self, url, login, password, realm=None, port=22):
+    def __init__(self, url, login, password, realm=None, port=22,
+                 server_root=os.path.sep):
         """ Initilize the HTTPConnection class.
 
         Parameters
@@ -99,6 +100,9 @@ class CWInstanceConnection(object):
             -> Reseau -> Get)
         port: int (optional default 22)
             the sftp port.
+        server_root: str (optional default '/')
+            the server root directory where the user mount points (chroot) are
+            mapped.
         """
         # Class parameters
         self.url = url
@@ -107,6 +111,7 @@ class CWInstanceConnection(object):
         self.host = self.url.split("/")[2].split(":")[0]
         self.port = port
         self.realm = realm
+        self.server_root = server_root
         self._connect(password)
 
     ###########################################################################
@@ -302,7 +307,7 @@ class CWInstanceConnection(object):
         """
         # Build the mount point
         mount_point = os.path.join(
-            os.path.sep, cw_params["instance_name"])
+            self.server_root, cw_params["instance_name"])
 
         # Get the virtual folder to sync
         virtual_dir_to_sync = os.path.join(mount_point, cwsearch_title)
