@@ -31,7 +31,7 @@ It provides meethods to script requests to a cubicweb database and inherits from
 
 .. |License| image:: https://pypip.in/license/cwbrowser/badge.png
                  :target: https://pypi.python.org/pypi/cwbrowser/
-                :alt: License
+                 :alt: License
 
 
 RQL_download
