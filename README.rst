@@ -37,7 +37,7 @@ It provides meethods to script requests to a cubicweb database and inherits from
 RQL_download
 ------------
 
-This module allows to setup a s-ftp service on the server hosting your database. Thus, all query results are accessible (we use the python_fuse_ package or Twisted_ to build the filesystem) in a definite s-ftp repository. Users can then access and download their data using the s-ftp protocol.
+This module allows to setup a s-ftp service on the server hosting your database. Thus, all query results are accessible (we use the python_fuse_ package or Twisted_ to build the filesystem) through a predefinite s-ftp repository. Users can then access and download their data using the s-ftp protocol.
 
 .. _Twisted: https://pypi.python.org/pypi/Twisted
 .. _python_fuse: https://pypi.python.org/pypi/fuse-python
