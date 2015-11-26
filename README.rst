@@ -16,9 +16,9 @@ CW_Browser
 This module allows remote quering in the database. For more, information, please refer to the |latest_version| in pypi.
 
 
-.. |latest_version| .. image:: https://pypip.in/version/cwbrowser/badge.png
-    :target: https://pypi.python.org/pypi/cwbrowser/
-    :alt: Latest Version
+.. |latest_version| image:: https://pypip.in/version/cwbrowser/badge.png
+                        :target: https://pypi.python.org/pypi/cwbrowser/
+                        :alt: Latest Version
     
 .. image:: https://pypip.in/status/cwbrowser/badge.png
     :target: https://pypi.python.org/pypi/cwbrowser/
