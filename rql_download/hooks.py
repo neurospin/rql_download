@@ -21,7 +21,7 @@ from rql.nodes import Constant, Function
 from cubicweb import NotAnEntity
 from cubicweb import Binary, ValidationError
 from cubicweb.server import hook
-from cubicweb.selectors import is_instance
+from cubicweb.predicates import is_instance
 
 
 ###############################################################################
