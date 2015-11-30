@@ -22,7 +22,7 @@ from rql.nodes import Constant, Function
 from cubicweb import NotAnEntity
 from cubicweb import Binary, ValidationError
 from cubicweb.server import hook
-from cubicweb.selectors import is_instance
+from cubicweb.predicates import is_instance
 
 # Cube import
 from rql_download.fuse.fuse_mount import get_cw_option
@@ -151,7 +151,6 @@ class CWSearchAdd(hook.Hook):
                         actions.setdefault(etype, []).append(
                             (action, entity_label))
                         export_vids.add(unicode(action.__rset_type__))
-        print actions
 
         # Check that at least one action has been found for this request
         if actions == []:
