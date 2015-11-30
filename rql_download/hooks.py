@@ -13,7 +13,6 @@ import sys
 import json
 import os
 import datetime
-import signal
 
 # RQL import
 from rql.nodes import Constant, Function
@@ -409,9 +408,6 @@ class ServerShutdownKillFuseProcess(hook.Hook):
                                             self.repo.schema.name)
             if os.path.isdir(mount_point):
                 os.stat(os.path.join(mount_point, ".kill"))
-
-#                # unmount Fuse
-#                subprocess.Popen(['fusermount', "-u", mount_point])
 
 
 ###############################################################################
