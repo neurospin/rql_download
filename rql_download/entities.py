@@ -14,10 +14,20 @@ import re
 from cubicweb.web.action import Action
 from cubicweb.predicates import is_instance
 from cubicweb import ValidationError
+from cubicweb.entities import AnyEntity
+
+# Container import
+from cubes.rql_download.config import CWSEARCH_RSET_CONTAINER
+from cubes.rql_download.config import CWSEARCH_RESULT_CONTAINER
 
 # Define global adaptor variables
 RQL_DOWNLOAD_EXPORT_ENTITIES = ["Subject"]
 RQL_DOWNLOAD_FSET_ENTITIES = ["Scan", "ProcessingRun", "GenomicMeasure"]
+
+
+class CWSearch(AnyEntity):
+    __regid__ = "CWSearch"
+    container_config = CWSEARCH_RSET_CONTAINER
 
 
 class BaseIDownloadAdapter(Action):

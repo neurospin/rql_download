@@ -116,7 +116,8 @@ class CWSearchAdd(hook.Hook):
 
         # Find the constant nodes
         constant_nodes = {}
-        self._find_constant_nodes(rset._rqlst.children, constant_nodes)
+	
+        self._find_constant_nodes(rset.syntax_tree().children, constant_nodes)
 
         # Check we can associated rset entities with their rql labels
         actions = []
@@ -371,7 +372,10 @@ class ServerStartupFuseZombiesLoop(hook.Hook):
         # Define the cleaning function
         def cleaning_cw_fuse_zombies():
             if "cw_fuse_zombies" in globals():
-                for process in globals()["cw_fuse_zombies"]:
+                fuse_zombies = globals()["cw_fuse_zombies"]
+                if fuse_zombies is None:
+                    fuse_zombies = []
+                for process in fuse_zombies:
                     if process.poll() is not None:
                         process.wait()
                         globals()["cw_fuse_zombies"].remove(process)
