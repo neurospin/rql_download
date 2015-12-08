@@ -4,7 +4,7 @@
 modname = 'rql_download'
 distname = 'cubicweb-rql-download'
 
-numversion = (1, 0, 1)
+numversion = (1, 2, 0)
 version = '.'.join(str(num) for num in numversion)
 
 license = 'LGPL'
