@@ -115,9 +115,6 @@ class VirtualPathTranslator(object):
         # Check we are dealing with a path
         assert path.startswith('/')
 
-        # ToDo: remove
-        print "LIST::", path
-
         # Construct root folder
         if path == "/":
             if self.INSTANCE_NAMES is not None:
@@ -383,8 +380,6 @@ class VirtualPathTranslator(object):
         out: iterator
             each item is 2-uplet of the form (file path, associated rset).        
         """
-        print "--", virtpath
-
         # Do not consider the first level ie. instance level
         #if virtpath.search_name == self.INSTANCE_NAME:
         #    return self.cw_search_names
@@ -761,7 +756,6 @@ class CubicWebSFTPRealm:
         out: tuple
             a 3-uplet of the form (interface, avatarAspect, logout).
         """
-        print "INNNN::", identity, self.cw_repositories
         cw_session_ids = identity[1]
         unix_username = self.conf.get('unix-username')
         user = CubicWebConchUser(unix_username,
