@@ -25,7 +25,8 @@ class CWSearch(EntityType):
     expiration_data: Date (mandatory)
         the expiration date of the current search.
     result: SubjectRelation (mandatory)
-        a json file with all the server resources associated with the current search - {"rql": rql, "files": [], "nonexistent-files": []}
+        a json file with all the server resources associated with the
+        current search - {"rql": rql, "files": [], "nonexistent-files": []}
     rset: SubjectRelation (mandatory)
         the result set associated with the current search.
     rset_type: String (optional, default 'jsonexport')
@@ -56,3 +57,4 @@ class CWSearch(EntityType):
                            composite="subject")
     # view regid to show rset
     rset_type = String(required=True, default="jsonexport", maxsize=50)
+

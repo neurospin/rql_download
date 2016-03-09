@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 ##########################################################################
 # NSAp - Copyright (C) CEA, 2013
 # Distributed under the terms of the CeCILL-B license, as published by
@@ -25,10 +24,12 @@ from cubicweb.web.views.bookmark import BookmarksBox
 # RQL download import
 from cubes.rql_download.entities import RQL_DOWNLOAD_EXPORT_ENTITIES
 from cubes.rql_download.entities import RQL_DOWNLOAD_FSET_ENTITIES
+from cubes.rql_download.entities import RQL_DOWNLOAD_ENTITIES
 
 # Define global search variables
 RQL_DOWNLOAD_SEARCH_ENTITIES = (
-    RQL_DOWNLOAD_EXPORT_ENTITIES + RQL_DOWNLOAD_FSET_ENTITIES)
+    RQL_DOWNLOAD_EXPORT_ENTITIES + RQL_DOWNLOAD_FSET_ENTITIES +
+    RQL_DOWNLOAD_ENTITIES)
 
 
 ###############################################################################
@@ -41,8 +42,9 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
 
     * This component shows up if the current rset is adaptable.
     * This component is integrated in the CW facet component
-    * The global parameters 'RQL_DOWNLOAD_EXPORT_ENTITIES' and
-      'RQL_DOWNLOAD_FSET_ENTITIES' specify which entities can be downloaded
+    * The global parameters 'RQL_DOWNLOAD_ENTITIES',
+      'RQL_DOWNLOAD_EXPORT_ENTITIES' and 'RQL_DOWNLOAD_FSET_ENTITIES' specify
+      which entities can be downloaded
       (ie. are adaptable).
     """
     __regid__ = "facet.filterbox"
@@ -162,7 +164,7 @@ class HelpCWSearchBox(component.CtxComponent):
     """
     __regid__ = "help-cw-search"
     __select__ = is_instance("CWSearch")
-    context = "right"
+    context = "navcontentbottom"
     order = 0
     title = _("Download Search Help")
     _message = (u"This is the content of your cart. You can download each "

@@ -207,7 +207,7 @@ class CWSearchAdd(hook.Hook):
             # Save the rset in a File entity
             f_eid = self._cw.create_entity(
                 "File", data=rset_view,
-                data_format=view.content_type or u"text",
+                data_format=unicode(view.content_type) or u"text",
                 data_name=u"rset").eid
 
             # Entity modification related event: specify that the rset has been
