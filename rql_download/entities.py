@@ -202,6 +202,10 @@ class IEntityFSetAdapter(BaseIDownloadAdapter):
             * reserved keys are 'PATH', 'FENTRIES', 'FILES' postfixed with the
               identifier number.
             * returned files are necessary at the beginning of the adapted rql.
+            * detect if a filter is activated on the FileSets by checking
+              the unique 'filesets' relation: in this case the reserved
+              'FENTRIES' postfixed label is the label associated to the
+              FileSets.
 
         Parameters
         ----------
@@ -239,12 +243,22 @@ class IEntityFSetAdapter(BaseIDownloadAdapter):
         # Remove the begining of the rql in order to complete it
         formated_rql = " ".join(rql.split()[1:])
 
-        # Complete the rql in order to access file pathes
-        global_rql = (
-            "Any {0}, {1}, {2} filesets {3}, {3} external_files {4}, "
-            "{4} filepath {0}".format(reserved_labels[0], formated_rql, 
-                                      parameter_name, reserved_labels[1],
-                                      reserved_labels[2]))
+        # Complete the rql in order to access file pathes:
+        # case 1: a filter is activated on the FileSets
+        # case 2: download all the file sets associated files
+        if "filesets" in formated_rql:
+            fileset_label = formated_rql.split("filesets")[1].split(",")[0]
+            fileset_label = fileset_label.strip()
+            global_rql = (
+                "Any {0}, {1}, {2} external_files {3}, "
+                "{3} filepath {0}".format(reserved_labels[0], formated_rql, 
+                                          fileset_label, reserved_labels[2]))
+        else:
+            global_rql = (
+                "Any {0}, {1}, {2} filesets {3}, {3} external_files {4}, "
+                "{4} filepath {0}".format(reserved_labels[0], formated_rql, 
+                                          parameter_name, reserved_labels[1],
+                                          reserved_labels[2]))
 
         return global_rql, 1
 
