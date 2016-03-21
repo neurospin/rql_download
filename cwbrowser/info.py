@@ -8,9 +8,9 @@
 ##########################################################################
 
 # cwbrowser current version
-_version_major = 1
-_version_minor = 2
-_version_micro = 1
+_version_major = 2
+_version_minor = 0
+_version_micro = 0
 
 
 # Expected by setup.py: string of form "X.Y.Z"
