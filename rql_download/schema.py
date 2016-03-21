@@ -9,7 +9,12 @@
 
 # Cubicweb import
 from cubicweb.schema import ERQLExpression, RQLUniqueConstraint
-from yams.buildobjs import EntityType, SubjectRelation, String, Date
+from yams.buildobjs import EntityType
+from yams.buildobjs import SubjectRelation
+from yams.buildobjs import String
+from yams.buildobjs import Date
+from yams.buildobjs import Bytes
+from yams.buildobjs import RichString
 
 
 class CWSearch(EntityType):
@@ -25,7 +30,8 @@ class CWSearch(EntityType):
     expiration_data: Date (mandatory)
         the expiration date of the current search.
     result: SubjectRelation (mandatory)
-        a json file with all the server resources associated with the current search - {"rql": rql, "files": [], "nonexistent-files": []}
+        a json file with all the server resources associated with the
+        current search - {"rql": rql, "files": [], "nonexistent-files": []}
     rset: SubjectRelation (mandatory)
         the result set associated with the current search.
     rset_type: String (optional, default 'jsonexport')
@@ -56,3 +62,36 @@ class CWSearch(EntityType):
                            composite="subject")
     # view regid to show rset
     rset_type = String(required=True, default="jsonexport", maxsize=50)
+
+
+class File(EntityType):
+    """ A downloadable file which may contains binary data.
+    """
+    __permissions__ = {
+        "read":   ("managers", ERQLExpression("X owned_by U"),),
+        "add":    ("managers", "users"),
+        "delete": ("managers", "owners"),
+        "update": ("managers", "owners"),
+    }
+    title = String(fulltextindexed=True, maxsize=256)
+    data = Bytes(
+        required=True, fulltextindexed=True, description=_("file to upload"))
+    data_format = String(
+        required=True, maxsize=128,
+        description=_("MIME type of the file. Should be dynamically set at "
+                      "upload time."))
+    data_encoding = String(
+        maxsize=32,
+        description=_("encoding of the file when it applies (e.g. text). "
+                      "Should be dynamically set at upload time."))
+    data_name = String(
+        required=True, fulltextindexed=True,
+        description=_("name of the file. Should be dynamically set at upload "
+                      "time."))
+    data_sha1hex = String(
+        maxsize=40,
+        description=_("SHA1 sum of the file. May be set at upload time."))
+    description = RichString(
+        fulltextindexed=True, internationalizable=True,
+        default_format="text/rest")
+

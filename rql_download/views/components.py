@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 ##########################################################################
 # NSAp - Copyright (C) CEA, 2013
 # Distributed under the terms of the CeCILL-B license, as published by
@@ -25,10 +24,12 @@ from cubicweb.web.views.bookmark import BookmarksBox
 # RQL download import
 from cubes.rql_download.entities import RQL_DOWNLOAD_EXPORT_ENTITIES
 from cubes.rql_download.entities import RQL_DOWNLOAD_FSET_ENTITIES
+from cubes.rql_download.entities import RQL_DOWNLOAD_ENTITIES
 
 # Define global search variables
 RQL_DOWNLOAD_SEARCH_ENTITIES = (
-    RQL_DOWNLOAD_EXPORT_ENTITIES + RQL_DOWNLOAD_FSET_ENTITIES)
+    RQL_DOWNLOAD_EXPORT_ENTITIES + RQL_DOWNLOAD_FSET_ENTITIES +
+    RQL_DOWNLOAD_ENTITIES)
 
 
 ###############################################################################
@@ -41,33 +42,31 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
 
     * This component shows up if the current rset is adaptable.
     * This component is integrated in the CW facet component
-    * The global parameters 'RQL_DOWNLOAD_EXPORT_ENTITIES' and
-      'RQL_DOWNLOAD_FSET_ENTITIES' specify which entities can be downloaded
+    * The global parameters 'RQL_DOWNLOAD_ENTITIES',
+      'RQL_DOWNLOAD_EXPORT_ENTITIES' and 'RQL_DOWNLOAD_FSET_ENTITIES' specify
+      which entities can be downloaded
       (ie. are adaptable).
     """
     __regid__ = "facet.filterbox"
     __select__ = (nonempty_rset() | contextview_selector())
     context = "left"
     order = 0
+    visible = True
     title = _("Filter")
 
     linkbox_template = u'<div class="cw_search_box">{0}</div>'
 
-    def render_body(self, w, **kwargs):
-        """ Method that generates the html elements to display the 'Save search'
-        box.
-
-        .. note::
-
-            This method only consider the first registered 'rqldownload-adapters'
-            action to generate the resources associated with the current search.
+    def render(self, w, **kwargs):
+        """ Render the facet box only if something has to be displayed.
         """
-
         # Get the component context
         rset, vid, divid, paginate = self._get_context()
 
         # Check if some facets are defined for this view
-        nb_facet_widgets = len(facets(self._cw, rset, self.__regid__)[1])
+        rql, available_facets = facets(self._cw, rset, self.__regid__)
+        nb_facet_widgets = len(available_facets)
+        if "eid" in rql:
+            nb_facet_widgets = 0
 
         # Check if the view information can be downloaded
         can_save_search = False
@@ -88,14 +87,35 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         can_save_search = (can_save_search and 
                            not self._cw.session.anonymous_session)
 
+        # Display the facet if something has to be displayed
+        if can_save_search or nb_facet_widgets > 0:
+            self.can_save_search = can_save_search
+            self.nb_facet_widgets = nb_facet_widgets
+            self.layout_render(w, **kwargs)
+
+    def render_body(self, w, **kwargs):
+        """ Method that generates the html elements to display the 'Save search'
+        box.
+
+        .. note::
+
+            This method only consider the first registered
+            'rqldownload-adapters' action to generate the resources associated
+            with the current search.
+
+            If the 'eid' attribute is in the RQL do not show the facets.
+        """
+        # Get the component context
+        rset, vid, divid, paginate = self._get_context()
+
         # Check we have a valid vid
         if vid is None:
             vid = self._cw.form.get("vid")
 
         # Create the form url
-        if can_save_search:
+        if self.can_save_search:
             w(self.search_link(rset))
-        if nb_facet_widgets > 0:
+        if self.nb_facet_widgets > 0:
             self.generate_form(w, rset, divid, vid, paginate=paginate,
                                hiddens={}, **self.cw_extra_kwargs)
 
@@ -162,7 +182,7 @@ class HelpCWSearchBox(component.CtxComponent):
     """
     __regid__ = "help-cw-search"
     __select__ = is_instance("CWSearch")
-    context = "right"
+    context = "navcontentbottom"
     order = 0
     title = _("Download Search Help")
     _message = (u"This is the content of your cart. You can download each "
