@@ -6,6 +6,8 @@ Summary
 =======
 
 Cube to download a complete subset of data via sftp (two strategies proposed) and remotely query the database.
+Check `this link <https://neurospin.github.io/rql_download/>`_ for the complete
+documentation.
 
 Content
 =======
