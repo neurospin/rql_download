@@ -518,7 +518,7 @@ class FuseRset(Operations):
         mount_base = get_cw_option(self.instance_name, "mountdir")
         logger.info("Fuse: unmounting {0}".format(os.path.join(mount_base,
                                                                self.login,
-                                                               self.instance))
+                                                               self.instance)))
         subprocess.Popen(['fusermount', "-uz", os.path.join(mount_base,
                                                             self.login,
                                                             self.instance)])
