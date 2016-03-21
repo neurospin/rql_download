@@ -17,9 +17,7 @@ import time
 import pwd
 import logging
 import datetime
-
-# Define the logger
-logger = logging.getLogger("fuse.log-mixin")
+import subprocess
 
 # CW import
 from cubicweb.cwconfig import CubicWebConfiguration as cwcfg
@@ -32,6 +30,8 @@ from cubes.rql_download.fuse.fuse import (FUSE,
                                           ENOTDIR,
                                           EROFS,
                                           ENOTSUP)
+# Define the logger
+logger = logging.getLogger("fuse.log-mixin")
 
 # Define a mapping between cw export vid and file extension
 VID_TO_EXT = {
@@ -46,6 +46,10 @@ VID_TO_EXT = {
 # printed on the log. In order to debug is also necessary to add LoggingMixIn
 # to FuseRset below.
 # from cubes.rql_download.fuse.fuse import LoggingMixIn
+
+
+class Suicide(Exception):
+    pass
 
 
 def get_cw_connection(instance_name):
@@ -507,6 +511,21 @@ class FuseRset(Operations):
         # Message
         logger.debug("! update done")
 
+    def suicide():
+        """
+        unmount Fuse and suicide
+        """
+        mount_base = get_cw_option(self.instance_name, "mountdir")
+        logger.info("Fuse: unmounting {0}".format(os.path.join(mount_base,
+                                                               self.login,
+                                                               self.instance))
+        subprocess.Popen(['fusermount', "-uz", os.path.join(mount_base,
+                                                            self.login,
+                                                            self.instance)])
+
+        # Now kill the process
+        raise Suicide("Servershutdown: self-kill for fuse subprocess")
+
     ########################################################################
     # Filesystem methods
     ########################################################################
@@ -531,6 +550,12 @@ class FuseRset(Operations):
             the virtual direcotry is recreated and the process may not be
             available during this operation.
 
+        .. note::
+            when the stat method is called on the '/.kill' fake folder,
+            the fuse repository is unmounted and the process terminates by
+            raising an exception.
+
+
         Parameters
         ----------
         path: str (mandatory)
@@ -552,6 +577,11 @@ class FuseRset(Operations):
         if path == "/.isalive":
             return fstat
 
+        # kill subprocess (occurs during server shutdown)
+        if path == "./kill":
+            logger.info("killing {0}".format(path))
+            self.suicide()
+
         # Start the fuse update: the process is not avalaible during the update
         elif path == "/.update":
             self.update()
@@ -560,7 +590,7 @@ class FuseRset(Operations):
         return self.vdir.stat(path)
 
     def opendir(self, path):
-        """ Tis method is useless here because the path is always given to
+        """ This method is useless here because the path is always given to
         readdir().
         Always return 0.
         """

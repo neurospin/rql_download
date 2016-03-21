@@ -11,7 +11,7 @@
 import subprocess
 import sys
 import json
-import os.path as osp
+import os
 import datetime
 
 # RQL import
@@ -22,6 +22,8 @@ from cubicweb import NotAnEntity
 from cubicweb import Binary, ValidationError
 from cubicweb.server import hook
 from cubicweb.predicates import is_instance
+
+_ = unicode
 
 
 ###############################################################################
@@ -73,7 +75,7 @@ class CWSearchAdd(hook.Hook):
                 self._find_constant_nodes(node.children, constant_nodes)
 
     def __call__(self):
-        """ Before adding the CWSearch entity, create a 'rset' and a 
+        """ Before adding the CWSearch entity, create a 'rset' and a
         'result.json' File entities that contain all the filepath attached
         to the current rql request.
         Filepath are found by patching the rql request with the declared
@@ -126,8 +128,9 @@ class CWSearchAdd(hook.Hook):
             if etype not in rql_etypes or len(rql_etypes[etype]) != 1:
                 raise ValidationError(
                     "CWSearch", {
-                        "rql": _('cannot find entity description in the request '
-                                 '{0}. Expect something like "Any X Where X is '
+                        "rql": _('cannot find entity description in the'
+                                 'request {0}. Expect something like "Any X'
+                                 'Where X is '
                                  '{1}, ..."'.format(rql, etype))})
 
         # Get all the rqldownload declared adapters
@@ -384,6 +387,30 @@ class ServerStartupFuseZombiesLoop(hook.Hook):
         self.repo.looping_task(dt.total_seconds(), cleaning_cw_fuse_zombies)
 
 
+class ServerShutdownKillFuseProcess(hook.Hook):
+    """
+    When the server is going down, kill the Fuse process and unmount the
+    user's repository. They will be automatically restored when server starts
+    again.
+    """
+    __regid__ = "rqldownload.shutdown_fuse_process"
+    events = ("server_shutdown", )
+
+    def __call__(self):
+        """ Start a loop to clean fuse processes and unmount fuse repository.
+        """
+
+        # get all fuse folders
+        mount_base = self.repo.config.get("mountdir", None)
+
+        for fuse_folder in os.listdir(mount_base):
+            # send the kill signal
+            mount_point = os.path.join(mount_base, fuse_folder,
+                                       self.repo.schema.name)
+            if os.path.isdir(mount_point):
+                os.stat(os.path.join(mount_point, ".kill"))
+
+
 ###############################################################################
 # CW search twisted hook
 ###############################################################################
@@ -402,8 +429,10 @@ class LaunchTwistedFTPServer(hook.Hook):
         'start_sftp_server' option is set to True.
         """
         if self.repo.vreg.config["start_sftp_server"]:
-            cube_path = osp.dirname(osp.abspath(__file__))
-            ftpserver_path = osp.join(cube_path, "twistedserver/main.py")
+            cube_path = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)))
+            ftpserver_path = os.path.join(cube_path,
+                                          "twistedserver/main.py")
             basedir_opt = ""
             sftp_server_basedir = self.repo.vreg.config["basedir"]
             if sftp_server_basedir:
