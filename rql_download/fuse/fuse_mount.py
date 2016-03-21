@@ -519,9 +519,9 @@ class FuseRset(Operations):
         logger.info("Fuse: unmounting {0}".format(os.path.join(mount_base,
                                                                self.login,
                                                                self.instance))
-        subprocess.Popen(['fusermount', "-u", os.path.join(mount_base,
-                                                           self.login,
-                                                           self.instance)])
+        subprocess.Popen(['fusermount', "-uz", os.path.join(mount_base,
+                                                            self.login,
+                                                            self.instance)])
 
         # Now kill the process
         raise Suicide("Servershutdown: self-kill for fuse subprocess")
@@ -553,7 +553,7 @@ class FuseRset(Operations):
         .. note::
             when the stat method is called on the '/.kill' fake folder,
             the fuse repository is unmounted and the process terminates by
-            raisong an exception.
+            raising an exception.
 
 
         Parameters

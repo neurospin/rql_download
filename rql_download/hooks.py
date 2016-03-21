@@ -23,9 +23,6 @@ from cubicweb import Binary, ValidationError
 from cubicweb.server import hook
 from cubicweb.predicates import is_instance
 
-# Cube import
-from rql_download.fuse.fuse_mount import get_cw_option
-
 _ = unicode
 
 
@@ -400,12 +397,12 @@ class ServerShutdownKillFuseProcess(hook.Hook):
         """
 
         # get all fuse folders
-        mount_base = get_cw_option(self.repo.schema.name, "mountdir")
+        mount_base = self.repo.config.get("mountdir", None)
 
         for fuse_folder in os.listdir(mount_base):
             # send the kill signal
-            mount_point = os.path.join.join(mount_base, fuse_folder,
-                                            self.repo.schema.name)
+            mount_point = os.path.join(mount_base, fuse_folder,
+                                       self.repo.schema.name)
             if os.path.isdir(mount_point):
                 os.stat(os.path.join(mount_point, ".kill"))
 
@@ -428,9 +425,10 @@ class LaunchTwistedFTPServer(hook.Hook):
         'start_sftp_server' option is set to True.
         """
         if self.repo.vreg.config["start_sftp_server"]:
-            cube_path = os.path.join.dirname(os.path.join.abspath(__file__))
-            ftpserver_path = os.path.join.join(cube_path,
-                                               "twistedserver/main.py")
+            cube_path = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)))
+            ftpserver_path = os.path.join(cube_path,
+                                          "twistedserver/main.py")
             basedir_opt = ""
             sftp_server_basedir = self.repo.vreg.config["basedir"]
             if sftp_server_basedir:
