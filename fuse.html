@@ -1,0 +1,293 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  
+    <title>RQL Download &mdash; Rql upload</title>
+  <!-- htmltitle is before nature.css - we use this hack to load bootstrap first -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="_static/css/bootstrap.min.css" media="screen" />
+  <link rel="stylesheet" href="_static/css/bootstrap-responsive.css"/>
+
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Rql upload" href="index.html" />
+  
+   
+       <script type="text/javascript" src="_static/sidebar.js"></script>
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="_static/js/bootstrap.min.js" type="text/javascript"></script>
+  <!-- <link rel="canonical" href="https://bioproj.extra.cea.fr/redmine/projects/nsap/fuse.html" /> -->
+
+  <script type="text/javascript">
+    $("div.buttonNext, div.buttonPrevious").hover(
+       function () {
+           $(this).css('background-color', '#FF9C34');
+       },
+       function () {
+           $(this).css('background-color', '#A7D6E2');
+       }
+    );
+    var bodywrapper = $('.bodywrapper');
+    var sidebarbutton = $('#sidebarbutton');
+    sidebarbutton.css({'height': '900px'});
+  </script>
+
+  </head>
+  <body role="document">
+
+<div class="header-wrapper">
+  <div class="header">
+    <p class="logo">
+      <a href="index.html">
+        <img src="_static/nsap.png" alt="Logo"/>
+      </a>
+    </p><div class="navbar">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="installation.html">Installation</a></li>
+        <li class="btn-li">
+          <div class="btn-group">
+		    <a href="documentation.html">Documentation</a>
+		    <a class="btn dropdown-toggle" data-toggle="dropdown">
+		      <span class="caret"></span>
+		    </a>
+		    <ul class="dropdown-menu">
+	          <li class="link-title">RQL Download</li>
+			  <li class="divider"></li>
+			  <li><a href="cwbrowser.html">CWBrowser</a></li>
+			  <li class="divider"></li>
+			  <li><a href="#">Fuse virual folders</a></li>
+			  <li><a href="twisted.html">Twisted SFTP server</a></li>
+			  <li class="divider"></li>
+			  <li><a href="schema.html">Schema modifications</a></li>
+			  <li><a href="views.html">The search mechanism</a></li>
+			  <li class="divider"></li>
+		    </ul>
+		  </div>
+        </li>
+        <li><a href="http://neurospin-wiki.org/">NeuroSpin Wiki</a></li>
+      </ul>
+    </div> <!-- end navbar --></div>
+</div>
+
+
+<div class="content-wrapper">
+    <div class="sphinxsidebar">
+      <div class="sphinxsidebarwrapper">
+
+        <!-- info setup -->
+          <p class="doc-version">
+           This documentation is for Rql Download <strong>version 2.0.0</strong>
+          </p>
+        <p class="citing">
+          If you use the software, please do not hesitate to
+          <a href="https://github.com/neurospin/rql_download">report a bug</a>.
+        </p>
+
+      <!-- toc tree -->
+      <ul>
+<li><a class="reference internal" href="#">Fuse virtual folders</a><ul>
+<li><a class="reference internal" href="#description">Description</a></li>
+<li><a class="reference internal" href="#how-to-use">How to use</a></li>
+<li><a class="reference internal" href="#rql-download-fuse-fuse-virtual-folders"><code class="docutils literal"><span class="pre">rql_download.fuse</span></code>: Fuse virtual folders</a><ul>
+<li><a class="reference internal" href="#fuse">Fuse</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#hooks">Hooks</a></li>
+<li><a class="reference internal" href="#operations">Operations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+      </div>
+    </div>
+  
+
+  <div class="content">
+      
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="fuse-virtual-folders">
+<h1>Fuse virtual folders<a class="headerlink" href="#fuse-virtual-folders" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="description">
+<span id="fuse-ref"></span><h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>In order to expose the content of CWSearch entities, a process (which can be
+started  automatically by cubicweb) can create a virtual folder with the the
+content of the result set associated to the search. The creation of such a
+virtual folder requires the cubicweb and system accounts to be the same
+(to ease this step, cubicweb is able to work with LDAP).</p>
+</div>
+<div class="section" id="how-to-use">
+<span id="fuse-how-to"></span><h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
+<p>During the rql download instanciation or in your instance all-in-one.conf file,
+set the following options to activate the Fuse virtual folders creation from
+CW searches:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>[RQL_DOWNLOAD]
+# specifies expiration delay of CWSearch (in days)
+default_expiration_delay=1
+
+# base directory in which files are stored (this option is given to the ftp
+# server and fuse processes)
+basedir=/tmp
+
+# base directory in which fuse will mount the user virtual directoies
+mountdir=/chroot
+
+# if true cubicweb will start automatically a fuse mount per user when the user
+# has some CWSearch entities.
+start_user_fuse=yes
+</pre></div>
+</div>
+<p>In the &#8216;mountdir&#8217; you have to create a hierarchy for each cw user of the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>-- cw_user_name
+        |
+        -- instance_name
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Each CW user has to be unix user too (you can use LDAP with CW to
+simplify this step).</p>
+</div>
+<p>Then change the mountdir directory rights, in our example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>sudo chown root:root /chroot
+sudo chown root:root /chroot/cw_user_name
+sudo chmod 755 /chroot
+sudo chown 755 /chroot/cw_user_name
+</pre></div>
+</div>
+<p>Configure the ssh service of your machine by editing the &#8216;/etc/ssh/sshd_config&#8217;
+configuration file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>Subsystem sftp internal-sftp #/usr/lib/openssh/sftp-server
+Match Group sftp
+    ChrootDirectory /chroot/%u
+    ForceCommand internal-sftp
+    AllowTcpForwarding no
+    X11Forwarding no
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Sshd will reject SFTP connections from accounts that are set to chroot into
+any directory where ownership/permissions are considered insecure by sshd.</p>
+</div>
+<p>Restart the ssh service:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>sudo service ssh restart
+</pre></div>
+</div>
+<p>If you experience any login issue, check the logs:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">tail</span> <span class="o">-</span><span class="mi">20</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">auth</span><span class="o">.</span><span class="n">log</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="rql-download-fuse-fuse-virtual-folders">
+<span id="fuse-api"></span><h2><code class="xref py py-mod docutils literal"><span class="pre">rql_download.fuse</span></code>: Fuse virtual folders<a class="headerlink" href="#rql-download-fuse-fuse-virtual-folders" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fuse">
+<h3>Fuse<a class="headerlink" href="#fuse" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/twisted/rql_download.fuse.fuse_mount.VirtualDirectory.html#rql_download.fuse.fuse_mount.VirtualDirectory" title="rql_download.fuse.fuse_mount.VirtualDirectory"><code class="xref py py-obj docutils literal"><span class="pre">fuse_mount.VirtualDirectory</span></code></a>(root_data_dir)</td>
+<td>Build an internal representation of a full virtual directory to allow easy and fast usge of this directory with fuse.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset" title="rql_download.fuse.fuse_mount.FuseRset"><code class="xref py py-obj docutils literal"><span class="pre">fuse_mount.FuseRset</span></code></a>(instance,&nbsp;login)</td>
+<td>Class that create a mount point containing virtual path representing the CWSearch entities of a cw user.</td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/twisted/rql_download.fuse.fuse_mount.get_cw_connection.html#rql_download.fuse.fuse_mount.get_cw_connection" title="rql_download.fuse.fuse_mount.get_cw_connection"><code class="xref py py-obj docutils literal"><span class="pre">fuse_mount.get_cw_connection</span></code></a>(instance_name)</td>
+<td>Connect to a local instance using an in memory connection.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/twisted/rql_download.fuse.fuse_mount.get_cw_option.html#rql_download.fuse.fuse_mount.get_cw_option" title="rql_download.fuse.fuse_mount.get_cw_option"><code class="xref py py-obj docutils literal"><span class="pre">fuse_mount.get_cw_option</span></code></a>(instance_name,&nbsp;...)</td>
+<td>Get a cw option.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="hooks">
+<h3>Hooks<a class="headerlink" href="#hooks" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/twisted/rql_download.hooks.CWSearchFuseMount.html#rql_download.hooks.CWSearchFuseMount" title="rql_download.hooks.CWSearchFuseMount"><code class="xref py py-obj docutils literal"><span class="pre">hooks.CWSearchFuseMount</span></code></a>(req,&nbsp;event,&nbsp;**kwargs)</td>
+<td>Class that start/update a process specific to a user that mount his CWSearch entities.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/twisted/rql_download.hooks.ServerStartupFuseMount.html#rql_download.hooks.ServerStartupFuseMount" title="rql_download.hooks.ServerStartupFuseMount"><code class="xref py py-obj docutils literal"><span class="pre">hooks.ServerStartupFuseMount</span></code></a>(req,&nbsp;event,&nbsp;...)</td>
+<td>On startup, generate all the fuse mount point associated with CWSearch owners.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/twisted/rql_download.hooks.ServerStartupFuseZombiesLoop.html#rql_download.hooks.ServerStartupFuseZombiesLoop" title="rql_download.hooks.ServerStartupFuseZombiesLoop"><code class="xref py py-obj docutils literal"><span class="pre">hooks.ServerStartupFuseZombiesLoop</span></code></a>(req,&nbsp;...)</td>
+<td>On startup, register a task to clean zombie (defunc) processes stored in the &#8216;cw_fuse_zombies&#8217; global parameter.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="operations">
+<h3>Operations<a class="headerlink" href="#operations" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/twisted/rql_download.hooks.PostCommitFuseOperation.html#rql_download.hooks.PostCommitFuseOperation" title="rql_download.hooks.PostCommitFuseOperation"><code class="xref py py-obj docutils literal"><span class="pre">hooks.PostCommitFuseOperation</span></code></a>(cnx,&nbsp;**kwargs)</td>
+<td>Start/update a fuse process after a CWSearch entity is commited.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer">
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+    &copy; 2015, CWBROWSER developers &lt;antoine.grigis@cea.fr&gt;.
+</div>
+  </body>
+</html>

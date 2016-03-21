@@ -1,0 +1,1347 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  
+    <title>RQL Download &mdash; Rql upload</title>
+  <!-- htmltitle is before nature.css - we use this hack to load bootstrap first -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../../../_static/css/bootstrap.min.css" media="screen" />
+  <link rel="stylesheet" href="../../../_static/css/bootstrap-responsive.css"/>
+
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Rql upload" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+   
+       <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../../../_static/js/bootstrap.min.js" type="text/javascript"></script>
+  <!-- <link rel="canonical" href="https://bioproj.extra.cea.fr/redmine/projects/nsap/_modules/rql_download/twistedserver/server.html" /> -->
+
+  <script type="text/javascript">
+    $("div.buttonNext, div.buttonPrevious").hover(
+       function () {
+           $(this).css('background-color', '#FF9C34');
+       },
+       function () {
+           $(this).css('background-color', '#A7D6E2');
+       }
+    );
+    var bodywrapper = $('.bodywrapper');
+    var sidebarbutton = $('#sidebarbutton');
+    sidebarbutton.css({'height': '900px'});
+  </script>
+
+  </head>
+  <body role="document">
+
+<div class="header-wrapper">
+  <div class="header">
+    <p class="logo">
+      <a href="../../../index.html">
+        <img src="../../../_static/nsap.png" alt="Logo"/>
+      </a>
+    </p><div class="navbar">
+      <ul>
+        <li><a href="../../../index.html">Home</a></li>
+        <li><a href="../../../installation.html">Installation</a></li>
+        <li class="btn-li">
+          <div class="btn-group">
+		    <a href="../../../documentation.html">Documentation</a>
+		    <a class="btn dropdown-toggle" data-toggle="dropdown">
+		      <span class="caret"></span>
+		    </a>
+		    <ul class="dropdown-menu">
+	          <li class="link-title">RQL Download</li>
+			  <li class="divider"></li>
+			  <li><a href="../../../cwbrowser.html">CWBrowser</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../../fuse.html">Fuse virual folders</a></li>
+			  <li><a href="../../../twisted.html">Twisted SFTP server</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../../schema.html">Schema modifications</a></li>
+			  <li><a href="../../../views.html">The search mechanism</a></li>
+			  <li class="divider"></li>
+		    </ul>
+		  </div>
+        </li>
+        <li><a href="http://neurospin-wiki.org/">NeuroSpin Wiki</a></li>
+      </ul>
+    </div> <!-- end navbar --></div>
+</div>
+
+
+<div class="content-wrapper">
+    <div class="sphinxsidebar">
+      <div class="sphinxsidebarwrapper">
+
+        <!-- info setup -->
+          <p class="doc-version">
+           This documentation is for Rql Download <strong>version 2.0.0</strong>
+          </p>
+        <p class="citing">
+          If you use the software, please do not hesitate to
+          <a href="https://github.com/neurospin/rql_download">report a bug</a>.
+        </p>
+
+      <!-- toc tree -->
+      
+
+      </div>
+    </div>
+  
+
+  <div class="content">
+      
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for rql_download.twistedserver.server</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1">##########################################################################</span>
+<span class="c1"># NSAp - Copyright (C) CEA, 2013</span>
+<span class="c1"># Distributed under the terms of the CeCILL-B license, as published by</span>
+<span class="c1"># the CEA-CNRS-INRIA. Refer to the LICENSE file or to</span>
+<span class="c1"># http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html</span>
+<span class="c1"># for details.</span>
+<span class="c1">##########################################################################</span>
+
+<span class="c1"># System import</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="kn">as</span> <span class="nn">osp</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">stat</span>
+<span class="kn">import</span> <span class="nn">posix</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+
+<span class="c1"># Define the logger</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="c1"># Twisted import</span>
+<span class="kn">from</span> <span class="nn">twisted.conch.ls</span> <span class="kn">import</span> <span class="n">lsLine</span>
+<span class="kn">from</span> <span class="nn">twisted.conch.unix</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SSHSessionForUnixConchUser</span><span class="p">,</span> <span class="n">SFTPServerForUnixConchUser</span><span class="p">,</span> <span class="n">UnixConchUser</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">twisted.python</span> <span class="kn">import</span> <span class="n">components</span>
+<span class="kn">from</span> <span class="nn">twisted.cred.portal</span> <span class="kn">import</span> <span class="n">Portal</span><span class="p">,</span> <span class="n">IRealm</span>
+<span class="kn">from</span> <span class="nn">twisted.cred.credentials</span> <span class="kn">import</span> <span class="n">IUsernamePassword</span>
+<span class="kn">from</span> <span class="nn">twisted.cred.checkers</span> <span class="kn">import</span> <span class="n">ICredentialsChecker</span>
+<span class="kn">from</span> <span class="nn">twisted.cred.error</span> <span class="kn">import</span> <span class="n">UnauthorizedLogin</span>
+<span class="kn">from</span> <span class="nn">twisted.conch.interfaces</span> <span class="kn">import</span> <span class="n">ISFTPServer</span><span class="p">,</span> <span class="n">ISFTPFile</span>
+<span class="kn">from</span> <span class="nn">twisted.conch.ssh</span> <span class="kn">import</span> <span class="n">factory</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">session</span>
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">defer</span>
+<span class="kn">from</span> <span class="nn">zope.interface</span> <span class="kn">import</span> <span class="n">implements</span>
+
+<span class="c1"># CW import</span>
+<span class="kn">from</span> <span class="nn">cubicweb</span> <span class="kn">import</span> <span class="n">cwconfig</span>
+<span class="kn">from</span> <span class="nn">cubicweb.server.repository</span> <span class="kn">import</span> <span class="n">Repository</span>
+<span class="kn">from</span> <span class="nn">cubicweb.server.utils</span> <span class="kn">import</span> <span class="n">TasksManager</span>
+
+
+<span class="c1"># Define a mapping between cw export vid and file extension</span>
+<span class="n">VID_TO_EXT</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;csvexport&quot;</span><span class="p">:</span> <span class="s2">&quot;.csv&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;jsonexport&quot;</span><span class="p">:</span> <span class="s2">&quot;.json&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ecsvexport&quot;</span><span class="p">:</span> <span class="s2">&quot;.csv&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ejsonexport&quot;</span><span class="p">:</span> <span class="s2">&quot;.json&quot;</span>
+<span class="p">}</span>
+
+<span class="c1"># Define the virtual path structure</span>
+<span class="n">VirtualPath</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;VirtualPath&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;search_name&#39;</span><span class="p">,</span> <span class="s1">&#39;search_relpath&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;search_basedir&#39;</span><span class="p">,</span> <span class="s1">&#39;search_instance&#39;</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="VirtualPathTranslator"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator">[docs]</a><span class="k">class</span> <span class="nc">VirtualPathTranslator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Responsible to translate virtual path into real one.</span>
+
+<span class="sd">    Suppose to be called from &#39;CubicWebConchUser&#39; through the following methods:</span>
+
+<span class="sd">    * openDirectory</span>
+<span class="sd">    * getAttrs</span>
+<span class="sd">    * realPath</span>
+<span class="sd">    * openFile</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">INSTANCE_NAMES</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">BASE_REAL_DIR</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span>
+    <span class="n">file_perm</span> <span class="o">=</span> <span class="mb">0b1000000100100100</span>
+    <span class="n">dir_perm</span> <span class="o">=</span> <span class="mb">0b100001101101101</span>
+    <span class="n">file_entity_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">r&#39;(request_result)|.+_(\d+)$&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">search_request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the &#39;VirtualPathTranslator&#39; class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        search_request: Search (mandatory)</span>
+<span class="sd">            An in memory user CWSearch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_request</span> <span class="o">=</span> <span class="n">search_request</span>
+
+<div class="viewcode-block" id="VirtualPathTranslator.list_directory"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.list_directory">[docs]</a>    <span class="k">def</span> <span class="nf">list_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method to list a virtual folder.</span>
+
+<span class="sd">        Virtual folders have a common root organization:</span>
+<span class="sd">        </span>
+<span class="sd">        ::</span>
+
+<span class="sd">            instance name</span>
+<span class="sd">                |</span>
+<span class="sd">                ---- CWSearch name</span>
+<span class="sd">                            |</span>
+<span class="sd">                            ---- ...</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: string (mandatory)</span>
+<span class="sd">            the virtual path we want to access.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: iterator</span>
+<span class="sd">            an iterator containing virtual folder description. Each iterator</span>
+<span class="sd">            item is a 3-uplet of the form (basename, longname, stat). </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Create an association between cw rset and db name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rset_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">key</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">),</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">INSTANCE_NAMES</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_request</span><span class="o">.</span><span class="n">get_searches</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_cw_search_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">rset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rset_map</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">all_cw_search_names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rset</span><span class="p">])</span>
+
+        <span class="c1"># Check we are dealing with a path</span>
+        <span class="k">assert</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="c1"># ToDo: remove</span>
+        <span class="c1"># print &quot;LIST::&quot;, path</span>
+
+        <span class="c1"># Construct root folder</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">INSTANCE_NAMES</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">root_virtual_folders</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+                                        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">INSTANCE_NAMES</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">root_virtual_folders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cw_search_names</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">root_virtual_folders</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="s2">&quot;/{0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+                <span class="k">yield</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span>
+                       <span class="n">lsLine</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">s</span><span class="p">),</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">attrs_from_stat</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+
+        <span class="c1"># Construct search folders if root contains instances</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">INSTANCE_NAMES</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span>
+              <span class="n">path</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">INSTANCE_NAMES</span><span class="p">):</span>
+            <span class="c1"># Get the proper rset</span>
+            <span class="n">rset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rset_map</span><span class="p">[</span><span class="n">path</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)]</span>
+            <span class="n">cw_search_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rset</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">cw_search_names</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="s1">&#39;/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span>
+                       <span class="n">lsLine</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">s</span><span class="p">),</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">attrs_from_stat</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+
+        <span class="c1"># Otherwise the build the tree based on the file path contained in cw</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">virtpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_virtual_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">session_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">INSTANCE_NAMES</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">virtpath</span><span class="o">.</span><span class="n">search_instance</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">rset_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dir_content</span><span class="p">(</span><span class="n">virtpath</span><span class="p">,</span>
+                                                        <span class="n">session_index</span><span class="p">):</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">rset_file</span><span class="p">:</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">path_is_real</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># retrieve rset binary from database</span>
+                    <span class="n">rset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_request</span><span class="o">.</span><span class="n">get_file_data</span><span class="p">(</span>
+                        <span class="n">file_eid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rset_file</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                        <span class="n">search_name</span><span class="o">=</span><span class="n">virtpath</span><span class="o">.</span><span class="n">search_name</span><span class="p">,</span>
+                        <span class="n">session_index</span><span class="o">=</span><span class="n">session_index</span><span class="p">)</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_file_entity</span><span class="p">(</span><span class="n">rset</span><span class="o">.</span><span class="n">len</span><span class="p">)</span>
+                <span class="n">basename</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                <span class="n">longname</span> <span class="o">=</span> <span class="n">lsLine</span><span class="p">(</span><span class="n">basename</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="p">(</span><span class="n">basename</span><span class="p">,</span> <span class="n">longname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs_from_stat</span><span class="p">(</span><span class="n">s</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="VirtualPathTranslator.real_path"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.real_path">[docs]</a>    <span class="k">def</span> <span class="nf">real_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">virtpath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the real path from a virtual path.</span>
+
+<span class="sd">        Simply concatenate the search basedir set in the configuration file</span>
+<span class="sd">        with the search relpath.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        virtpath: VirtualPath (mandatory)</span>
+<span class="sd">            a virtual path.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: string</span>
+<span class="sd">            the real path on the server.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">virtpath</span><span class="o">.</span><span class="n">search_basedir</span><span class="p">,</span> <span class="n">virtpath</span><span class="o">.</span><span class="n">search_relpath</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VirtualPathTranslator.get_attrs"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.get_attrs">[docs]</a>    <span class="k">def</span> <span class="nf">get_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">followlinks</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return the file state.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        binary_len: int (mandatory)</span>
+<span class="sd">            the size of the file.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: stat_result</span>
+<span class="sd">            the same structure returned by a stat or lstat.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">virtpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_virtual_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_file_entity</span><span class="p">(</span><span class="n">virtpath</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_file_entity</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">followlinks</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs_from_stat</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VirtualPathTranslator.stat_file_entity"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.stat_file_entity">[docs]</a>    <span class="k">def</span> <span class="nf">stat_file_entity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary_len</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return the file state.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        binary_len: int (mandatory)</span>
+<span class="sd">            the size of the file.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: posix.stat_result</span>
+<span class="sd">            the same structure returned by a stat or lstat.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">posix</span><span class="o">.</span><span class="n">stat_result</span><span class="p">((</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_perm</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_ino</span>
+            <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_dev</span>
+            <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_nlink</span>
+            <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_uid</span>
+            <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_gid</span>
+            <span class="n">binary_len</span><span class="p">,</span>  <span class="c1"># st_size</span>
+            <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_atime</span>
+            <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_mtime</span>
+            <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_ctime</span>
+        <span class="p">))</span></div>
+
+<div class="viewcode-block" id="VirtualPathTranslator.get_attrs_file_entity"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.get_attrs_file_entity">[docs]</a>    <span class="k">def</span> <span class="nf">get_attrs_file_entity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get statistical information of a Binary field.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        binary: a Binary entity field (mandatory)</span>
+<span class="sd">            a Binary object.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: dict</span>
+<span class="sd">            a dictionary summarizing the input statistic structure: size -</span>
+<span class="sd">            uid - gid - mtime - atime - permissions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_file_entity</span><span class="p">(</span><span class="n">binary</span><span class="o">.</span><span class="n">len</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs_from_stat</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VirtualPathTranslator.is_file_entity"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.is_file_entity">[docs]</a>    <span class="k">def</span> <span class="nf">is_file_entity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">virtpath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Check if the file is virtual, ie. a Binary cubicweb file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        virtpath: VirtualPath  (mandatory)</span>
+<span class="sd">            a virtual path of the form (search name, search relpath,</span>
+<span class="sd">            search basedir, search instance).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: bool</span>
+<span class="sd">            True if the virtualpath point to a cubicweb file,</span>
+<span class="sd">            False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_entity_re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">virtpath</span><span class="o">.</span><span class="n">search_relpath</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">matched_entity_file_eid</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">matched_rset_file</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">matched_rset_file</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">elif</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">matched_entity_file_eid</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
+
+<div class="viewcode-block" id="VirtualPathTranslator.open_cw_file"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.open_cw_file">[docs]</a>    <span class="k">def</span> <span class="nf">open_cw_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">virtpath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method used to open a virtual cubicweb file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        virtpath: VirtualPath  (mandatory)</span>
+<span class="sd">            a virtual path of the form (search name, search relpath,</span>
+<span class="sd">            search basedir, search instance).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: CubicwebFile</span>
+<span class="sd">            a virtual file containing the Binary field data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">session_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">INSTANCE_NAMES</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">virtpath</span><span class="o">.</span><span class="n">search_instance</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_request</span><span class="o">.</span><span class="n">get_file_data</span><span class="p">(</span>
+            <span class="n">file_eid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">matched_entity_file_eid</span><span class="p">,</span>
+            <span class="n">rset_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">matched_rset_file</span><span class="p">,</span>
+            <span class="n">search_name</span><span class="o">=</span><span class="n">virtpath</span><span class="o">.</span><span class="n">search_name</span><span class="p">,</span>
+            <span class="n">session_index</span><span class="o">=</span><span class="n">session_index</span><span class="p">)</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attrs_file_entity</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">CubicwebFile</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VirtualPathTranslator.stat"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.stat">[docs]</a>    <span class="k">def</span> <span class="nf">stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">followlinks</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">path_is_real</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method to access a path state.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str (mandatory)</span>
+<span class="sd">            a path from which we want to get the associated statistics.</span>
+<span class="sd">        followlinks: int (optional, default 0)</span>
+<span class="sd">            if True the system will follow the symbolic links with the &#39;os.stat&#39;</span>
+<span class="sd">            method,</span>
+<span class="sd">            otherwise the &#39;os.lstat&#39; method is used.</span>
+<span class="sd">        path_is_real: bool (optional, default False)</span>
+<span class="sd">            if True the path really exists on the file system,</span>
+<span class="sd">            otherwise we have a virtual cubicweb path.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: posix.stat_result</span>
+<span class="sd">            the same structure returned by a stat or lstat.     </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path_is_real</span><span class="p">:</span>
+            <span class="n">virtpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_virtual_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">virtpath</span><span class="o">.</span><span class="n">search_name</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span>
+               <span class="n">virtpath</span><span class="o">.</span><span class="n">search_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_cw_search_names</span> <span class="o">+</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">INSTANCE_NAMES</span><span class="p">)):</span>
+                <span class="c1"># raise OSError like os.stat does</span>
+                <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="s1">&#39;No such file or directory: &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">virtpath</span><span class="o">.</span><span class="n">search_relpath</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span> <span class="ow">or</span> <span class="n">virtpath</span><span class="o">.</span><span class="n">search_relpath</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">posix</span><span class="o">.</span><span class="n">stat_result</span><span class="p">((</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dir_perm</span><span class="p">,</span>
+                    <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_ino</span>
+                    <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_dev</span>
+                    <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_nlink</span>
+                    <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_uid</span>
+                    <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_gid</span>
+                    <span class="mi">4096</span><span class="p">,</span>  <span class="c1"># st_size</span>
+                    <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_atime</span>
+                    <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_mtime</span>
+                    <span class="mi">0</span><span class="p">,</span>  <span class="c1"># st_ctime</span>
+                <span class="p">))</span>
+            <span class="n">real_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_path</span><span class="p">(</span><span class="n">virtpath</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">real_path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="k">if</span> <span class="n">followlinks</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">real_path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">lstat</span><span class="p">(</span><span class="n">real_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_ISDIR</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dir_perm</span>
+        <span class="k">elif</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_ISREG</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_perm</span>
+        <span class="k">return</span> <span class="n">posix</span><span class="o">.</span><span class="n">stat_result</span><span class="p">((</span><span class="n">mode</span><span class="p">,)</span> <span class="o">+</span> <span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span></div>
+
+<div class="viewcode-block" id="VirtualPathTranslator.attrs_from_stat"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.attrs_from_stat">[docs]</a>    <span class="k">def</span> <span class="nf">attrs_from_stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Convert a &#39;posix.stat_result&#39; to python dictionary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        s: posix.stat_result (mandatory)</span>
+<span class="sd">            the same structure returned by a stat or lstat.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: dict</span>
+<span class="sd">            a dictionary summarizing the input statistic structure: size -</span>
+<span class="sd">            uid - gid - mtime - atime - permissions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">st_size</span><span class="p">,</span>
+                <span class="s1">&#39;uid&#39;</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">st_uid</span><span class="p">,</span>
+                <span class="s1">&#39;gid&#39;</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">st_gid</span><span class="p">,</span>
+                <span class="s1">&#39;mtime&#39;</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">,</span>
+                <span class="s1">&#39;atime&#39;</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">st_atime</span><span class="p">,</span>
+                <span class="s1">&#39;permissions&#39;</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">st_mode</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="VirtualPathTranslator.dir_content"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.dir_content">[docs]</a>    <span class="k">def</span> <span class="nf">dir_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">virtpath</span><span class="p">,</span> <span class="n">session_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get complete file paths of files located in a virtual directory.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        virtpath: VirtualPath  (mandatory)</span>
+<span class="sd">            a virtual path of the form (search name, search relpath,</span>
+<span class="sd">            search basedir, search instance).</span>
+<span class="sd">        session_index: int (mandatory)</span>
+<span class="sd">            an index pointing to the instance of interest.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: iterator</span>
+<span class="sd">            each item is 2-uplet of the form (file path, associated rset).        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># print &quot;--&quot;, virtpath</span>
+
+        <span class="c1"># Do not consider the first level ie. instance level</span>
+        <span class="c1">#if virtpath.search_name == self.INSTANCE_NAME:</span>
+        <span class="c1">#    return self.cw_search_names</span>
+
+        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_request</span><span class="o">.</span><span class="n">get_files</span><span class="p">(</span><span class="n">virtpath</span><span class="p">,</span> <span class="n">session_index</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">files</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_files</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_path</span><span class="p">(</span><span class="n">virtpath</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="VirtualPathTranslator.split_virtual_path"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.split_virtual_path">[docs]</a>    <span class="k">def</span> <span class="nf">split_virtual_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Extract the name of a Search Entity from path.</span>
+
+<span class="sd">        This name is expected to be the first part of path if no instance name</span>
+<span class="sd">        are given, second one otherwise.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: string (mandatory)</span>
+<span class="sd">            the virtual path we want to split.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: VirtualPath</span>
+<span class="sd">            the virtual path built from the input path, ie. a 4-uplet of the</span>
+<span class="sd">            form (search name, search relpath, search basedir, search instance).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check we are dealing with a path</span>
+        <span class="k">assert</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+
+        <span class="c1"># Split the path</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+
+        <span class="c1"># No instance name provided or initialization of the other case</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">INSTANCE_NAMES</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">VirtualPath</span><span class="p">(</span>
+                <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">BASE_REAL_DIR</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="c1"># Instance name provided: one extra level in the virtual tree</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">VirtualPath</span><span class="p">(</span>
+                <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">:]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">BASE_REAL_DIR</span><span class="p">,</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="VirtualPathTranslator.filter_files"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html#rql_download.twistedserver.server.VirtualPathTranslator.filter_files">[docs]</a>    <span class="k">def</span> <span class="nf">filter_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Extract files which are located in a directory defined by path.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        files: list of 2-uplet (mandatory)</span>
+<span class="sd">            a list of files formated in a 2-uplet of the form (path, is_virtual).</span>
+<span class="sd">        path: string (mandatory)</span>
+<span class="sd">            the associated dir real path.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: iterator</span>
+<span class="sd">            each item is 2-uplet of the form (file path, associated rset).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">rset_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="n">filepath</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="n">f</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">):]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">filepath</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">rset_file</span>
+                    <span class="n">res</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="CubicWebConchUser"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebConchUser.html#rql_download.twistedserver.server.CubicWebConchUser">[docs]</a><span class="k">class</span> <span class="nc">CubicWebConchUser</span><span class="p">(</span><span class="n">UnixConchUser</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Class to create a cubicweb user.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unix_username</span><span class="p">,</span> <span class="n">cw_session_ids</span><span class="p">,</span> <span class="n">login</span><span class="p">,</span> <span class="n">cw_instance_names</span><span class="p">,</span>
+                 <span class="n">cw_repositories</span><span class="p">,</span> <span class="n">base_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the CubicWebConchUser class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        unix_username: str (mandatory)</span>
+<span class="sd">            the sftp server will read file system with the permission</span>
+<span class="sd">            associated to this user.            </span>
+<span class="sd">        cw_session_ids: list of str (mandatory)</span>
+<span class="sd">            the cubicweb sessions identifiers.</span>
+<span class="sd">        login: str (mandatory)</span>
+<span class="sd">            the cubicweb user login.</span>
+<span class="sd">        cw_instance_names: list of str (mandatory)</span>
+<span class="sd">            the cubicweb instance names.</span>
+<span class="sd">        cw_repositories: cubicweb.server.repository.Repository (mandatory)</span>
+<span class="sd">            internal cubicweb connections.</span>
+<span class="sd">        base_dir: str (mandatory)</span>
+<span class="sd">            base directory in which file are stored (it acts as</span>
+<span class="sd">            mask, so every files outside this base_dir will be</span>
+<span class="sd">            invisible).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Inheritance</span>
+        <span class="n">UnixConchUser</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unix_username</span><span class="p">)</span>
+
+        <span class="c1"># Class parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">login</span> <span class="o">=</span> <span class="n">login</span>
+
+        <span class="c1"># create the session associated to each repository</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cw_sessions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cw_users</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instance_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">cnt</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                <span class="nb">zip</span><span class="p">(</span><span class="n">cw_session_ids</span><span class="p">,</span> <span class="n">cw_repositories</span><span class="p">,</span> <span class="n">cw_instance_names</span><span class="p">)):</span>
+
+            <span class="c1"># Unpack items</span>
+            <span class="n">sessionid</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">instance_name</span> <span class="o">=</span> <span class="n">item</span>
+
+            <span class="c1"># Get the corresponding cw session</span>
+            <span class="n">session</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">_get_session</span><span class="p">(</span><span class="n">sessionid</span><span class="p">)</span>  <span class="c1"># XXX private method</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">set_cnxset</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cw_sessions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+
+            <span class="c1"># Get the user entity eid</span>
+            <span class="n">login_eid</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="s2">&quot;Any X WHERE X is CWUser, X login &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">login</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cw_users</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">login_eid</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+            <span class="c1"># Store the instance name: assume the name is unique</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">instance_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instance_name</span><span class="p">)</span>
+
+        <span class="c1"># Create a Search object that provides tools to filter the CWSearch</span>
+        <span class="c1"># elements</span>
+        <span class="n">search_filter</span> <span class="o">=</span> <span class="n">Search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cw_sessions</span><span class="p">,</span> <span class="n">cwusers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cw_users</span><span class="p">)</span>
+
+        <span class="c1"># Create an object to translate the paths contained in the CWSearch</span>
+        <span class="c1"># elements</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_translator</span> <span class="o">=</span> <span class="n">VirtualPathTranslator</span><span class="p">(</span><span class="n">search_filter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_translator</span><span class="o">.</span><span class="n">BASE_REAL_DIR</span> <span class="o">=</span> <span class="n">base_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_translator</span><span class="o">.</span><span class="n">INSTANCE_NAMES</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance_names</span>
+
+<div class="viewcode-block" id="CubicWebConchUser.logout"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebConchUser.html#rql_download.twistedserver.server.CubicWebConchUser.logout">[docs]</a>    <span class="k">def</span> <span class="nf">logout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method to close all the user sessions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cwsession</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cw_sessions</span><span class="p">:</span>
+            <span class="n">cwsession</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&#39;{0}&#39; logout!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CubicWebConchUser._runAsUser"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebConchUser.html#rql_download.twistedserver.server.CubicWebConchUser._runAsUser">[docs]</a>    <span class="k">def</span> <span class="nf">_runAsUser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method to logged-in a user.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">user_is_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getuid</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>  <span class="c1"># for tests</span>
+        <span class="k">if</span> <span class="n">user_is_root</span><span class="p">:</span>
+            <span class="n">euid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">geteuid</span><span class="p">()</span>
+            <span class="n">egid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getegid</span><span class="p">()</span>
+            <span class="n">groups</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getgroups</span><span class="p">()</span>
+            <span class="n">uid</span><span class="p">,</span> <span class="n">gid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getUserGroupId</span><span class="p">()</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">setegid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">seteuid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">setgroups</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getOtherGroups</span><span class="p">())</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">setegid</span><span class="p">(</span><span class="n">gid</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">seteuid</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="p">[(</span><span class="n">f</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kw</span><span class="p">)]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">func</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">or</span> <span class="p">()</span>
+                <span class="n">kw</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">i</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">or</span> <span class="p">{}</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">user_is_root</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">setegid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">seteuid</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">setgroups</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">setegid</span><span class="p">(</span><span class="n">egid</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">seteuid</span><span class="p">(</span><span class="n">euid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span></div></div>
+
+
+<div class="viewcode-block" id="Search"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.Search.html#rql_download.twistedserver.server.Search">[docs]</a><span class="k">class</span> <span class="nc">Search</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Class to access all the file paths associated to a specific user</span>
+<span class="sd">    CWSearch searches.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sessions</span><span class="p">,</span> <span class="n">cwusers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initilaize the Search class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sessions: list of cubicweb sessions (mandatory)</span>
+<span class="sd">            a list of cubicweb sessions.</span>
+<span class="sd">        cwusers: list of int (mandatory)</span>
+<span class="sd">            a list of user eids.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cwsessions</span> <span class="o">=</span> <span class="n">sessions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cwusers</span> <span class="o">=</span> <span class="n">cwusers</span>
+
+<div class="viewcode-block" id="Search.get_files"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.Search.html#rql_download.twistedserver.server.Search.get_files">[docs]</a>    <span class="k">def</span> <span class="nf">get_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">virtpath</span><span class="p">,</span> <span class="n">session_index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return a list of file associated to CWSearch named &#39;search_name&#39;</span>
+<span class="sd">        including rset file which is a pure virtual file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        virtpath: VirtualPath  (mandatory)</span>
+<span class="sd">            a virtual path of the form (search name, search relpath,</span>
+<span class="sd">            search basedir, search instance).</span>
+<span class="sd">        session_index: int (mandatory)</span>
+<span class="sd">            an index pointing to the instance of interest.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        filepaths: list of 2-uplet (mandatory)</span>
+<span class="sd">            a list of files formated in a 2-uplet of the form (path, is_virtual).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get the selected session and user</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cwsessions</span><span class="p">[</span><span class="n">session_index</span><span class="p">]</span>
+        <span class="n">cwuser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cwusers</span><span class="p">[</span><span class="n">session_index</span><span class="p">]</span>
+
+        <span class="c1"># Get all the user CWSearch entities</span>
+        <span class="n">rset</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;Any D WHERE S is CWSearch, S title </span><span class="si">%(title)s</span><span class="s1">, &#39;</span>
+                               <span class="s1">&#39;S owned_by </span><span class="si">%(cwuser)s</span><span class="s1">, &#39;</span>
+                               <span class="s1">&#39;S result F, F data D&#39;</span><span class="p">,</span>
+                               <span class="p">{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">virtpath</span><span class="o">.</span><span class="n">search_name</span><span class="p">,</span>
+                                <span class="s1">&#39;cwuser&#39;</span><span class="p">:</span> <span class="n">cwuser</span><span class="p">})</span>
+
+        <span class="c1"># Reorganize the file paths</span>
+        <span class="n">filepaths</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+                        <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">rset</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())[</span><span class="s2">&quot;files&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Add the rset to the build tree, add the appropriate</span>
+        <span class="c1"># file extension</span>
+        <span class="n">rset</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;Any T WHERE S is CWSearch, S title </span><span class="si">%(title)s</span><span class="s1">, &#39;</span>
+                               <span class="s1">&#39;S rset_type T&#39;</span><span class="p">,</span>
+                               <span class="p">{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">virtpath</span><span class="o">.</span><span class="n">search_name</span><span class="p">})</span>
+        <span class="n">fext</span> <span class="o">=</span> <span class="n">VID_TO_EXT</span><span class="p">[</span><span class="n">rset</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">filepaths</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">virtpath</span><span class="o">.</span><span class="n">search_basedir</span><span class="p">,</span>
+                          <span class="s2">u&quot;request_result&quot;</span> <span class="o">+</span> <span class="n">fext</span><span class="p">),</span> <span class="bp">True</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">filepaths</span></div>
+
+<div class="viewcode-block" id="Search.get_searches"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.Search.html#rql_download.twistedserver.server.Search.get_searches">[docs]</a>    <span class="k">def</span> <span class="nf">get_searches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method to get for each user the result set with the name of the</span>
+<span class="sd">        associated CWSearch entities.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        rsets: list of rset</span>
+<span class="sd">            the search names related to each user.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rsets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">cwsession</span><span class="p">,</span> <span class="n">cwuser</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cwsessions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cwusers</span><span class="p">):</span>
+            <span class="n">rsets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">cwsession</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;Any SN WHERE X is CWSearch, X title SN, &#39;</span>
+                                  <span class="s1">&#39;X owned_by </span><span class="si">%(cwuser)s</span><span class="s1"> &#39;</span><span class="p">,</span>
+                                  <span class="p">{</span><span class="s1">&#39;cwuser&#39;</span><span class="p">:</span> <span class="n">cwuser</span><span class="p">}))</span>
+        <span class="k">return</span> <span class="n">rsets</span></div>
+
+<div class="viewcode-block" id="Search.get_file_data"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.Search.html#rql_download.twistedserver.server.Search.get_file_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_eid</span><span class="p">,</span> <span class="n">rset_file</span><span class="p">,</span> <span class="n">session_index</span><span class="p">,</span>
+                      <span class="n">search_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the Binary data contain in an entity.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file_eid: int (mandatory)</span>
+<span class="sd">            the eid of the entity containing a &#39;data&#39; Binary attribute.</span>
+<span class="sd">        rset_file: bool (mandatory)</span>
+<span class="sd">            True if we want the rset virtual file associated to the CWSearch,</span>
+<span class="sd">            False otherwise.</span>
+<span class="sd">        session_index: int (mandatory)</span>
+<span class="sd">            an index pointing to the instance of interest.</span>
+<span class="sd">        search_name: string (optional, default None)</span>
+<span class="sd">            </span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: Binary or None</span>
+<span class="sd">            the desired Binary data object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get the selected session and user</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cwsessions</span><span class="p">[</span><span class="n">session_index</span><span class="p">]</span>
+        <span class="n">cwuser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cwusers</span><span class="p">[</span><span class="n">session_index</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">rset_file</span><span class="p">:</span>
+            <span class="n">rset</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;Any D WHERE F is File, &#39;</span>
+                                   <span class="s1">&#39;S is CWSearch, S title </span><span class="si">%(title)s</span><span class="s1">, &#39;</span>
+                                   <span class="s1">&#39;S owned_by </span><span class="si">%(cwuser)s</span><span class="s1">, S rset F, &#39;</span>
+                                   <span class="s1">&#39;F data D&#39;</span><span class="p">,</span>
+                                   <span class="p">{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">search_name</span><span class="p">,</span>
+                                    <span class="s1">&#39;cwuser&#39;</span><span class="p">:</span> <span class="n">cwuser</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rset</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;Any D WHERE F is File, &#39;</span>
+                                   <span class="s1">&#39;F eid </span><span class="si">%(eid)s</span><span class="s1">, F data D&#39;</span><span class="p">,</span>
+                                   <span class="p">{</span><span class="s1">&#39;eid&#39;</span><span class="p">:</span> <span class="n">file_eid</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">rset</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">rset</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="CubicWebCredentialsChecker"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebCredentialsChecker.html#rql_download.twistedserver.server.CubicWebCredentialsChecker">[docs]</a><span class="k">class</span> <span class="nc">CubicWebCredentialsChecker</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; Check user credentials on a cubicweb instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">credentialInterfaces</span> <span class="o">=</span> <span class="n">IUsernamePassword</span><span class="p">,</span>
+    <span class="n">implements</span><span class="p">(</span><span class="n">ICredentialsChecker</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cw_repositories</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the &#39;CubicWebCredentialsChecker&#39; class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cw_repositories: cubicweb.server.repository.Repository (mandatory)</span>
+<span class="sd">            internal cubicweb connections.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cw_repositories</span> <span class="o">=</span> <span class="n">cw_repositories</span>
+
+<div class="viewcode-block" id="CubicWebCredentialsChecker.requestAvatarId"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebCredentialsChecker.html#rql_download.twistedserver.server.CubicWebCredentialsChecker.requestAvatarId">[docs]</a>    <span class="k">def</span> <span class="nf">requestAvatarId</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">credentials</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the avatar id.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        credentials: (mandatory)</span>
+<span class="sd">            something which implements one of the interfaces in</span>
+<span class="sd">            self.credentialInterfaces.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out:</span>
+<span class="sd">            a Deferred which will fire a string which identifies an avatar,</span>
+<span class="sd">            an empty tuple to specify an authenticated anonymous user</span>
+<span class="sd">            (provided as checkers.ANONYMOUS) or fire a</span>
+<span class="sd">            Failure(UnauthorizedLogin). Alternatively, return the result itself. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">session_ids</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cw_repositories</span><span class="p">:</span>
+                <span class="n">session_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">credentials</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                                                <span class="n">password</span><span class="o">=</span><span class="n">credentials</span><span class="o">.</span><span class="n">password</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Failed to get connection for user {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">credentials</span><span class="o">.</span><span class="n">username</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">defer</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="n">UnauthorizedLogin</span><span class="p">(</span><span class="s2">&quot;Invalid user/password&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">defer</span><span class="o">.</span><span class="n">succeed</span><span class="p">((</span><span class="n">credentials</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session_ids</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="CubicWebSFTPRealm"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebSFTPRealm.html#rql_download.twistedserver.server.CubicWebSFTPRealm">[docs]</a><span class="k">class</span> <span class="nc">CubicWebSFTPRealm</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; A Realm corresponds to an application domain and is in charge of</span>
+<span class="sd">    avatars, which are network-accessible business logic objects.</span>
+
+<span class="sd">    To connect this to an authentication database, a top-level object called</span>
+<span class="sd">    a Portal stores a realm, and a number of credential checkers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">implements</span><span class="p">(</span><span class="n">IRealm</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cw_instance_names</span><span class="p">,</span> <span class="n">cw_repositories</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initilaize the &#39;CubicWebSFTPRealm&#39; class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cw_instance_names: list of str (mandatory)</span>
+<span class="sd">            the cubicweb instance names.</span>
+<span class="sd">        cw_repositories: cubicweb.server.repository.Repository (mandatory)</span>
+<span class="sd">            the internal cubicweb connections.</span>
+<span class="sd">        conf: logilab.common.configuration.Configuration (mandatory)</span>
+<span class="sd">            the server configuration options.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf</span> <span class="o">=</span> <span class="n">conf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cw_instance_names</span> <span class="o">=</span> <span class="n">cw_instance_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cw_repositories</span> <span class="o">=</span> <span class="n">cw_repositories</span>
+
+<div class="viewcode-block" id="CubicWebSFTPRealm.requestAvatar"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebSFTPRealm.html#rql_download.twistedserver.server.CubicWebSFTPRealm.requestAvatar">[docs]</a>    <span class="k">def</span> <span class="nf">requestAvatar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identity</span><span class="p">,</span> <span class="n">mind</span><span class="p">,</span> <span class="o">*</span><span class="n">interfaces</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; This method will typically be called from &#39;Portal.login&#39;.</span>
+
+<span class="sd">        The &#39;identity&#39; is the one returned by a CredentialChecker.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        identity, mind, interfaces: objects (mandatory)</span>
+<span class="sd">            see &#39;twisted.cred.portal.IRealm.requestAvatar&#39;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: tuple</span>
+<span class="sd">            a 3-uplet of the form (interface, avatarAspect, logout).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># print &quot;INNNN::&quot;, identity, self.cw_repositories</span>
+        <span class="n">cw_session_ids</span> <span class="o">=</span> <span class="n">identity</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">unix_username</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;unix-username&#39;</span><span class="p">)</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">CubicWebConchUser</span><span class="p">(</span><span class="n">unix_username</span><span class="p">,</span>
+                                 <span class="n">cw_session_ids</span><span class="o">=</span><span class="n">cw_session_ids</span><span class="p">,</span>
+                                 <span class="n">login</span><span class="o">=</span><span class="n">identity</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                 <span class="n">cw_instance_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cw_instance_names</span><span class="p">,</span>
+                                 <span class="n">cw_repositories</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cw_repositories</span><span class="p">,</span>
+                                 <span class="n">base_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;base-dir&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">interfaces</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">user</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">logout</span></div></div>
+
+
+<div class="viewcode-block" id="CubicWebSSHdFactory"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebSSHdFactory.html#rql_download.twistedserver.server.CubicWebSSHdFactory">[docs]</a><span class="k">class</span> <span class="nc">CubicWebSSHdFactory</span><span class="p">(</span><span class="n">factory</span><span class="o">.</span><span class="n">SSHFactory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Define a factory for SSH servers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the &#39;CubicWebSSHdFactory&#39; class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        conf: logilab.common.configuration.Configuration (mandatory)</span>
+<span class="sd">            the server configuration options.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_keys</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+
+        <span class="c1"># Deal with multiple instances</span>
+        <span class="n">cw_instance_names</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cubicweb-instance&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+        <span class="n">cw_repositories</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">instance_name</span> <span class="ow">in</span> <span class="n">cw_instance_names</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">cwconfig</span><span class="o">.</span><span class="n">instance_configuration</span><span class="p">(</span><span class="n">cw_instance_names</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">cw_repositories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Repository</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">TasksManager</span><span class="p">(),</span> <span class="n">vreg</span><span class="o">=</span><span class="bp">None</span><span class="p">))</span>
+
+        <span class="c1"># A Portal associates one Realm with a collection of CredentialChecker</span>
+        <span class="c1"># instances.</span>
+        <span class="n">portal</span> <span class="o">=</span> <span class="n">Portal</span><span class="p">(</span>
+            <span class="n">CubicWebSFTPRealm</span><span class="p">(</span><span class="n">cw_instance_names</span><span class="p">,</span> <span class="n">cw_repositories</span><span class="p">,</span> <span class="n">conf</span><span class="p">))</span>
+        <span class="n">portal</span><span class="o">.</span><span class="n">registerChecker</span><span class="p">(</span><span class="n">CubicWebCredentialsChecker</span><span class="p">(</span><span class="n">cw_repositories</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">portal</span> <span class="o">=</span> <span class="n">portal</span>
+
+<div class="viewcode-block" id="CubicWebSSHdFactory._init_keys"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebSSHdFactory.html#rql_download.twistedserver.server.CubicWebSSHdFactory._init_keys">[docs]</a>    <span class="k">def</span> <span class="nf">_init_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method to set the public and private keys (as generated by</span>
+<span class="sd">        ssh-keygen).</span>
+
+<span class="sd">        The pass phrase and the path to the public/private key files are</span>
+<span class="sd">        defined in the instance configuration file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        config: logilab.common.configuration.Configuration (mandatory)</span>
+<span class="sd">            the server configuration options.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">passwd</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;passphrase&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">publicKeys</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;ssh-rsa&#39;</span><span class="p">:</span> <span class="n">keys</span><span class="o">.</span><span class="n">Key</span><span class="o">.</span><span class="n">fromFile</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;public-key&#39;</span><span class="p">))</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">privateKeys</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;ssh-rsa&#39;</span><span class="p">:</span> <span class="n">keys</span><span class="o">.</span><span class="n">Key</span><span class="o">.</span><span class="n">fromFile</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;private-key&#39;</span><span class="p">),</span>
+                                         <span class="n">passphrase</span><span class="o">=</span><span class="n">passwd</span><span class="p">)</span>
+        <span class="p">}</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">unauthorized</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_unauthorized</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># XXX find appropriate exception + log username</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;user </span><span class="si">%s</span><span class="s1"> tried to access to method </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">avatar</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;method </span><span class="si">%s</span><span class="s1"> is unauthorized&#39;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_unauthorized</span>
+
+
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer">[docs]</a><span class="k">class</span> <span class="nc">CubicWebProxiedSFTPServer</span><span class="p">(</span><span class="n">SFTPServerForUnixConchUser</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Implements the authorized actions on the sftp server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">implements</span><span class="p">(</span><span class="n">ISFTPServer</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.openFile"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.openFile">[docs]</a>    <span class="k">def</span> <span class="nf">openFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the clients asks to open a file.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            There is no way to indicate text or binary files. It is up</span>
+<span class="sd">            to the SFTP client to deal with this.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename: str (mandatory)</span>
+<span class="sd">            a string representing the file to open.</span>
+<span class="sd">        flags: int (mandatory)</span>
+<span class="sd">            an integer of the flags to open the file with, ORed together.</span>
+<span class="sd">            The flags and their values are listed at the bottom of this file.</span>
+<span class="sd">        attrs: list (mandatory)</span>
+<span class="sd">            a list of attributes to open the file with.  It is a dictionary,</span>
+<span class="sd">            consisting of 0 or more keys. The possible keys are:</span>
+
+<span class="sd">            * size: the size of the file in bytes</span>
+<span class="sd">            * uid: the user ID of the file as an integer</span>
+<span class="sd">            * gid: the group ID of the file as an integer</span>
+<span class="sd">            * permissions: the permissions of the file with as an integer.</span>
+<span class="sd">            * the bit representation of this field is defined by POSIX.</span>
+<span class="sd">            * atime: the access time of the file as seconds since the epoch.</span>
+<span class="sd">            * mtime: the modification time of the file as seconds since the</span>
+<span class="sd">              epoch.</span>
+<span class="sd">            * ext_*: extended attributes.  The server is not required to</span>
+<span class="sd">              understand this, but it may.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: object</span>
+<span class="sd">            an object that meets the ISFTPFile interface. Alternatively,</span>
+<span class="sd">            it can return a L{Deferred} that will be called back with the object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">avatar</span><span class="o">.</span><span class="n">path_translator</span>
+        <span class="n">virtpath</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">split_virtual_path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">is_file_entity</span><span class="p">(</span><span class="n">virtpath</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">open_cw_file</span><span class="p">(</span><span class="n">virtpath</span><span class="p">)</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">real_path</span><span class="p">(</span><span class="n">virtpath</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SFTPServerForUnixConchUser</span><span class="o">.</span><span class="n">openFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span>
+                                                   <span class="n">attrs</span><span class="p">)</span></div>
+
+    <span class="nd">@unauthorized</span>
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.removeFile"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.removeFile">[docs]</a>    <span class="k">def</span> <span class="nf">removeFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Remove the given file.</span>
+
+<span class="sd">        This method returns when the remove succeeds, or a Deferred that is</span>
+<span class="sd">        called back when it succeeds.</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            Unauthorized method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename: str (mandatory)</span>
+<span class="sd">            the name of the file as a string.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+    <span class="nd">@unauthorized</span>
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.renameFile"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.renameFile">[docs]</a>    <span class="k">def</span> <span class="nf">renameFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oldpath</span><span class="p">,</span> <span class="n">newpath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Rename the given file.</span>
+
+<span class="sd">        This method returns when the rename succeeds, or a L{Deferred} that is</span>
+<span class="sd">        called back when it succeeds. If the rename fails, C{renameFile} will</span>
+<span class="sd">        raise an implementation-dependent exception.</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            Unauthorized method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        oldpath: str  (mandatory)</span>
+<span class="sd">            the current location of the file.</span>
+<span class="sd">        newpath: str  (mandatory)</span>
+<span class="sd">            the new file name.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+    <span class="nd">@unauthorized</span>
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.makeDirectory"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.makeDirectory">[docs]</a>    <span class="k">def</span> <span class="nf">makeDirectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Make a directory.</span>
+
+<span class="sd">        This method returns when the directory is created, or a Deferred that</span>
+<span class="sd">        is called back when it is created.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str  (mandatory)</span>
+<span class="sd">            the name of the directory to create as a string.</span>
+<span class="sd">        attrs: dict  (mandatory)</span>
+<span class="sd">            a dictionary of attributes to create the directory with.</span>
+<span class="sd">            Its meaning is the same as the attrs in the L{openFile} method.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+    <span class="nd">@unauthorized</span>
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.removeDirectory"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.removeDirectory">[docs]</a>    <span class="k">def</span> <span class="nf">removeDirectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Remove a directory (non-recursively).</span>
+
+<span class="sd">        It is an error to remove a directory that has files or directories in</span>
+<span class="sd">        it.</span>
+
+<span class="sd">        This method returns when the directory is removed, or a Deferred that</span>
+<span class="sd">        is called back when it is removed.</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            Unauthorized method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str  (mandatory)</span>
+<span class="sd">            the directory to remove.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.openDirectory"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.openDirectory">[docs]</a>    <span class="k">def</span> <span class="nf">openDirectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Open a directory for scanning.</span>
+
+<span class="sd">        This method returns an iterable object that has a close() method,</span>
+<span class="sd">        or a Deferred that is called back with same.</span>
+
+<span class="sd">        The close() method is called when the client is finished reading</span>
+<span class="sd">        from the directory.  At this point, the iterable will no longer</span>
+<span class="sd">        be used.</span>
+
+<span class="sd">        The iterable should return triples of the form (filename,</span>
+<span class="sd">        longname, attrs) or Deferreds that return the same.  The</span>
+<span class="sd">        sequence must support __getitem__, but otherwise may be any</span>
+<span class="sd">        &#39;sequence-like&#39; object.</span>
+
+<span class="sd">        filename is the name of the file relative to the directory.</span>
+<span class="sd">        logname is an expanded format of the filename. The recommended format</span>
+<span class="sd">        is:</span>
+<span class="sd">        -rwxr-xr-x   1 mjos     staff      348911 Mar 25 14:29 t-filexfer</span>
+<span class="sd">        1234567890 123 12345678 12345678 12345678 123456789012</span>
+
+<span class="sd">        The first line is sample output, the second is the length of the field.</span>
+<span class="sd">        The fields are: permissions, link count, user owner, group owner,</span>
+<span class="sd">        size in bytes, modification time.</span>
+
+<span class="sd">        attrs is a dictionary in the format of the attrs argument to openFile.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str  (mandatory)</span>
+<span class="sd">            the directory to open.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">avatar</span><span class="o">.</span><span class="n">path_translator</span><span class="o">.</span><span class="n">list_directory</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.getAttrs"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.getAttrs">[docs]</a>    <span class="k">def</span> <span class="nf">getAttrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">followLinks</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return the attributes for the given path.</span>
+
+<span class="sd">        This method returns a dictionary in the same format as the attrs</span>
+<span class="sd">        argument to openFile or a Deferred that is called back with same.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str  (mandatory)</span>
+<span class="sd">            the path to return attributes for as a string.</span>
+<span class="sd">        followLinks: bool  (mandatory)</span>
+<span class="sd">            If it is True, follow symbolic links.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: dict</span>
+<span class="sd">            If it &#39;followLinks&#39; is True, follow symbolic links and return</span>
+<span class="sd">            attributes for the real path at the base.</span>
+<span class="sd">            If it is False, return attributes for the specified path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># path parameter comes from realPath method</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">avatar</span><span class="o">.</span><span class="n">path_translator</span><span class="o">.</span><span class="n">get_attrs</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">followLinks</span><span class="p">)</span></div>
+
+    <span class="nd">@unauthorized</span>
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.setAttrs"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.setAttrs">[docs]</a>    <span class="k">def</span> <span class="nf">setAttrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the attributes for the path.</span>
+
+<span class="sd">        This method returns when the attributes are set or a Deferred that is</span>
+<span class="sd">        called back when they are.</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            Unauthorized method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str  (mandatory)</span>
+<span class="sd">            the path to set attributes for as a string.</span>
+<span class="sd">        attrs: dict  (mandatory)</span>
+<span class="sd">            a dictionary in the same format as the attrs argument to</span>
+<span class="sd">            L{openFile}.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+    <span class="nd">@unauthorized</span>
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.readLink"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.readLink">[docs]</a>    <span class="k">def</span> <span class="nf">readLink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Find the root of a set of symbolic links.</span>
+
+<span class="sd">        This method returns the target of the link, or a Deferred that</span>
+<span class="sd">        returns the same.</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            Unauthorized method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str  (mandatory)</span>
+<span class="sd">            the path of the symlink to read.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+    <span class="nd">@unauthorized</span>
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.makeLink"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.makeLink">[docs]</a>    <span class="k">def</span> <span class="nf">makeLink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linkPath</span><span class="p">,</span> <span class="n">targetPath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create a symbolic link.</span>
+
+<span class="sd">        This method returns when the link is made, or a Deferred that</span>
+<span class="sd">        returns the same.</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            Unauthorized method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        linkPath: str  (mandatory)</span>
+<span class="sd">            the pathname of the symlink as a string.</span>
+<span class="sd">        targetPath: str  (mandatory)</span>
+<span class="sd">            the path of the target of the link as a string.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.realPath"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.realPath">[docs]</a>    <span class="k">def</span> <span class="nf">realPath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert any path to an absolute path.</span>
+
+<span class="sd">        This method returns the absolute path as a string, or a Deferred</span>
+<span class="sd">        that returns the same.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str  (mandatory)</span>
+<span class="sd">            the path to convert as a string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s1">&#39;.&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;/&#39;</span>
+        <span class="k">return</span> <span class="n">osp</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>  <span class="c1"># handle /toto/..</span></div>
+
+    <span class="nd">@unauthorized</span>
+<div class="viewcode-block" id="CubicWebProxiedSFTPServer.extendedRequest"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicWebProxiedSFTPServer.html#rql_download.twistedserver.server.CubicWebProxiedSFTPServer.extendedRequest">[docs]</a>    <span class="k">def</span> <span class="nf">extendedRequest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extendedName</span><span class="p">,</span> <span class="n">extendedData</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; This is the extension mechanism for SFTP.  The other side can send</span>
+<span class="sd">        us arbitrary requests.</span>
+
+<span class="sd">        If we don&#39;t implement the request given by extendedName, raise</span>
+<span class="sd">        NotImplementedError.</span>
+
+<span class="sd">        The return value is a string, or a Deferred that will be called</span>
+<span class="sd">        back with a string.</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            Unauthorized method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        extendedName: str  (mandatory)</span>
+<span class="sd">            the name of the request as a string.</span>
+<span class="sd">        extendedData: str  (mandatory)</span>
+<span class="sd">            the data the other side sent with the request</span>
+<span class="sd">        &quot;&quot;&quot;</span></div></div>
+
+
+<div class="viewcode-block" id="CubicwebFile"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicwebFile.html#rql_download.twistedserver.server.CubicwebFile">[docs]</a><span class="k">class</span> <span class="nc">CubicwebFile</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; A virtual cubicweb file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">implements</span><span class="p">(</span><span class="n">ISFTPFile</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cw_binary</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binary</span> <span class="o">=</span> <span class="n">cw_binary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span>
+
+<div class="viewcode-block" id="CubicwebFile.close"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicwebFile.html#rql_download.twistedserver.server.CubicwebFile.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Close the file.</span>
+
+<span class="sd">        This method returns nothing if the close succeeds immediately, or a</span>
+<span class="sd">        Deferred that is called back when the close succeeds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="CubicwebFile.readChunk"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicwebFile.html#rql_download.twistedserver.server.CubicwebFile.readChunk">[docs]</a>    <span class="k">def</span> <span class="nf">readChunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Read from the file.</span>
+
+<span class="sd">        If EOF is reached before any data is read, raise EOFError.</span>
+
+<span class="sd">        This method returns the data as a string, or a Deferred that is</span>
+<span class="sd">        called back with same.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        offset: int</span>
+<span class="sd">            an integer that is the index to start from in the file.</span>
+<span class="sd">        length: int:</span>
+<span class="sd">            the maximum length of data to return. The actual amount</span>
+<span class="sd">            returned may be less than this. For normal disk files, however,</span>
+<span class="sd">            this should read the requested number (up to the end of the file).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        data: object</span>
+<span class="sd">            the requested chunk of data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">length</span><span class="p">)</span></div>
+
+    <span class="nd">@unauthorized</span>
+<div class="viewcode-block" id="CubicwebFile.writeChunk"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicwebFile.html#rql_download.twistedserver.server.CubicwebFile.writeChunk">[docs]</a>    <span class="k">def</span> <span class="nf">writeChunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Write to the file.</span>
+
+<span class="sd">        This method returns when the write completes, or a Deferred that is</span>
+<span class="sd">        called when it completes.</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            Unauthorized method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        offset: int</span>
+<span class="sd">            an integer that is the index to start from in the file.</span>
+<span class="sd">        data: str</span>
+<span class="sd">            a string that is the data to write.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="CubicwebFile.getAttrs"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicwebFile.html#rql_download.twistedserver.server.CubicwebFile.getAttrs">[docs]</a>    <span class="k">def</span> <span class="nf">getAttrs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the attributes for the file.</span>
+
+<span class="sd">        This method returns a dictionary in the same format as the attrs</span>
+<span class="sd">        argument to L{openFile} or a L{Deferred} that is called back with same.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out: object</span>
+<span class="sd">            a dictionary in the same format as the attrs argument to</span>
+<span class="sd">            L{openFile} or a L{Deferred} that is called back with same.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span></div>
+
+    <span class="nd">@unauthorized</span>
+<div class="viewcode-block" id="CubicwebFile.setAttrs"><a class="viewcode-back" href="../../../generated/twisted/rql_download.twistedserver.server.CubicwebFile.html#rql_download.twistedserver.server.CubicwebFile.setAttrs">[docs]</a>    <span class="k">def</span> <span class="nf">setAttrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the attributes for the file.</span>
+
+<span class="sd">        This method returns when the attributes are set or a Deferred that is</span>
+<span class="sd">        called back when they are.</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            Unauthorized method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        attrs: dict</span>
+<span class="sd">            a dictionary in the same format as the attrs argument to</span>
+<span class="sd">            L{openFile}.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div></div>
+
+
+<span class="n">components</span><span class="o">.</span><span class="n">registerAdapter</span><span class="p">(</span><span class="n">CubicWebProxiedSFTPServer</span><span class="p">,</span> <span class="n">CubicWebConchUser</span><span class="p">,</span>
+                           <span class="n">ISFTPServer</span><span class="p">)</span>
+<span class="n">components</span><span class="o">.</span><span class="n">registerAdapter</span><span class="p">(</span><span class="n">SSHSessionForUnixConchUser</span><span class="p">,</span> <span class="n">CubicWebConchUser</span><span class="p">,</span>
+                           <span class="n">session</span><span class="o">.</span><span class="n">ISession</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer">
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+    &copy; 2015, CWBROWSER developers &lt;antoine.grigis@cea.fr&gt;.
+</div>
+  </body>
+</html>

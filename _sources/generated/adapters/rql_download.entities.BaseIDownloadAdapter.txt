@@ -1,0 +1,44 @@
+:orphan:
+
+rql_download.entities.BaseIDownloadAdapter
+==========================================
+
+.. currentmodule:: rql_download.entities
+
+.. autoclass:: BaseIDownloadAdapter
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~BaseIDownloadAdapter.__init__
+      ~BaseIDownloadAdapter.actual_actions
+      ~BaseIDownloadAdapter.build_action
+      ~BaseIDownloadAdapter.critical
+      ~BaseIDownloadAdapter.cw_propval
+      ~BaseIDownloadAdapter.debug
+      ~BaseIDownloadAdapter.error
+      ~BaseIDownloadAdapter.exception
+      ~BaseIDownloadAdapter.fill_menu
+      ~BaseIDownloadAdapter.html_class
+      ~BaseIDownloadAdapter.info
+      ~BaseIDownloadAdapter.rql
+      ~BaseIDownloadAdapter.url
+      ~BaseIDownloadAdapter.warning
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~BaseIDownloadAdapter.category
+      ~BaseIDownloadAdapter.order
+      ~BaseIDownloadAdapter.submenu
+    
+    
+

@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  
+    <title>RQL Download &mdash; Rql upload</title>
+  <!-- htmltitle is before nature.css - we use this hack to load bootstrap first -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="_static/css/bootstrap.min.css" media="screen" />
+  <link rel="stylesheet" href="_static/css/bootstrap-responsive.css"/>
+
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Rql upload" href="index.html" />
+    <link rel="next" title="Documentation of the RQL Download tools" href="documentation.html" />
+    <link rel="prev" title="Rql Download" href="index.html" />
+  
+   
+       <script type="text/javascript" src="_static/sidebar.js"></script>
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="_static/js/bootstrap.min.js" type="text/javascript"></script>
+  <!-- <link rel="canonical" href="https://bioproj.extra.cea.fr/redmine/projects/nsap/installation.html" /> -->
+
+  <script type="text/javascript">
+    $("div.buttonNext, div.buttonPrevious").hover(
+       function () {
+           $(this).css('background-color', '#FF9C34');
+       },
+       function () {
+           $(this).css('background-color', '#A7D6E2');
+       }
+    );
+    var bodywrapper = $('.bodywrapper');
+    var sidebarbutton = $('#sidebarbutton');
+    sidebarbutton.css({'height': '900px'});
+  </script>
+
+  </head>
+  <body role="document">
+
+<div class="header-wrapper">
+  <div class="header">
+    <p class="logo">
+      <a href="index.html">
+        <img src="_static/nsap.png" alt="Logo"/>
+      </a>
+    </p><div class="navbar">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="#">Installation</a></li>
+        <li class="btn-li">
+          <div class="btn-group">
+		    <a href="documentation.html">Documentation</a>
+		    <a class="btn dropdown-toggle" data-toggle="dropdown">
+		      <span class="caret"></span>
+		    </a>
+		    <ul class="dropdown-menu">
+	          <li class="link-title">RQL Download</li>
+			  <li class="divider"></li>
+			  <li><a href="cwbrowser.html">CWBrowser</a></li>
+			  <li class="divider"></li>
+			  <li><a href="fuse.html">Fuse virual folders</a></li>
+			  <li><a href="twisted.html">Twisted SFTP server</a></li>
+			  <li class="divider"></li>
+			  <li><a href="schema.html">Schema modifications</a></li>
+			  <li><a href="views.html">The search mechanism</a></li>
+			  <li class="divider"></li>
+		    </ul>
+		  </div>
+        </li>
+        <li><a href="http://neurospin-wiki.org/">NeuroSpin Wiki</a></li>
+      </ul>
+    </div> <!-- end navbar --></div>
+</div>
+
+
+<div class="content-wrapper">
+    <div class="sphinxsidebar">
+      <div class="sphinxsidebarwrapper">
+
+        <!-- info setup -->
+        <p class="citing">
+          If you use the software, please do not hesitate to
+          <a href="https://github.com/neurospin/rql_download">report a bug</a>.
+        </p>
+
+      <!-- toc tree -->
+      <ul>
+<li><a class="reference internal" href="#">Installing <cite>Rql Download</cite></a><ul>
+<li><a class="reference internal" href="#installing-cwbrowser">Installing CWBrowser</a><ul>
+<li><a class="reference internal" href="#installing-a-stable-version">Installing a stable version</a><ul>
+<li><a class="reference internal" href="#install-the-python-package-with-pip">Install the python package with <em>pip</em></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installing-the-current-version">Installing the current version</a><ul>
+<li><a class="reference internal" href="#install-from-github">Install from <em>github</em></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install-rqldownload">Installing rql_download</a><ul>
+<li><a class="reference internal" href="#id2">Installing the current version</a><ul>
+<li><a class="reference internal" href="#id3">Install from <em>github</em></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#make-sure-the-cube-is-in-cubicweb-s-path">Make sure the cube is in CubicWeb&#8217;s path</a></li>
+<li><a class="reference internal" href="#create-an-instance-of-the-cube">Create an instance of the cube</a></li>
+<li><a class="reference internal" href="#change-configuration">Change configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+      </div>
+    </div>
+  
+
+  <div class="content">
+      
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installing-rql-download">
+<span id="install-guid"></span><h1>Installing <cite>Rql Download</cite><a class="headerlink" href="#installing-rql-download" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial will walk you through the process of intalling Rql Download:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>CWBrowser</strong>: a pure Python module.</li>
+<li><strong>rql_download</strong>: a cube that can only be instanciated
+if <a class="reference external" href="https://docs.cubicweb.org/admin/setup">Cubicweb is installed</a>.</li>
+</ul>
+</div></blockquote>
+<p>Have a look at the <a class="reference internal" href="twisted.html#twisted-how-to"><span>twisted SFTP server</span></a> and
+<a class="reference internal" href="fuse.html#fuse-how-to"><span>fuse virtual folders</span></a> configurations.</p>
+<div class="section" id="installing-cwbrowser">
+<span id="install-cwbrowser"></span><h2>Installing CWBrowser<a class="headerlink" href="#installing-cwbrowser" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="installing-a-stable-version">
+<h3>Installing a stable version<a class="headerlink" href="#installing-a-stable-version" title="Permalink to this headline">¶</a></h3>
+<p>This is the best approach for users who want a stable version.</p>
+<div class="section" id="install-the-python-package-with-pip">
+<h4>Install the python package with <em>pip</em><a class="headerlink" href="#install-the-python-package-with-pip" title="Permalink to this headline">¶</a></h4>
+<p><strong>Install the package without the root privilege</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>pip install --user cwbrowser
+</pre></div>
+</div>
+<p><strong>Install the package with the root privilege</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>sudo pip install cwbrowser
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="installing-the-current-version">
+<h3>Installing the current version<a class="headerlink" href="#installing-the-current-version" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="install-from-github">
+<h4>Install from <em>github</em><a class="headerlink" href="#install-from-github" title="Permalink to this headline">¶</a></h4>
+<p><strong>Clone the project</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>cd $CLONEDIR
+git clone https://github.com/neurospin/rql_download.git
+</pre></div>
+</div>
+<p><strong>Update your PYTHONPATH</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>export PYTHONPATH=$CLONE_DIR/rql_download:$PYTHONPATH
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="install-rqldownload">
+<span id="id1"></span><h2>Installing rql_download<a class="headerlink" href="#install-rqldownload" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id2">
+<h3>Installing the current version<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h4>Install from <em>github</em><a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<p><strong>Clone the project</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>cd $CLONEDIR
+git clone https://github.com/neurospin/rql_download.git
+</pre></div>
+</div>
+<p><strong>Update your CW_CUBES_PATH</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>export CW_CUBES_PATH=$CLONE_DIR/rql_download:$CW_CUBES_PATH
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="make-sure-the-cube-is-in-cubicweb-s-path">
+<h3>Make sure the cube is in CubicWeb&#8217;s path<a class="headerlink" href="#make-sure-the-cube-is-in-cubicweb-s-path" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span></span>cubicweb-ctl list
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-an-instance-of-the-cube">
+<h3>Create an instance of the cube<a class="headerlink" href="#create-an-instance-of-the-cube" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span></span>cubicweb-ctl create rql_download toy_instance
+</pre></div>
+</div>
+<p>You can then run the instance in debug mode:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>cubicweb-ctl start -D toy_instance
+</pre></div>
+</div>
+<p>The last line of the prompt will indicate which url the
+instance can be reached by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>(cubicweb.twisted) INFO: instance started on http://url:port/
+</pre></div>
+</div>
+</div>
+<div class="section" id="change-configuration">
+<h3>Change configuration<a class="headerlink" href="#change-configuration" title="Permalink to this headline">¶</a></h3>
+<p>The configuration file is stored on your system:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="o">...</span><span class="n">etc</span><span class="o">/</span><span class="n">cubicweb</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">toy_instance</span><span class="o">/</span><span class="nb">all</span><span class="o">-</span><span class="ow">in</span><span class="o">-</span><span class="n">one</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer">
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+    &copy; 2015, CWBROWSER developers &lt;antoine.grigis@cea.fr&gt;.
+</div>
+  </body>
+</html>

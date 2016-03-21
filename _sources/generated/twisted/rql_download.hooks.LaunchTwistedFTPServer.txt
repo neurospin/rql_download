@@ -1,0 +1,46 @@
+:orphan:
+
+rql_download.hooks.LaunchTwistedFTPServer
+=========================================
+
+.. currentmodule:: rql_download.hooks
+
+.. autoclass:: LaunchTwistedFTPServer
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~LaunchTwistedFTPServer.__init__
+      ~LaunchTwistedFTPServer.check_events
+      ~LaunchTwistedFTPServer.critical
+      ~LaunchTwistedFTPServer.cw_propval
+      ~LaunchTwistedFTPServer.debug
+      ~LaunchTwistedFTPServer.error
+      ~LaunchTwistedFTPServer.exception
+      ~LaunchTwistedFTPServer.filterable_selectors
+      ~LaunchTwistedFTPServer.info
+      ~LaunchTwistedFTPServer.warning
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~LaunchTwistedFTPServer.category
+      ~LaunchTwistedFTPServer.eidfrom
+      ~LaunchTwistedFTPServer.eidto
+      ~LaunchTwistedFTPServer.entity
+      ~LaunchTwistedFTPServer.events
+      ~LaunchTwistedFTPServer.known_args
+      ~LaunchTwistedFTPServer.order
+      ~LaunchTwistedFTPServer.repo
+      ~LaunchTwistedFTPServer.rtype
+    
+    
+

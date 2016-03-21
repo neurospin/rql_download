@@ -1,0 +1,31 @@
+:orphan:
+
+cwbrowser.cw_connection.CWInstanceConnection
+============================================
+
+.. currentmodule:: cwbrowser.cw_connection
+
+.. autoclass:: CWInstanceConnection
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~CWInstanceConnection.__init__
+      ~CWInstanceConnection.execute
+      ~CWInstanceConnection.execute_with_sync
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~CWInstanceConnection.importers
+    
+    
+

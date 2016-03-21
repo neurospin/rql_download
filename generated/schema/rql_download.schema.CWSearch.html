@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  
+    <title>RQL Download &mdash; Rql upload</title>
+  <!-- htmltitle is before nature.css - we use this hack to load bootstrap first -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../../_static/css/bootstrap.min.css" media="screen" />
+  <link rel="stylesheet" href="../../_static/css/bootstrap-responsive.css"/>
+
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Rql upload" href="../../index.html" />
+  
+   
+       <script type="text/javascript" src="../../_static/sidebar.js"></script>
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../../_static/js/bootstrap.min.js" type="text/javascript"></script>
+  <!-- <link rel="canonical" href="https://bioproj.extra.cea.fr/redmine/projects/nsap/generated/schema/rql_download.schema.CWSearch.html" /> -->
+
+  <script type="text/javascript">
+    $("div.buttonNext, div.buttonPrevious").hover(
+       function () {
+           $(this).css('background-color', '#FF9C34');
+       },
+       function () {
+           $(this).css('background-color', '#A7D6E2');
+       }
+    );
+    var bodywrapper = $('.bodywrapper');
+    var sidebarbutton = $('#sidebarbutton');
+    sidebarbutton.css({'height': '900px'});
+  </script>
+
+  </head>
+  <body role="document">
+
+<div class="header-wrapper">
+  <div class="header">
+    <p class="logo">
+      <a href="../../index.html">
+        <img src="../../_static/nsap.png" alt="Logo"/>
+      </a>
+    </p><div class="navbar">
+      <ul>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../installation.html">Installation</a></li>
+        <li class="btn-li">
+          <div class="btn-group">
+		    <a href="../../documentation.html">Documentation</a>
+		    <a class="btn dropdown-toggle" data-toggle="dropdown">
+		      <span class="caret"></span>
+		    </a>
+		    <ul class="dropdown-menu">
+	          <li class="link-title">RQL Download</li>
+			  <li class="divider"></li>
+			  <li><a href="../../cwbrowser.html">CWBrowser</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../fuse.html">Fuse virual folders</a></li>
+			  <li><a href="../../twisted.html">Twisted SFTP server</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../schema.html">Schema modifications</a></li>
+			  <li><a href="../../views.html">The search mechanism</a></li>
+			  <li class="divider"></li>
+		    </ul>
+		  </div>
+        </li>
+        <li><a href="http://neurospin-wiki.org/">NeuroSpin Wiki</a></li>
+      </ul>
+    </div> <!-- end navbar --></div>
+</div>
+
+
+<div class="content-wrapper">
+    <div class="sphinxsidebar">
+      <div class="sphinxsidebarwrapper">
+
+        <!-- info setup -->
+          <p class="doc-version">
+           This documentation is for Rql Download <strong>version 2.0.0</strong>
+          </p>
+        <p class="citing">
+          If you use the software, please do not hesitate to
+          <a href="https://github.com/neurospin/rql_download">report a bug</a>.
+        </p>
+
+      <!-- toc tree -->
+      <ul>
+<li><a class="reference internal" href="#">rql_download.schema.CWSearch</a></li>
+</ul>
+
+
+      </div>
+    </div>
+  
+
+  <div class="content">
+      
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rql-download-schema-cwsearch">
+<h1>rql_download.schema.CWSearch<a class="headerlink" href="#rql-download-schema-cwsearch" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rql_download.schema.CWSearch">
+<em class="property">class </em><code class="descclassname">rql_download.schema.</code><code class="descname">CWSearch</code><span class="sig-paren">(</span><em>name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/schema.html#CWSearch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.schema.CWSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>An entity used to save a search which may contains resources on the 
+server file system.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="43%" />
+<col width="57%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>title: String (mandatory)</td>
+<td>a short description of the file.</td>
+</tr>
+<tr class="row-even"><td>path: String (mandatory)</td>
+<td>the rql request that will be saved.</td>
+</tr>
+<tr class="row-odd"><td>expiration_data: Date (mandatory)</td>
+<td>the expiration date of the current search.</td>
+</tr>
+<tr class="row-even"><td>result: SubjectRelation (mandatory)</td>
+<td>a json file with all the server resources associated with the
+current search - {&#8220;rql&#8221;: rql, &#8220;files&#8221;: [], &#8220;nonexistent-files&#8221;: []}</td>
+</tr>
+<tr class="row-odd"><td>rset: SubjectRelation (mandatory)</td>
+<td>the result set associated with the current search.</td>
+</tr>
+<tr class="row-even"><td>rset_type: String (optional, default &#8216;jsonexport&#8217;)</td>
+<td>the type of the rset.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">__init__</span></code>([name])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">add_relation</span></code>(rdef[,&nbsp;name])</td>
+<td>Add <code class="docutils literal"><span class="pre">rdef</span></code> relation to the class</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">expand_relation_definitions</span></code>(defined,&nbsp;schema)</td>
+<td>schema building step 2:</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">expand_type_definitions</span></code>(defined)</td>
+<td>Schema building step 1: register definition objects by adding them to the <cite>defined</cite> dictionnary.</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">extend</span></code>(othermetadefcls)</td>
+<td>add all relations of <code class="docutils literal"><span class="pre">othermetadefcls</span></code> to the current class</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">get_permissions</span></code>([final])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">get_relation</span></code>(name)</td>
+<td>Return relation definitions by name.</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">get_relations</span></code>(name)</td>
+<td>Iterate over relations definitions that match the <code class="docutils literal"><span class="pre">name</span></code> parameters</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">insert_relation_after</span></code>(afterrelname,&nbsp;name,&nbsp;rdef)</td>
+<td>Add <code class="docutils literal"><span class="pre">rdef</span></code> relation to the class right after another</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">remove_relation</span></code>(name)</td>
+<td>Remove relation from the class</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">set_permissions</span></code>(perms)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">description</span></code></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">meta</span></code></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.schema.CWSearch.package" title="rql_download.schema.CWSearch.package"><code class="xref py py-obj docutils literal"><span class="pre">package</span></code></a></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">specialized_by</span></code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rql_download.schema.CWSearch.__module__">
+<code class="descname">__module__</code><em class="property"> = 'rql_download.schema'</em><a class="headerlink" href="#rql_download.schema.CWSearch.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="rql_download.schema.CWSearch.package">
+<code class="descname">package</code><em class="property"> = '&lt;builtin&gt;'</em><a class="headerlink" href="#rql_download.schema.CWSearch.package" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer">
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+    &copy; 2015, CWBROWSER developers &lt;antoine.grigis@cea.fr&gt;.
+</div>
+  </body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  
+    <title>RQL Download &mdash; Rql upload</title>
+  <!-- htmltitle is before nature.css - we use this hack to load bootstrap first -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../../_static/css/bootstrap.min.css" media="screen" />
+  <link rel="stylesheet" href="../../_static/css/bootstrap-responsive.css"/>
+
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Rql upload" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+  
+   
+       <script type="text/javascript" src="../../_static/sidebar.js"></script>
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../../_static/js/bootstrap.min.js" type="text/javascript"></script>
+  <!-- <link rel="canonical" href="https://bioproj.extra.cea.fr/redmine/projects/nsap/_modules/rql_download/hooks.html" /> -->
+
+  <script type="text/javascript">
+    $("div.buttonNext, div.buttonPrevious").hover(
+       function () {
+           $(this).css('background-color', '#FF9C34');
+       },
+       function () {
+           $(this).css('background-color', '#A7D6E2');
+       }
+    );
+    var bodywrapper = $('.bodywrapper');
+    var sidebarbutton = $('#sidebarbutton');
+    sidebarbutton.css({'height': '900px'});
+  </script>
+
+  </head>
+  <body role="document">
+
+<div class="header-wrapper">
+  <div class="header">
+    <p class="logo">
+      <a href="../../index.html">
+        <img src="../../_static/nsap.png" alt="Logo"/>
+      </a>
+    </p><div class="navbar">
+      <ul>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../installation.html">Installation</a></li>
+        <li class="btn-li">
+          <div class="btn-group">
+		    <a href="../../documentation.html">Documentation</a>
+		    <a class="btn dropdown-toggle" data-toggle="dropdown">
+		      <span class="caret"></span>
+		    </a>
+		    <ul class="dropdown-menu">
+	          <li class="link-title">RQL Download</li>
+			  <li class="divider"></li>
+			  <li><a href="../../cwbrowser.html">CWBrowser</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../fuse.html">Fuse virual folders</a></li>
+			  <li><a href="../../twisted.html">Twisted SFTP server</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../schema.html">Schema modifications</a></li>
+			  <li><a href="../../views.html">The search mechanism</a></li>
+			  <li class="divider"></li>
+		    </ul>
+		  </div>
+        </li>
+        <li><a href="http://neurospin-wiki.org/">NeuroSpin Wiki</a></li>
+      </ul>
+    </div> <!-- end navbar --></div>
+</div>
+
+
+<div class="content-wrapper">
+    <div class="sphinxsidebar">
+      <div class="sphinxsidebarwrapper">
+
+        <!-- info setup -->
+          <p class="doc-version">
+           This documentation is for Rql Download <strong>version 2.0.0</strong>
+          </p>
+        <p class="citing">
+          If you use the software, please do not hesitate to
+          <a href="https://github.com/neurospin/rql_download">report a bug</a>.
+        </p>
+
+      <!-- toc tree -->
+      
+
+      </div>
+    </div>
+  
+
+  <div class="content">
+      
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for rql_download.hooks</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1">##########################################################################</span>
+<span class="c1"># NSAp - Copyright (C) CEA, 2013</span>
+<span class="c1"># Distributed under the terms of the CeCILL-B license, as published by</span>
+<span class="c1"># the CEA-CNRS-INRIA. Refer to the LICENSE file or to</span>
+<span class="c1"># http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html</span>
+<span class="c1"># for details.</span>
+<span class="c1">##########################################################################</span>
+
+<span class="c1"># System import</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="c1"># RQL import</span>
+<span class="kn">from</span> <span class="nn">rql.nodes</span> <span class="kn">import</span> <span class="n">Constant</span><span class="p">,</span> <span class="n">Function</span>
+
+<span class="c1"># CW import</span>
+<span class="kn">from</span> <span class="nn">cubicweb</span> <span class="kn">import</span> <span class="n">NotAnEntity</span>
+<span class="kn">from</span> <span class="nn">cubicweb</span> <span class="kn">import</span> <span class="n">Binary</span><span class="p">,</span> <span class="n">ValidationError</span>
+<span class="kn">from</span> <span class="nn">cubicweb.server</span> <span class="kn">import</span> <span class="n">hook</span>
+<span class="kn">from</span> <span class="nn">cubicweb.predicates</span> <span class="kn">import</span> <span class="n">is_instance</span>
+
+<span class="n">_</span> <span class="o">=</span> <span class="nb">unicode</span>
+
+
+<span class="c1">###############################################################################</span>
+<span class="c1"># CW search main hooks</span>
+<span class="c1">###############################################################################</span>
+
+<div class="viewcode-block" id="CWSearchAdd"><a class="viewcode-back" href="../../generated/schema/rql_download.hooks.CWSearchAdd.html#rql_download.hooks.CWSearchAdd">[docs]</a><span class="k">class</span> <span class="nc">CWSearchAdd</span><span class="p">(</span><span class="n">hook</span><span class="o">.</span><span class="n">Hook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; CubicWeb hook that is called before adding the new CWSearch entity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__regid__</span> <span class="o">=</span> <span class="s2">&quot;rqldownload.search_add_hook&quot;</span>
+    <span class="n">__select__</span> <span class="o">=</span> <span class="n">hook</span><span class="o">.</span><span class="n">Hook</span><span class="o">.</span><span class="n">__select__</span> <span class="o">&amp;</span> <span class="n">is_instance</span><span class="p">(</span><span class="s2">&quot;CWSearch&quot;</span><span class="p">)</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;before_add_entity&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="CWSearchAdd._find_constant_nodes"><a class="viewcode-back" href="../../generated/schema/rql_download.hooks.CWSearchAdd.html#rql_download.hooks.CWSearchAdd._find_constant_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">_find_constant_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">constant_nodes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method that finds all leaf entity constant nodes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nodes: rql.Nodes (mandatory)</span>
+<span class="sd">            the rql structure.</span>
+<span class="sd">        constant_nodes: dict of list of 2-uplet of the form (str, str)</span>
+<span class="sd">            a dict with element types as key containing a list of constant</span>
+<span class="sd">            nodes. Each item of the list is a 2-uplet that contains</span>
+<span class="sd">            the entity name and the rql corresponding variable name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Go through all rql nodes</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+
+            <span class="c1"># Skip function node</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">Function</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># If a leaf constant node is reached</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">Constant</span><span class="p">):</span>
+
+                <span class="c1"># Get the entity name and related parameter name in the rql</span>
+                <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">constant_nodes</span><span class="p">:</span>
+                    <span class="n">constant_nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">rql_type</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span>
+                <span class="n">rql_expression</span> <span class="o">=</span> <span class="n">rql_type</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">children</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="ow">not</span><span class="p">(</span><span class="n">rql_expression</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">rql_type</span><span class="p">)))</span>
+                <span class="n">variable_name</span> <span class="o">=</span> <span class="n">rql_expression</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">constant_nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">type</span><span class="p">]:</span>
+                    <span class="n">constant_nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">type</span><span class="p">][</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">constant_nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">type</span><span class="p">][</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variable_name</span><span class="p">)</span>
+
+            <span class="c1"># Otherwise go deaper</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_find_constant_nodes</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="n">constant_nodes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CWSearchAdd.__call__"><a class="viewcode-back" href="../../generated/schema/rql_download.hooks.CWSearchAdd.html#rql_download.hooks.CWSearchAdd.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Before adding the CWSearch entity, create a &#39;rset&#39; and a</span>
+<span class="sd">        &#39;result.json&#39; File entities that contain all the filepath attached</span>
+<span class="sd">        to the current rql request.</span>
+<span class="sd">        Filepath are found by patching the rql request with the declared</span>
+<span class="sd">        &#39;rqldownload-adaptors&#39; actions.</span>
+<span class="sd">        The &#39;__rset_type__&#39; adaptor attribute is used to export the rset.</span>
+
+<span class="sd">        When an &#39;ecsvexport&#39; is used, no file are then attached in</span>
+<span class="sd">        the &#39;result.json&#39; file.</span>
+
+<span class="sd">        .. warning::</span>
+
+<span class="sd">            For the moment we assume the database intergrity (ie. all file</span>
+<span class="sd">            paths inserted in the db exist on the file system) and thus do not</span>
+<span class="sd">            check to speed up the hook.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get the rql/export type from the CWSearch form</span>
+        <span class="n">rql</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="o">.</span><span class="n">cw_edited</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;path&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Execute the rql</span>
+        <span class="c1"># ToDo: try to get the current request cw_rset</span>
+        <span class="n">rset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">rql</span><span class="p">)</span>
+
+        <span class="c1"># Get all the entities</span>
+        <span class="n">entities</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">rset</span><span class="o">.</span><span class="n">rowcount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">rowindex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rset</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">entity</span> <span class="o">=</span> <span class="n">rset</span><span class="o">.</span><span class="n">get_entity</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rowindex</span><span class="p">)</span>
+                    <span class="n">entity_type</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+                    <span class="n">entities</span><span class="p">[</span><span class="n">rowindex</span><span class="p">]</span> <span class="o">=</span> <span class="n">entity_type</span>
+                <span class="k">except</span> <span class="n">NotAnEntity</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">raise</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+                <span class="s2">&quot;CWSearch&quot;</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="s2">&quot;entities&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;cannot find any entity for the request &#39;</span>
+                                  <span class="s1">&#39;{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rql</span><span class="p">))})</span>
+
+        <span class="c1"># Find the constant nodes</span>
+        <span class="n">constant_nodes</span> <span class="o">=</span> <span class="p">{}</span>
+	
+        <span class="bp">self</span><span class="o">.</span><span class="n">_find_constant_nodes</span><span class="p">(</span><span class="n">rset</span><span class="o">.</span><span class="n">syntax_tree</span><span class="p">()</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="n">constant_nodes</span><span class="p">)</span>
+
+        <span class="c1"># Check we can associated rset entities with their rql labels</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">rql_etypes</span> <span class="o">=</span> <span class="n">constant_nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;etype&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">for</span> <span class="n">etype</span> <span class="ow">in</span> <span class="n">entities</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">etype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rql_etypes</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">rql_etypes</span><span class="p">[</span><span class="n">etype</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+                    <span class="s2">&quot;CWSearch&quot;</span><span class="p">,</span> <span class="p">{</span>
+                        <span class="s2">&quot;rql&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;cannot find entity description in the&#39;</span>
+                                 <span class="s1">&#39;request {0}. Expect something like &quot;Any X&#39;</span>
+                                 <span class="s1">&#39;Where X is &#39;</span>
+                                 <span class="s1">&#39;{1}, ...&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rql</span><span class="p">,</span> <span class="n">etype</span><span class="p">))})</span>
+
+        <span class="c1"># Get all the rqldownload declared adapters</span>
+        <span class="n">possible_actions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">vreg</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">][</span><span class="s2">&quot;rqldownload-adapters&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Keep only actions that respect the current context</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">export_vids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">etype</span> <span class="ow">in</span> <span class="n">entities</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">entity_label</span> <span class="o">=</span> <span class="n">rql_etypes</span><span class="p">[</span><span class="n">etype</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">possible_actions</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">selector</span> <span class="ow">in</span> <span class="n">action</span><span class="o">.</span><span class="n">__select__</span><span class="o">.</span><span class="n">selectors</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">is_instance</span><span class="p">)</span> <span class="ow">and</span>
+                       <span class="n">etype</span> <span class="ow">in</span> <span class="n">selector</span><span class="o">.</span><span class="n">expected_etypes</span><span class="p">):</span>
+                        <span class="n">actions</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">entity_label</span><span class="p">))</span>
+                        <span class="n">export_vids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">unicode</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">__rset_type__</span><span class="p">))</span>
+
+        <span class="c1"># Check that at least one action has been found for this request</span>
+        <span class="k">if</span> <span class="n">actions</span> <span class="o">==</span> <span class="p">[]:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+                <span class="s2">&quot;CWSearch&quot;</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;cannot find an action for this request &#39;</span>
+                                 <span class="s1">&#39;{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rql</span><span class="p">))})</span>
+
+        <span class="c1"># Check that the export types are homogeneous</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">export_vids</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+                <span class="s2">&quot;CWSearch&quot;</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;cannot deal with different action export &#39;</span>
+                                 <span class="s1">&#39;types: {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">export_vids</span><span class="p">))})</span>
+        <span class="n">export_vid</span> <span class="o">=</span> <span class="n">export_vids</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="c1"># Create an empty result structure</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;rql&quot;</span><span class="p">:</span> <span class="n">rql</span><span class="p">,</span> <span class="s2">&quot;files&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;nonexistent-files&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                  <span class="s2">&quot;upper_file_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+
+        <span class="c1"># Here we want to execute rql request with user permissions: user who</span>
+        <span class="c1"># is creating this entity</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">security_enabled</span><span class="p">(</span><span class="n">read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">write</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+
+            <span class="c1"># Set the adaptor rset type</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="o">.</span><span class="n">cw_edited</span><span class="p">[</span><span class="s2">&quot;rset_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">export_vid</span>
+
+            <span class="c1"># Create the global rql from the declared actions</span>
+            <span class="n">global_rql</span> <span class="o">=</span> <span class="n">rql</span>
+            <span class="n">cnt</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">upper_file_index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">etype</span><span class="p">,</span> <span class="n">action_item</span> <span class="ow">in</span> <span class="n">actions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">action</span><span class="p">,</span> <span class="n">entity_label</span> <span class="ow">in</span> <span class="n">action_item</span><span class="p">:</span>
+                    <span class="n">global_rql</span><span class="p">,</span> <span class="n">nb_files</span> <span class="o">=</span> <span class="n">action</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="p">)</span><span class="o">.</span><span class="n">rql</span><span class="p">(</span>
+                        <span class="n">global_rql</span><span class="p">,</span> <span class="n">entity_label</span><span class="p">,</span> <span class="n">cnt</span><span class="p">)</span>
+                    <span class="n">upper_file_index</span> <span class="o">+=</span> <span class="n">nb_files</span>
+                    <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;upper_file_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">upper_file_index</span>
+
+            <span class="c1"># Execute the global rql</span>
+            <span class="n">rset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">global_rql</span><span class="p">)</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;rql&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_rql</span>
+
+            <span class="c1"># Because self._cw is not a cubicwebRequest add an empty form</span>
+            <span class="c1"># parameter</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s2">&quot;form&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">vreg</span><span class="p">[</span><span class="s2">&quot;views&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                    <span class="n">export_vid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="p">,</span> <span class="n">rset</span><span class="o">=</span><span class="n">rset</span><span class="p">)</span>
+                <span class="n">rset_view</span> <span class="o">=</span> <span class="n">Binary</span><span class="p">()</span>
+                <span class="n">view</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">rset_view</span><span class="o">.</span><span class="n">write</span>
+                <span class="n">view</span><span class="o">.</span><span class="n">call</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+                    <span class="s2">&quot;CWSearch&quot;</span><span class="p">,</span> <span class="p">{</span>
+                        <span class="s2">&quot;rset_type&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;cannot apply this view &quot;{0}&quot; on this &#39;</span>
+                                       <span class="s1">&#39;rset, choose another view &#39;</span>
+                                       <span class="s1">&#39;id&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">export_vid</span><span class="p">))})</span>
+
+            <span class="c1"># Save the rset in a File entity</span>
+            <span class="n">f_eid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">create_entity</span><span class="p">(</span>
+                <span class="s2">&quot;File&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">rset_view</span><span class="p">,</span>
+                <span class="n">data_format</span><span class="o">=</span><span class="nb">unicode</span><span class="p">(</span><span class="n">view</span><span class="o">.</span><span class="n">content_type</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">u&quot;text&quot;</span><span class="p">,</span>
+                <span class="n">data_name</span><span class="o">=</span><span class="s2">u&quot;rset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">eid</span>
+
+            <span class="c1"># Entity modification related event: specify that the rset has been</span>
+            <span class="c1"># modified</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="o">.</span><span class="n">cw_edited</span><span class="p">[</span><span class="s2">&quot;rset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_eid</span>
+
+            <span class="c1"># Get all the files attached to the current request</span>
+            <span class="c1"># Note: we assume the database intergrity (ie. all file paths</span>
+            <span class="c1"># inserted in the db exist on the file system) and thus do not</span>
+            <span class="c1"># check to speed up this process.</span>
+            <span class="n">files_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="n">non_existent_files_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">export_vid</span> <span class="o">!=</span> <span class="s2">&quot;ecsvexport&quot;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">rset_row</span> <span class="ow">in</span> <span class="n">rset</span><span class="o">.</span><span class="n">rows</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">rset_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">upper_file_index</span><span class="p">):</span>
+                        <span class="n">files_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">rset_row</span><span class="p">[</span><span class="n">rset_index</span><span class="p">])</span>
+
+            <span class="c1"># Update the result structure</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;files&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">files_set</span><span class="p">)</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;nonexistent-files&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">non_existent_files_set</span><span class="p">)</span>
+
+            <span class="c1"># Save the result in a File entity</span>
+            <span class="n">f_eid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">create_entity</span><span class="p">(</span>
+                <span class="s2">&quot;File&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">Binary</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">)),</span>
+                <span class="n">data_format</span><span class="o">=</span><span class="s2">u&quot;text/json&quot;</span><span class="p">,</span> <span class="n">data_name</span><span class="o">=</span><span class="s2">u&quot;result.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">eid</span>
+
+            <span class="c1"># Entity modification related event: specify that the result has</span>
+            <span class="c1"># been modified</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="o">.</span><span class="n">cw_edited</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_eid</span></div></div>
+
+
+<div class="viewcode-block" id="CWSearchExpirationDateHook"><a class="viewcode-back" href="../../generated/schema/rql_download.hooks.CWSearchExpirationDateHook.html#rql_download.hooks.CWSearchExpirationDateHook">[docs]</a><span class="k">class</span> <span class="nc">CWSearchExpirationDateHook</span><span class="p">(</span><span class="n">hook</span><span class="o">.</span><span class="n">Hook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; On startup, register a task to add an expiration date to each CWSearch.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__regid__</span> <span class="o">=</span> <span class="s2">&quot;rsetftp.search_add_expiration_hook&quot;</span>
+    <span class="n">__select__</span> <span class="o">=</span> <span class="n">hook</span><span class="o">.</span><span class="n">Hook</span><span class="o">.</span><span class="n">__select__</span> <span class="o">&amp;</span> <span class="n">is_instance</span><span class="p">(</span><span class="s2">&quot;CWSearch&quot;</span><span class="p">)</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;before_add_entity&quot;</span><span class="p">,</span> <span class="p">)</span>
+
+<div class="viewcode-block" id="CWSearchExpirationDateHook.__call__"><a class="viewcode-back" href="../../generated/schema/rql_download.hooks.CWSearchExpirationDateHook.html#rql_download.hooks.CWSearchExpirationDateHook.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method to execute the &#39;CWSearchExpirationDateHook&#39; hook.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;expiration_date&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="o">.</span><span class="n">cw_edited</span><span class="p">:</span>
+            <span class="n">delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">vreg</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;default_expiration_delay&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="o">.</span><span class="n">cw_edited</span><span class="p">[</span><span class="s2">&quot;expiration_date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">delay</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="CWSearchDelete"><a class="viewcode-back" href="../../generated/schema/rql_download.hooks.CWSearchDelete.html#rql_download.hooks.CWSearchDelete">[docs]</a><span class="k">class</span> <span class="nc">CWSearchDelete</span><span class="p">(</span><span class="n">hook</span><span class="o">.</span><span class="n">Hook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; On startup, register a task to delete old CWSearch entities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__regid__</span> <span class="o">=</span> <span class="s2">&quot;rqldownload.search_delete_hook&quot;</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;server_startup&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="CWSearchDelete.__call__"><a class="viewcode-back" href="../../generated/schema/rql_download.hooks.CWSearchDelete.html#rql_download.hooks.CWSearchDelete.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method to execute the &#39;CWSearchDelete&#39; hook.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">cleaning_old_cwsearch</span><span class="p">(</span><span class="n">repo</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot; Delete all CWSearch entities that have expired.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">with</span> <span class="n">repo</span><span class="o">.</span><span class="n">internal_cnx</span><span class="p">()</span> <span class="k">as</span> <span class="n">cnx</span><span class="p">:</span>
+                <span class="n">cnx</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="s2">&quot;DELETE CWSearch S WHERE S expiration_date &lt; today&quot;</span><span class="p">)</span>
+                <span class="n">cnx</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+        <span class="c1"># Set the cleaning event loop</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># 12h</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">looping_task</span><span class="p">(</span>
+            <span class="n">dt</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">(),</span> <span class="n">cleaning_old_cwsearch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="p">)</span>
+
+        <span class="c1"># Call the clean function manually on the startup</span>
+        <span class="n">cleaning_old_cwsearch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="p">)</span></div></div>
+
+
+<span class="c1">###############################################################################</span>
+<span class="c1"># CW search fuse hooks</span>
+<span class="c1">###############################################################################</span>
+
+<div class="viewcode-block" id="CWSearchFuseMount"><a class="viewcode-back" href="../../generated/twisted/rql_download.hooks.CWSearchFuseMount.html#rql_download.hooks.CWSearchFuseMount">[docs]</a><span class="k">class</span> <span class="nc">CWSearchFuseMount</span><span class="p">(</span><span class="n">hook</span><span class="o">.</span><span class="n">Hook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Class that start/update a process specific to a user that mount</span>
+<span class="sd">    his CWSearch entities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__regid__</span> <span class="o">=</span> <span class="s2">&quot;rqldownload.fuse_mount_hook&quot;</span>
+    <span class="n">__select__</span> <span class="o">=</span> <span class="n">hook</span><span class="o">.</span><span class="n">Hook</span><span class="o">.</span><span class="n">__select__</span> <span class="o">&amp;</span> <span class="n">is_instance</span><span class="p">(</span><span class="s2">&quot;CWSearch&quot;</span><span class="p">)</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;after_add_entity&quot;</span><span class="p">,</span> <span class="p">)</span>
+
+<div class="viewcode-block" id="CWSearchFuseMount.__call__"><a class="viewcode-back" href="../../generated/twisted/rql_download.hooks.CWSearchFuseMount.html#rql_download.hooks.CWSearchFuseMount.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method that start/update the user specific process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if fuse virtual directory have to be mounted</span>
+        <span class="n">use_fuse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">vreg</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;start_user_fuse&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">use_fuse</span><span class="p">:</span>
+
+            <span class="c1"># Update/Create action</span>
+            <span class="n">PostCommitFuseOperation</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="p">,</span> <span class="n">_cw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="p">,</span> <span class="n">entity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="PostCommitFuseOperation"><a class="viewcode-back" href="../../generated/twisted/rql_download.hooks.PostCommitFuseOperation.html#rql_download.hooks.PostCommitFuseOperation">[docs]</a><span class="k">class</span> <span class="nc">PostCommitFuseOperation</span><span class="p">(</span><span class="n">hook</span><span class="o">.</span><span class="n">Operation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Start/update a fuse process after a CWSearch entity is commited.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PostCommitFuseOperation.postcommit_event"><a class="viewcode-back" href="../../generated/twisted/rql_download.hooks.PostCommitFuseOperation.html#rql_download.hooks.PostCommitFuseOperation.postcommit_event">[docs]</a>    <span class="k">def</span> <span class="nf">postcommit_event</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Define the FuseOperation postcommit operation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get cw parameters</span>
+        <span class="n">repo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">repo</span>
+        <span class="n">instance_name</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">login</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="o">.</span><span class="n">owned_by</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">login</span>
+
+        <span class="c1"># Create a new fuse process: try first to update the fuse mount point</span>
+        <span class="c1"># if already created otherwise create a new mount point.</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;cubes.rql_download.fuse.fuse_mount&quot;</span><span class="p">,</span>
+               <span class="n">instance_name</span><span class="p">,</span> <span class="n">login</span><span class="p">]</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="c1"># Create zombie process, keep trace in memory to deal with them later.</span>
+        <span class="k">if</span> <span class="s2">&quot;cw_fuse_zombies&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
+            <span class="nb">globals</span><span class="p">()[</span><span class="s2">&quot;cw_fuse_zombies&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">process</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">globals</span><span class="p">()[</span><span class="s2">&quot;cw_fuse_zombies&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">process</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ServerStartupFuseMount"><a class="viewcode-back" href="../../generated/twisted/rql_download.hooks.ServerStartupFuseMount.html#rql_download.hooks.ServerStartupFuseMount">[docs]</a><span class="k">class</span> <span class="nc">ServerStartupFuseMount</span><span class="p">(</span><span class="n">hook</span><span class="o">.</span><span class="n">Hook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; On startup, generate all the fuse mount point associated with CWSearch</span>
+<span class="sd">    owners.&quot;&quot;&quot;</span>
+    <span class="n">__regid__</span> <span class="o">=</span> <span class="s2">&quot;rqldownload.startup_fuse_mount_hook&quot;</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;server_startup&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="ServerStartupFuseMount.__call__"><a class="viewcode-back" href="../../generated/twisted/rql_download.hooks.ServerStartupFuseMount.html#rql_download.hooks.ServerStartupFuseMount.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method that start the user specific processes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if fuse virtual directory have to be mounted</span>
+        <span class="n">use_fuse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">vreg</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;start_user_fuse&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">use_fuse</span><span class="p">:</span>
+
+            <span class="c1"># Execute a rql to get all the CWSearch owner logins</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">internal_cnx</span><span class="p">()</span> <span class="k">as</span> <span class="n">cnx</span><span class="p">:</span>
+                <span class="n">rql</span> <span class="o">=</span> <span class="s2">&quot;Any L Where S is CWSearch, S owned_by U, U login L&quot;</span>
+                <span class="n">rset</span> <span class="o">=</span> <span class="n">cnx</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">rql</span><span class="p">)</span>
+                <span class="n">logins</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rset</span><span class="p">])</span>
+
+            <span class="c1"># Start a fuse deamon for each user</span>
+            <span class="n">instance_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">logins</span><span class="p">:</span>
+                <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;cubes.rql_download.fuse.fuse_mount&quot;</span><span class="p">,</span>
+                       <span class="n">instance_name</span><span class="p">,</span> <span class="n">user</span><span class="p">]</span>
+                <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ServerStartupFuseZombiesLoop"><a class="viewcode-back" href="../../generated/twisted/rql_download.hooks.ServerStartupFuseZombiesLoop.html#rql_download.hooks.ServerStartupFuseZombiesLoop">[docs]</a><span class="k">class</span> <span class="nc">ServerStartupFuseZombiesLoop</span><span class="p">(</span><span class="n">hook</span><span class="o">.</span><span class="n">Hook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; On startup, register a task to clean zombie (defunc) processes stored</span>
+<span class="sd">    in the &#39;cw_fuse_zombies&#39; global parameter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__regid__</span> <span class="o">=</span> <span class="s2">&quot;rqldownload.startup_fuse_zombies_loop&quot;</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;server_startup&quot;</span><span class="p">,</span> <span class="p">)</span>
+
+<div class="viewcode-block" id="ServerStartupFuseZombiesLoop.__call__"><a class="viewcode-back" href="../../generated/twisted/rql_download.hooks.ServerStartupFuseZombiesLoop.html#rql_download.hooks.ServerStartupFuseZombiesLoop.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Start a loop to clean zombie processes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Specify the refresh time in days: every minute here</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="mf">1440.</span><span class="p">)</span>
+
+        <span class="c1"># Define the cleaning function</span>
+        <span class="k">def</span> <span class="nf">cleaning_cw_fuse_zombies</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s2">&quot;cw_fuse_zombies&quot;</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
+                <span class="n">fuse_zombies</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="s2">&quot;cw_fuse_zombies&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">fuse_zombies</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">fuse_zombies</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">fuse_zombies</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">process</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="n">process</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+                        <span class="nb">globals</span><span class="p">()[</span><span class="s2">&quot;cw_fuse_zombies&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+
+        <span class="c1"># Register the cleaning looping task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">looping_task</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">(),</span> <span class="n">cleaning_cw_fuse_zombies</span><span class="p">)</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">ServerShutdownKillFuseProcess</span><span class="p">(</span><span class="n">hook</span><span class="o">.</span><span class="n">Hook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    When the server is going down, kill the Fuse process and unmount the</span>
+<span class="sd">    user&#39;s repository. They will be automatically restored when server starts</span>
+<span class="sd">    again.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__regid__</span> <span class="o">=</span> <span class="s2">&quot;rqldownload.shutdown_fuse_process&quot;</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;server_shutdown&quot;</span><span class="p">,</span> <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Start a loop to clean fuse processes and unmount fuse repository.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get all fuse folders</span>
+        <span class="n">mount_base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mountdir&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">fuse_folder</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">mount_base</span><span class="p">):</span>
+            <span class="c1"># send the kill signal</span>
+            <span class="n">mount_point</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mount_base</span><span class="p">,</span> <span class="n">fuse_folder</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">mount_point</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mount_point</span><span class="p">,</span> <span class="s2">&quot;.kill&quot;</span><span class="p">))</span>
+
+
+<span class="c1">###############################################################################</span>
+<span class="c1"># CW search twisted hook</span>
+<span class="c1">###############################################################################</span>
+
+<div class="viewcode-block" id="LaunchTwistedFTPServer"><a class="viewcode-back" href="../../generated/twisted/rql_download.hooks.LaunchTwistedFTPServer.html#rql_download.hooks.LaunchTwistedFTPServer">[docs]</a><span class="k">class</span> <span class="nc">LaunchTwistedFTPServer</span><span class="p">(</span><span class="n">hook</span><span class="o">.</span><span class="n">Hook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; On startup launch the twisted sftp server.</span>
+
+<span class="sd">    If the option &#39;start_sftp_server&#39; is set to True in the configuration file</span>
+<span class="sd">    execute the the &#39;twistedserver/main.py&#39; script to start the sftp server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__regid__</span> <span class="o">=</span> <span class="s2">&quot;rqldownload.launch_twisted_server&quot;</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;server_startup&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="LaunchTwistedFTPServer.__call__"><a class="viewcode-back" href="../../generated/twisted/rql_download.hooks.LaunchTwistedFTPServer.html#rql_download.hooks.LaunchTwistedFTPServer.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Start the sftp server when starting the instance if the</span>
+<span class="sd">        &#39;start_sftp_server&#39; option is set to True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">vreg</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;start_sftp_server&quot;</span><span class="p">]:</span>
+            <span class="n">cube_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)))</span>
+            <span class="n">ftpserver_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cube_path</span><span class="p">,</span>
+                                          <span class="s2">&quot;twistedserver/main.py&quot;</span><span class="p">)</span>
+            <span class="n">basedir_opt</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">sftp_server_basedir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">vreg</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;basedir&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">sftp_server_basedir</span><span class="p">:</span>
+                <span class="n">basedir_opt</span> <span class="o">=</span> <span class="s2">&quot;--base-dir=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">sftp_server_basedir</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="n">ftpserver_path</span><span class="p">,</span> <span class="n">basedir_opt</span><span class="p">])</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer">
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+    &copy; 2015, CWBROWSER developers &lt;antoine.grigis@cea.fr&gt;.
+</div>
+  </body>
+</html>

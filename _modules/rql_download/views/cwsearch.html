@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  
+    <title>RQL Download &mdash; Rql upload</title>
+  <!-- htmltitle is before nature.css - we use this hack to load bootstrap first -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../../../_static/css/bootstrap.min.css" media="screen" />
+  <link rel="stylesheet" href="../../../_static/css/bootstrap-responsive.css"/>
+
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Rql upload" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+   
+       <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../../../_static/js/bootstrap.min.js" type="text/javascript"></script>
+  <!-- <link rel="canonical" href="https://bioproj.extra.cea.fr/redmine/projects/nsap/_modules/rql_download/views/cwsearch.html" /> -->
+
+  <script type="text/javascript">
+    $("div.buttonNext, div.buttonPrevious").hover(
+       function () {
+           $(this).css('background-color', '#FF9C34');
+       },
+       function () {
+           $(this).css('background-color', '#A7D6E2');
+       }
+    );
+    var bodywrapper = $('.bodywrapper');
+    var sidebarbutton = $('#sidebarbutton');
+    sidebarbutton.css({'height': '900px'});
+  </script>
+
+  </head>
+  <body role="document">
+
+<div class="header-wrapper">
+  <div class="header">
+    <p class="logo">
+      <a href="../../../index.html">
+        <img src="../../../_static/nsap.png" alt="Logo"/>
+      </a>
+    </p><div class="navbar">
+      <ul>
+        <li><a href="../../../index.html">Home</a></li>
+        <li><a href="../../../installation.html">Installation</a></li>
+        <li class="btn-li">
+          <div class="btn-group">
+		    <a href="../../../documentation.html">Documentation</a>
+		    <a class="btn dropdown-toggle" data-toggle="dropdown">
+		      <span class="caret"></span>
+		    </a>
+		    <ul class="dropdown-menu">
+	          <li class="link-title">RQL Download</li>
+			  <li class="divider"></li>
+			  <li><a href="../../../cwbrowser.html">CWBrowser</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../../fuse.html">Fuse virual folders</a></li>
+			  <li><a href="../../../twisted.html">Twisted SFTP server</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../../schema.html">Schema modifications</a></li>
+			  <li><a href="../../../views.html">The search mechanism</a></li>
+			  <li class="divider"></li>
+		    </ul>
+		  </div>
+        </li>
+        <li><a href="http://neurospin-wiki.org/">NeuroSpin Wiki</a></li>
+      </ul>
+    </div> <!-- end navbar --></div>
+</div>
+
+
+<div class="content-wrapper">
+    <div class="sphinxsidebar">
+      <div class="sphinxsidebarwrapper">
+
+        <!-- info setup -->
+          <p class="doc-version">
+           This documentation is for Rql Download <strong>version 2.0.0</strong>
+          </p>
+        <p class="citing">
+          If you use the software, please do not hesitate to
+          <a href="https://github.com/neurospin/rql_download">report a bug</a>.
+        </p>
+
+      <!-- toc tree -->
+      
+
+      </div>
+    </div>
+  
+
+  <div class="content">
+      
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for rql_download.views.cwsearch</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1">##########################################################################</span>
+<span class="c1"># NSAp - Copyright (C) CEA, 2013</span>
+<span class="c1"># Distributed under the terms of the CeCILL-B license, as published by</span>
+<span class="c1"># the CEA-CNRS-INRIA. Refer to the LICENSE file or to</span>
+<span class="c1"># http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html</span>
+<span class="c1"># for details.</span>
+<span class="c1">##########################################################################</span>
+
+<span class="c1"># CW import</span>
+<span class="kn">from</span> <span class="nn">cgi</span> <span class="kn">import</span> <span class="n">parse_qs</span>
+<span class="kn">from</span> <span class="nn">cubicweb.web.views</span> <span class="kn">import</span> <span class="n">uicfg</span>
+<span class="kn">from</span> <span class="nn">cubicweb.web.formwidgets</span> <span class="kn">import</span> <span class="n">FieldWidget</span>
+<span class="kn">from</span> <span class="nn">cubicweb</span> <span class="kn">import</span> <span class="n">tags</span>
+
+
+<span class="c1">###############################################################################</span>
+<span class="c1"># CWSearch Widgets</span>
+<span class="c1">###############################################################################</span>
+
+<div class="viewcode-block" id="CWSearchPathWidget"><a class="viewcode-back" href="../../../generated/views/rql_download.views.cwsearch.CWSearchPathWidget.html#rql_download.views.cwsearch.CWSearchPathWidget">[docs]</a><span class="k">class</span> <span class="nc">CWSearchPathWidget</span><span class="p">(</span><span class="n">FieldWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Custom widget to edit the query string from the &#39;path&#39; attribute.</span>
+
+<span class="sd">    It deals with url quoting nicely so that the user edit the unquoted value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CWSearchPathWidget._render"><a class="viewcode-back" href="../../../generated/views/rql_download.views.cwsearch.CWSearchPathWidget.html#rql_download.views.cwsearch.CWSearchPathWidget._render">[docs]</a>    <span class="k">def</span> <span class="nf">_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">renderer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the &#39;path&#39; form field.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get the path form value</span>
+        <span class="n">values</span><span class="p">,</span> <span class="n">attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values_and_attributes</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+        <span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;onkeyup&quot;</span><span class="p">,</span> <span class="s2">&quot;autogrow(this)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check the inputs</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s2">u&quot;&quot;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;A textarea is not supposed to be multivalued&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Extract the rql</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">path</span><span class="p">,</span> <span class="n">rql</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">rql</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rql</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="c1"># Get unquoted rql value</span>
+        <span class="k">if</span> <span class="n">rql</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">rql</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">form</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">url_parse_qsl</span><span class="p">(</span><span class="n">rql</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">rql</span> <span class="o">=</span> <span class="n">rql</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;DISTINCT &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># If no rql is specified by the script, check the url &#39;path&#39; parameter</span>
+        <span class="k">if</span> <span class="n">rql</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">relative_url</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">_cw</span><span class="o">.</span><span class="n">relative_path</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;?&quot;</span> <span class="ow">in</span> <span class="n">relative_url</span><span class="p">:</span>
+                <span class="n">path</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relative_url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">params_dict</span> <span class="o">=</span> <span class="n">parse_qs</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s2">&quot;path&quot;</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="p">:</span>
+                    <span class="n">rql</span> <span class="o">=</span> <span class="n">params_dict</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Compute render properties</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">rql</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="n">linecount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="n">linecount</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">/</span> <span class="mi">80</span>
+        <span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;cols&quot;</span><span class="p">,</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="n">linecount</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="c1"># Create the request render widget</span>
+        <span class="k">return</span> <span class="n">tags</span><span class="o">.</span><span class="n">textarea</span><span class="p">(</span><span class="n">rql</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">field</span><span class="o">.</span><span class="n">input_name</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">),</span>
+                             <span class="o">**</span><span class="n">attrs</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># Associate the CWSearch form widget</span>
+<span class="c1"># _affk = uicfg.autoform_field_kwargs</span>
+<span class="c1"># _affk.tag_attribute((&quot;CWSearch&quot;, &quot;path&quot;), {&quot;widget&quot;: CWSearchPathWidget})</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer">
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+    &copy; 2015, CWBROWSER developers &lt;antoine.grigis@cea.fr&gt;.
+</div>
+  </body>
+</html>

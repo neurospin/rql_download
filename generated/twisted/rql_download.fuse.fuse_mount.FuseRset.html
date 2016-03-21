@@ -1,0 +1,489 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  
+    <title>RQL Download &mdash; Rql upload</title>
+  <!-- htmltitle is before nature.css - we use this hack to load bootstrap first -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../../_static/css/bootstrap.min.css" media="screen" />
+  <link rel="stylesheet" href="../../_static/css/bootstrap-responsive.css"/>
+
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Rql upload" href="../../index.html" />
+  
+   
+       <script type="text/javascript" src="../../_static/sidebar.js"></script>
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../../_static/js/bootstrap.min.js" type="text/javascript"></script>
+  <!-- <link rel="canonical" href="https://bioproj.extra.cea.fr/redmine/projects/nsap/generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html" /> -->
+
+  <script type="text/javascript">
+    $("div.buttonNext, div.buttonPrevious").hover(
+       function () {
+           $(this).css('background-color', '#FF9C34');
+       },
+       function () {
+           $(this).css('background-color', '#A7D6E2');
+       }
+    );
+    var bodywrapper = $('.bodywrapper');
+    var sidebarbutton = $('#sidebarbutton');
+    sidebarbutton.css({'height': '900px'});
+  </script>
+
+  </head>
+  <body role="document">
+
+<div class="header-wrapper">
+  <div class="header">
+    <p class="logo">
+      <a href="../../index.html">
+        <img src="../../_static/nsap.png" alt="Logo"/>
+      </a>
+    </p><div class="navbar">
+      <ul>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../installation.html">Installation</a></li>
+        <li class="btn-li">
+          <div class="btn-group">
+		    <a href="../../documentation.html">Documentation</a>
+		    <a class="btn dropdown-toggle" data-toggle="dropdown">
+		      <span class="caret"></span>
+		    </a>
+		    <ul class="dropdown-menu">
+	          <li class="link-title">RQL Download</li>
+			  <li class="divider"></li>
+			  <li><a href="../../cwbrowser.html">CWBrowser</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../fuse.html">Fuse virual folders</a></li>
+			  <li><a href="../../twisted.html">Twisted SFTP server</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../schema.html">Schema modifications</a></li>
+			  <li><a href="../../views.html">The search mechanism</a></li>
+			  <li class="divider"></li>
+		    </ul>
+		  </div>
+        </li>
+        <li><a href="http://neurospin-wiki.org/">NeuroSpin Wiki</a></li>
+      </ul>
+    </div> <!-- end navbar --></div>
+</div>
+
+
+<div class="content-wrapper">
+    <div class="sphinxsidebar">
+      <div class="sphinxsidebarwrapper">
+
+        <!-- info setup -->
+          <p class="doc-version">
+           This documentation is for Rql Download <strong>version 2.0.0</strong>
+          </p>
+        <p class="citing">
+          If you use the software, please do not hesitate to
+          <a href="https://github.com/neurospin/rql_download">report a bug</a>.
+        </p>
+
+      <!-- toc tree -->
+      <ul>
+<li><a class="reference internal" href="#">rql_download.fuse.fuse_mount.FuseRset</a></li>
+</ul>
+
+
+      </div>
+    </div>
+  
+
+  <div class="content">
+      
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rql-download-fuse-fuse-mount-fuserset">
+<h1>rql_download.fuse.fuse_mount.FuseRset<a class="headerlink" href="#rql-download-fuse-fuse-mount-fuserset" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rql_download.fuse.fuse_mount.FuseRset">
+<em class="property">class </em><code class="descclassname">rql_download.fuse.fuse_mount.</code><code class="descname">FuseRset</code><span class="sig-paren">(</span><em>instance</em>, <em>login</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that create a mount point containing virtual path representing
+the CWSearch entities of a cw user.</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">__init__</span></code>(instance,&nbsp;login)</td>
+<td>Initilize the FuseRset class.</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">access</span></code>(path,&nbsp;amode)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.chmod" title="rql_download.fuse.fuse_mount.FuseRset.chmod"><code class="xref py py-obj docutils literal"><span class="pre">chmod</span></code></a>(path,&nbsp;mode)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.chown" title="rql_download.fuse.fuse_mount.FuseRset.chown"><code class="xref py py-obj docutils literal"><span class="pre">chown</span></code></a>(path,&nbsp;uid,&nbsp;gid)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.create" title="rql_download.fuse.fuse_mount.FuseRset.create"><code class="xref py py-obj docutils literal"><span class="pre">create</span></code></a>(path,&nbsp;mode[,&nbsp;fi])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">destroy</span></code>(path)</td>
+<td>Called on filesystem destruction.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.flush" title="rql_download.fuse.fuse_mount.FuseRset.flush"><code class="xref py py-obj docutils literal"><span class="pre">flush</span></code></a>(path,&nbsp;fh)</td>
+<td>File-class version of &#8216;flush&#8221;.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.fsync" title="rql_download.fuse.fuse_mount.FuseRset.fsync"><code class="xref py py-obj docutils literal"><span class="pre">fsync</span></code></a>(path,&nbsp;datasync,&nbsp;fh)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.fsyncdir" title="rql_download.fuse.fuse_mount.FuseRset.fsyncdir"><code class="xref py py-obj docutils literal"><span class="pre">fsyncdir</span></code></a>(path,&nbsp;datasync,&nbsp;fh)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.getattr" title="rql_download.fuse.fuse_mount.FuseRset.getattr"><code class="xref py py-obj docutils literal"><span class="pre">getattr</span></code></a>(path[,&nbsp;fh])</td>
+<td>File-class version of &#8216;getattr&#8217;.</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">getxattr</span></code>(path,&nbsp;name[,&nbsp;position])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">init</span></code>(path)</td>
+<td>Called on filesystem initialization.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.link" title="rql_download.fuse.fuse_mount.FuseRset.link"><code class="xref py py-obj docutils literal"><span class="pre">link</span></code></a>(target,&nbsp;source)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">listxattr</span></code>(path)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.mkdir" title="rql_download.fuse.fuse_mount.FuseRset.mkdir"><code class="xref py py-obj docutils literal"><span class="pre">mkdir</span></code></a>(path,&nbsp;mode)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.mknod" title="rql_download.fuse.fuse_mount.FuseRset.mknod"><code class="xref py py-obj docutils literal"><span class="pre">mknod</span></code></a>(path,&nbsp;mode,&nbsp;dev)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.open" title="rql_download.fuse.fuse_mount.FuseRset.open"><code class="xref py py-obj docutils literal"><span class="pre">open</span></code></a>(path,&nbsp;flags)</td>
+<td>File-class version of &#8216;open&#8217;.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.opendir" title="rql_download.fuse.fuse_mount.FuseRset.opendir"><code class="xref py py-obj docutils literal"><span class="pre">opendir</span></code></a>(path)</td>
+<td>This method is useless here because the path is always given to readdir().</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.read" title="rql_download.fuse.fuse_mount.FuseRset.read"><code class="xref py py-obj docutils literal"><span class="pre">read</span></code></a>(path,&nbsp;length,&nbsp;offset,&nbsp;fh)</td>
+<td>File-class version of &#8216;read&#8217;.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.readdir" title="rql_download.fuse.fuse_mount.FuseRset.readdir"><code class="xref py py-obj docutils literal"><span class="pre">readdir</span></code></a>(path,&nbsp;fh)</td>
+<td>List the content of a directory.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.readlink" title="rql_download.fuse.fuse_mount.FuseRset.readlink"><code class="xref py py-obj docutils literal"><span class="pre">readlink</span></code></a>(path)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.release" title="rql_download.fuse.fuse_mount.FuseRset.release"><code class="xref py py-obj docutils literal"><span class="pre">release</span></code></a>(path,&nbsp;fh)</td>
+<td>File-class version of &#8216;release&#8217;.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.releasedir" title="rql_download.fuse.fuse_mount.FuseRset.releasedir"><code class="xref py py-obj docutils literal"><span class="pre">releasedir</span></code></a>(path,&nbsp;fh)</td>
+<td>As for opendir, we do not use releasedir.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.removexattr" title="rql_download.fuse.fuse_mount.FuseRset.removexattr"><code class="xref py py-obj docutils literal"><span class="pre">removexattr</span></code></a>(path,&nbsp;name)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.rename" title="rql_download.fuse.fuse_mount.FuseRset.rename"><code class="xref py py-obj docutils literal"><span class="pre">rename</span></code></a>(old,&nbsp;new)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.rmdir" title="rql_download.fuse.fuse_mount.FuseRset.rmdir"><code class="xref py py-obj docutils literal"><span class="pre">rmdir</span></code></a>(path)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.setxattr" title="rql_download.fuse.fuse_mount.FuseRset.setxattr"><code class="xref py py-obj docutils literal"><span class="pre">setxattr</span></code></a>(path,&nbsp;name,&nbsp;value,&nbsp;options[,&nbsp;position])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.statfs" title="rql_download.fuse.fuse_mount.FuseRset.statfs"><code class="xref py py-obj docutils literal"><span class="pre">statfs</span></code></a>(path)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.suicide" title="rql_download.fuse.fuse_mount.FuseRset.suicide"><code class="xref py py-obj docutils literal"><span class="pre">suicide</span></code></a>()</td>
+<td>unmount Fuse and suicide</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.symlink" title="rql_download.fuse.fuse_mount.FuseRset.symlink"><code class="xref py py-obj docutils literal"><span class="pre">symlink</span></code></a>(target,&nbsp;source)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.truncate" title="rql_download.fuse.fuse_mount.FuseRset.truncate"><code class="xref py py-obj docutils literal"><span class="pre">truncate</span></code></a>(path,&nbsp;length[,&nbsp;fh])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.unlink" title="rql_download.fuse.fuse_mount.FuseRset.unlink"><code class="xref py py-obj docutils literal"><span class="pre">unlink</span></code></a>(path)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.update" title="rql_download.fuse.fuse_mount.FuseRset.update"><code class="xref py py-obj docutils literal"><span class="pre">update</span></code></a>()</td>
+<td>Method that create a virtual directory from a user CWSearch entities results.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.utimens" title="rql_download.fuse.fuse_mount.FuseRset.utimens"><code class="xref py py-obj docutils literal"><span class="pre">utimens</span></code></a>(path[,&nbsp;times])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.FuseRset.write" title="rql_download.fuse.fuse_mount.FuseRset.write"><code class="xref py py-obj docutils literal"><span class="pre">write</span></code></a>(path,&nbsp;data,&nbsp;offset,&nbsp;fh)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">bmap</span></code></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">lock</span></code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.__module__">
+<code class="descname">__module__</code><em class="property"> = 'rql_download.fuse.fuse_mount'</em><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.chmod">
+<code class="descname">chmod</code><span class="sig-paren">(</span><em>path</em>, <em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.chmod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.chmod" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.chown">
+<code class="descname">chown</code><span class="sig-paren">(</span><em>path</em>, <em>uid</em>, <em>gid</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.chown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.chown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.create">
+<code class="descname">create</code><span class="sig-paren">(</span><em>path</em>, <em>mode</em>, <em>fi=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.flush">
+<code class="descname">flush</code><span class="sig-paren">(</span><em>path</em>, <em>fh</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.flush" title="Permalink to this definition">¶</a></dt>
+<dd><p>File-class version of &#8216;flush&#8221;.
+Flush cached data to the file system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.fsync">
+<code class="descname">fsync</code><span class="sig-paren">(</span><em>path</em>, <em>datasync</em>, <em>fh</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.fsync"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.fsync" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.fsyncdir">
+<code class="descname">fsyncdir</code><span class="sig-paren">(</span><em>path</em>, <em>datasync</em>, <em>fh</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.fsyncdir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.fsyncdir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.getattr">
+<code class="descname">getattr</code><span class="sig-paren">(</span><em>path</em>, <em>fh=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.getattr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.getattr" title="Permalink to this definition">¶</a></dt>
+<dd><p>File-class version of &#8216;getattr&#8217;.
+Retrieves information about a file (the &#8220;stat&#8221; of a file).</p>
+<p>Return a dict with stats on the given virtual path.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">when the stat method is called on the &#8216;/.isalive&#8217; fake folder,
+the method return a fake folder stat but do not raise an exception.
+This in turns unables us to check if the fuse process is running.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">when the stat method is called on the &#8216;/.update&#8217; fake folder,
+the virtual direcotry is recreated and the process may not be
+available during this operation.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">when the stat method is called on the &#8216;/.kill&#8217; fake folder,
+the fuse repository is unmounted and the process terminates by
+raising an exception.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str (mandatory)</strong> :</p>
+<blockquote class="last">
+<div><p>a virtual path</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.link">
+<code class="descname">link</code><span class="sig-paren">(</span><em>target</em>, <em>source</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.link"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.link" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.mkdir">
+<code class="descname">mkdir</code><span class="sig-paren">(</span><em>path</em>, <em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.mkdir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.mkdir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.mknod">
+<code class="descname">mknod</code><span class="sig-paren">(</span><em>path</em>, <em>mode</em>, <em>dev</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.mknod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.mknod" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.open">
+<code class="descname">open</code><span class="sig-paren">(</span><em>path</em>, <em>flags</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>File-class version of &#8216;open&#8217;.
+Open a file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.opendir">
+<code class="descname">opendir</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.opendir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.opendir" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is useless here because the path is always given to
+readdir().
+Always return 0.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>path</em>, <em>length</em>, <em>offset</em>, <em>fh</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>File-class version of &#8216;read&#8217;.
+Get all or part of the contents of a file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.readdir">
+<code class="descname">readdir</code><span class="sig-paren">(</span><em>path</em>, <em>fh</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.readdir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.readdir" title="Permalink to this definition">¶</a></dt>
+<dd><p>List the content of a directory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str (mandatory)</strong> :</p>
+<blockquote class="last">
+<div><p>a virtual path</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.readlink">
+<code class="descname">readlink</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.readlink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.readlink" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.release">
+<code class="descname">release</code><span class="sig-paren">(</span><em>path</em>, <em>fh</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.release"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.release" title="Permalink to this definition">¶</a></dt>
+<dd><p>File-class version of &#8216;release&#8217;.
+Closes an open file. Allows filesystem to clean up.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.releasedir">
+<code class="descname">releasedir</code><span class="sig-paren">(</span><em>path</em>, <em>fh</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.releasedir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.releasedir" title="Permalink to this definition">¶</a></dt>
+<dd><p>As for opendir, we do not use releasedir.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.removexattr">
+<code class="descname">removexattr</code><span class="sig-paren">(</span><em>path</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.removexattr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.removexattr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.rename">
+<code class="descname">rename</code><span class="sig-paren">(</span><em>old</em>, <em>new</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.rename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.rename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.rmdir">
+<code class="descname">rmdir</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.rmdir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.rmdir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.setxattr">
+<code class="descname">setxattr</code><span class="sig-paren">(</span><em>path</em>, <em>name</em>, <em>value</em>, <em>options</em>, <em>position=0</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.setxattr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.setxattr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.statfs">
+<code class="descname">statfs</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.statfs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.statfs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.suicide">
+<code class="descname">suicide</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.suicide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.suicide" title="Permalink to this definition">¶</a></dt>
+<dd><p>unmount Fuse and suicide</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.symlink">
+<code class="descname">symlink</code><span class="sig-paren">(</span><em>target</em>, <em>source</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.symlink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.symlink" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.truncate">
+<code class="descname">truncate</code><span class="sig-paren">(</span><em>path</em>, <em>length</em>, <em>fh=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.truncate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.truncate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.unlink">
+<code class="descname">unlink</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.unlink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.unlink" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.update">
+<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that create a virtual directory from a user CWSearch
+entities results.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.utimens">
+<code class="descname">utimens</code><span class="sig-paren">(</span><em>path</em>, <em>times=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.utimens"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.utimens" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.FuseRset.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>path</em>, <em>data</em>, <em>offset</em>, <em>fh</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#FuseRset.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.FuseRset.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer">
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+    &copy; 2015, CWBROWSER developers &lt;antoine.grigis@cea.fr&gt;.
+</div>
+  </body>
+</html>

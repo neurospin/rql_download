@@ -1,0 +1,46 @@
+:orphan:
+
+rql_download.hooks.CWSearchAdd
+==============================
+
+.. currentmodule:: rql_download.hooks
+
+.. autoclass:: CWSearchAdd
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~CWSearchAdd.__init__
+      ~CWSearchAdd.check_events
+      ~CWSearchAdd.critical
+      ~CWSearchAdd.cw_propval
+      ~CWSearchAdd.debug
+      ~CWSearchAdd.error
+      ~CWSearchAdd.exception
+      ~CWSearchAdd.filterable_selectors
+      ~CWSearchAdd.info
+      ~CWSearchAdd.warning
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~CWSearchAdd.category
+      ~CWSearchAdd.eidfrom
+      ~CWSearchAdd.eidto
+      ~CWSearchAdd.entity
+      ~CWSearchAdd.events
+      ~CWSearchAdd.known_args
+      ~CWSearchAdd.order
+      ~CWSearchAdd.repo
+      ~CWSearchAdd.rtype
+    
+    
+

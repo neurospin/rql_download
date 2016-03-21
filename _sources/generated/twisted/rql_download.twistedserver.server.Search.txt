@@ -1,0 +1,27 @@
+:orphan:
+
+rql_download.twistedserver.server.Search
+========================================
+
+.. currentmodule:: rql_download.twistedserver.server
+
+.. autoclass:: Search
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~Search.__init__
+      ~Search.get_file_data
+      ~Search.get_files
+      ~Search.get_searches
+    
+    
+    
+    
+    
+

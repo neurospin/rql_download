@@ -1,0 +1,584 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  
+    <title>RQL Download &mdash; Rql upload</title>
+  <!-- htmltitle is before nature.css - we use this hack to load bootstrap first -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../../_static/css/bootstrap.min.css" media="screen" />
+  <link rel="stylesheet" href="../../_static/css/bootstrap-responsive.css"/>
+
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Rql upload" href="../../index.html" />
+  
+   
+       <script type="text/javascript" src="../../_static/sidebar.js"></script>
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../../_static/js/bootstrap.min.js" type="text/javascript"></script>
+  <!-- <link rel="canonical" href="https://bioproj.extra.cea.fr/redmine/projects/nsap/generated/twisted/rql_download.twistedserver.server.VirtualPathTranslator.html" /> -->
+
+  <script type="text/javascript">
+    $("div.buttonNext, div.buttonPrevious").hover(
+       function () {
+           $(this).css('background-color', '#FF9C34');
+       },
+       function () {
+           $(this).css('background-color', '#A7D6E2');
+       }
+    );
+    var bodywrapper = $('.bodywrapper');
+    var sidebarbutton = $('#sidebarbutton');
+    sidebarbutton.css({'height': '900px'});
+  </script>
+
+  </head>
+  <body role="document">
+
+<div class="header-wrapper">
+  <div class="header">
+    <p class="logo">
+      <a href="../../index.html">
+        <img src="../../_static/nsap.png" alt="Logo"/>
+      </a>
+    </p><div class="navbar">
+      <ul>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../installation.html">Installation</a></li>
+        <li class="btn-li">
+          <div class="btn-group">
+		    <a href="../../documentation.html">Documentation</a>
+		    <a class="btn dropdown-toggle" data-toggle="dropdown">
+		      <span class="caret"></span>
+		    </a>
+		    <ul class="dropdown-menu">
+	          <li class="link-title">RQL Download</li>
+			  <li class="divider"></li>
+			  <li><a href="../../cwbrowser.html">CWBrowser</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../fuse.html">Fuse virual folders</a></li>
+			  <li><a href="../../twisted.html">Twisted SFTP server</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../schema.html">Schema modifications</a></li>
+			  <li><a href="../../views.html">The search mechanism</a></li>
+			  <li class="divider"></li>
+		    </ul>
+		  </div>
+        </li>
+        <li><a href="http://neurospin-wiki.org/">NeuroSpin Wiki</a></li>
+      </ul>
+    </div> <!-- end navbar --></div>
+</div>
+
+
+<div class="content-wrapper">
+    <div class="sphinxsidebar">
+      <div class="sphinxsidebarwrapper">
+
+        <!-- info setup -->
+          <p class="doc-version">
+           This documentation is for Rql Download <strong>version 2.0.0</strong>
+          </p>
+        <p class="citing">
+          If you use the software, please do not hesitate to
+          <a href="https://github.com/neurospin/rql_download">report a bug</a>.
+        </p>
+
+      <!-- toc tree -->
+      <ul>
+<li><a class="reference internal" href="#">rql_download.twistedserver.server.VirtualPathTranslator</a></li>
+</ul>
+
+
+      </div>
+    </div>
+  
+
+  <div class="content">
+      
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rql-download-twistedserver-server-virtualpathtranslator">
+<h1>rql_download.twistedserver.server.VirtualPathTranslator<a class="headerlink" href="#rql-download-twistedserver-server-virtualpathtranslator" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator">
+<em class="property">class </em><code class="descclassname">rql_download.twistedserver.server.</code><code class="descname">VirtualPathTranslator</code><span class="sig-paren">(</span><em>search_request</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Responsible to translate virtual path into real one.</p>
+<p>Suppose to be called from &#8216;CubicWebConchUser&#8217; through the following methods:</p>
+<ul class="simple">
+<li>openDirectory</li>
+<li>getAttrs</li>
+<li>realPath</li>
+<li>openFile</li>
+</ul>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">__init__</span></code>(search_request)</td>
+<td>Initialize the &#8216;VirtualPathTranslator&#8217; class.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.attrs_from_stat" title="rql_download.twistedserver.server.VirtualPathTranslator.attrs_from_stat"><code class="xref py py-obj docutils literal"><span class="pre">attrs_from_stat</span></code></a>(s)</td>
+<td>Convert a &#8216;posix.stat_result&#8217; to python dictionary.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.dir_content" title="rql_download.twistedserver.server.VirtualPathTranslator.dir_content"><code class="xref py py-obj docutils literal"><span class="pre">dir_content</span></code></a>(virtpath,&nbsp;session_index)</td>
+<td>Get complete file paths of files located in a virtual directory.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.filter_files" title="rql_download.twistedserver.server.VirtualPathTranslator.filter_files"><code class="xref py py-obj docutils literal"><span class="pre">filter_files</span></code></a>(files,&nbsp;path)</td>
+<td>Extract files which are located in a directory defined by path.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.get_attrs" title="rql_download.twistedserver.server.VirtualPathTranslator.get_attrs"><code class="xref py py-obj docutils literal"><span class="pre">get_attrs</span></code></a>(path[,&nbsp;followlinks])</td>
+<td>Return the file state.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.get_attrs_file_entity" title="rql_download.twistedserver.server.VirtualPathTranslator.get_attrs_file_entity"><code class="xref py py-obj docutils literal"><span class="pre">get_attrs_file_entity</span></code></a>(binary)</td>
+<td>Get statistical information of a Binary field.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.is_file_entity" title="rql_download.twistedserver.server.VirtualPathTranslator.is_file_entity"><code class="xref py py-obj docutils literal"><span class="pre">is_file_entity</span></code></a>(virtpath)</td>
+<td>Check if the file is virtual, ie.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.list_directory" title="rql_download.twistedserver.server.VirtualPathTranslator.list_directory"><code class="xref py py-obj docutils literal"><span class="pre">list_directory</span></code></a>(path)</td>
+<td>Method to list a virtual folder.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.open_cw_file" title="rql_download.twistedserver.server.VirtualPathTranslator.open_cw_file"><code class="xref py py-obj docutils literal"><span class="pre">open_cw_file</span></code></a>(virtpath)</td>
+<td>Method used to open a virtual cubicweb file.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.real_path" title="rql_download.twistedserver.server.VirtualPathTranslator.real_path"><code class="xref py py-obj docutils literal"><span class="pre">real_path</span></code></a>(virtpath)</td>
+<td>Get the real path from a virtual path.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.split_virtual_path" title="rql_download.twistedserver.server.VirtualPathTranslator.split_virtual_path"><code class="xref py py-obj docutils literal"><span class="pre">split_virtual_path</span></code></a>(path)</td>
+<td>Extract the name of a Search Entity from path.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.stat" title="rql_download.twistedserver.server.VirtualPathTranslator.stat"><code class="xref py py-obj docutils literal"><span class="pre">stat</span></code></a>(path[,&nbsp;followlinks,&nbsp;path_is_real])</td>
+<td>Method to access a path state.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.stat_file_entity" title="rql_download.twistedserver.server.VirtualPathTranslator.stat_file_entity"><code class="xref py py-obj docutils literal"><span class="pre">stat_file_entity</span></code></a>([binary_len])</td>
+<td>Return the file state.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.BASE_REAL_DIR" title="rql_download.twistedserver.server.VirtualPathTranslator.BASE_REAL_DIR"><code class="xref py py-obj docutils literal"><span class="pre">BASE_REAL_DIR</span></code></a></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.INSTANCE_NAMES" title="rql_download.twistedserver.server.VirtualPathTranslator.INSTANCE_NAMES"><code class="xref py py-obj docutils literal"><span class="pre">INSTANCE_NAMES</span></code></a></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.dir_perm" title="rql_download.twistedserver.server.VirtualPathTranslator.dir_perm"><code class="xref py py-obj docutils literal"><span class="pre">dir_perm</span></code></a></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.file_entity_re" title="rql_download.twistedserver.server.VirtualPathTranslator.file_entity_re"><code class="xref py py-obj docutils literal"><span class="pre">file_entity_re</span></code></a></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.twistedserver.server.VirtualPathTranslator.file_perm" title="rql_download.twistedserver.server.VirtualPathTranslator.file_perm"><code class="xref py py-obj docutils literal"><span class="pre">file_perm</span></code></a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.BASE_REAL_DIR">
+<code class="descname">BASE_REAL_DIR</code><em class="property"> = '/'</em><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.BASE_REAL_DIR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.INSTANCE_NAMES">
+<code class="descname">INSTANCE_NAMES</code><em class="property"> = None</em><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.INSTANCE_NAMES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.__module__">
+<code class="descname">__module__</code><em class="property"> = 'rql_download.twistedserver.server'</em><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.attrs_from_stat">
+<code class="descname">attrs_from_stat</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.attrs_from_stat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.attrs_from_stat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a &#8216;posix.stat_result&#8217; to python dictionary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>s: posix.stat_result (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the same structure returned by a stat or lstat.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: dict</strong> :</p>
+<blockquote class="last">
+<div><p>a dictionary summarizing the input statistic structure: size -
+uid - gid - mtime - atime - permissions.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.dir_content">
+<code class="descname">dir_content</code><span class="sig-paren">(</span><em>virtpath</em>, <em>session_index</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.dir_content"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.dir_content" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get complete file paths of files located in a virtual directory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>virtpath: VirtualPath  (mandatory)</strong> :</p>
+<blockquote>
+<div><p>a virtual path of the form (search name, search relpath,
+search basedir, search instance).</p>
+</div></blockquote>
+<p><strong>session_index: int (mandatory)</strong> :</p>
+<blockquote>
+<div><p>an index pointing to the instance of interest.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: iterator</strong> :</p>
+<blockquote class="last">
+<div><p>each item is 2-uplet of the form (file path, associated rset).</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.dir_perm">
+<code class="descname">dir_perm</code><em class="property"> = 17261</em><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.dir_perm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.file_entity_re">
+<code class="descname">file_entity_re</code><em class="property"> = &lt;_sre.SRE_Pattern object&gt;</em><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.file_entity_re" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.file_perm">
+<code class="descname">file_perm</code><em class="property"> = 33060</em><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.file_perm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.filter_files">
+<code class="descname">filter_files</code><span class="sig-paren">(</span><em>files</em>, <em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.filter_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.filter_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract files which are located in a directory defined by path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>files: list of 2-uplet (mandatory)</strong> :</p>
+<blockquote>
+<div><p>a list of files formated in a 2-uplet of the form (path, is_virtual).</p>
+</div></blockquote>
+<p><strong>path: string (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the associated dir real path.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: iterator</strong> :</p>
+<blockquote class="last">
+<div><p>each item is 2-uplet of the form (file path, associated rset).</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.get_attrs">
+<code class="descname">get_attrs</code><span class="sig-paren">(</span><em>path</em>, <em>followlinks=0</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.get_attrs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.get_attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the file state.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>binary_len: int (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the size of the file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: stat_result</strong> :</p>
+<blockquote class="last">
+<div><p>the same structure returned by a stat or lstat.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.get_attrs_file_entity">
+<code class="descname">get_attrs_file_entity</code><span class="sig-paren">(</span><em>binary</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.get_attrs_file_entity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.get_attrs_file_entity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get statistical information of a Binary field.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>binary: a Binary entity field (mandatory)</strong> :</p>
+<blockquote>
+<div><p>a Binary object.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: dict</strong> :</p>
+<blockquote class="last">
+<div><p>a dictionary summarizing the input statistic structure: size -
+uid - gid - mtime - atime - permissions.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.is_file_entity">
+<code class="descname">is_file_entity</code><span class="sig-paren">(</span><em>virtpath</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.is_file_entity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.is_file_entity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the file is virtual, ie. a Binary cubicweb file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>virtpath: VirtualPath  (mandatory)</strong> :</p>
+<blockquote>
+<div><p>a virtual path of the form (search name, search relpath,
+search basedir, search instance).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: bool</strong> :</p>
+<blockquote class="last">
+<div><p>True if the virtualpath point to a cubicweb file,
+False otherwise.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.list_directory">
+<code class="descname">list_directory</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.list_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.list_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to list a virtual folder.</p>
+<p>Virtual folders have a common root organization:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>instance name
+    |
+    ---- CWSearch name
+                |
+                ---- ...
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: string (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the virtual path we want to access.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: iterator</strong> :</p>
+<blockquote class="last">
+<div><p>an iterator containing virtual folder description. Each iterator
+item is a 3-uplet of the form (basename, longname, stat).</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.open_cw_file">
+<code class="descname">open_cw_file</code><span class="sig-paren">(</span><em>virtpath</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.open_cw_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.open_cw_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method used to open a virtual cubicweb file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>virtpath: VirtualPath  (mandatory)</strong> :</p>
+<blockquote>
+<div><p>a virtual path of the form (search name, search relpath,
+search basedir, search instance).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: CubicwebFile</strong> :</p>
+<blockquote class="last">
+<div><p>a virtual file containing the Binary field data.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.real_path">
+<code class="descname">real_path</code><span class="sig-paren">(</span><em>virtpath</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.real_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.real_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the real path from a virtual path.</p>
+<p>Simply concatenate the search basedir set in the configuration file
+with the search relpath.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>virtpath: VirtualPath (mandatory)</strong> :</p>
+<blockquote>
+<div><p>a virtual path.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: string</strong> :</p>
+<blockquote class="last">
+<div><p>the real path on the server.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.split_virtual_path">
+<code class="descname">split_virtual_path</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.split_virtual_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.split_virtual_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the name of a Search Entity from path.</p>
+<p>This name is expected to be the first part of path if no instance name
+are given, second one otherwise.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: string (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the virtual path we want to split.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: VirtualPath</strong> :</p>
+<blockquote class="last">
+<div><p>the virtual path built from the input path, ie. a 4-uplet of the
+form (search name, search relpath, search basedir, search instance).</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.stat">
+<code class="descname">stat</code><span class="sig-paren">(</span><em>path</em>, <em>followlinks=0</em>, <em>path_is_real=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.stat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.stat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to access a path state.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str (mandatory)</strong> :</p>
+<blockquote>
+<div><p>a path from which we want to get the associated statistics.</p>
+</div></blockquote>
+<p><strong>followlinks: int (optional, default 0)</strong> :</p>
+<blockquote>
+<div><p>if True the system will follow the symbolic links with the &#8216;os.stat&#8217;
+method,
+otherwise the &#8216;os.lstat&#8217; method is used.</p>
+</div></blockquote>
+<p><strong>path_is_real: bool (optional, default False)</strong> :</p>
+<blockquote>
+<div><p>if True the path really exists on the file system,
+otherwise we have a virtual cubicweb path.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: posix.stat_result</strong> :</p>
+<blockquote class="last">
+<div><p>the same structure returned by a stat or lstat.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.twistedserver.server.VirtualPathTranslator.stat_file_entity">
+<code class="descname">stat_file_entity</code><span class="sig-paren">(</span><em>binary_len=0</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/twistedserver/server.html#VirtualPathTranslator.stat_file_entity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.twistedserver.server.VirtualPathTranslator.stat_file_entity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the file state.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>binary_len: int (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the size of the file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out: posix.stat_result</strong> :</p>
+<blockquote class="last">
+<div><p>the same structure returned by a stat or lstat.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer">
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+    &copy; 2015, CWBROWSER developers &lt;antoine.grigis@cea.fr&gt;.
+</div>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+:orphan:
+
+rql_download.twistedserver.server.CubicWebConchUser
+===================================================
+
+.. currentmodule:: rql_download.twistedserver.server
+
+.. autoclass:: CubicWebConchUser
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~CubicWebConchUser.__init__
+      ~CubicWebConchUser.getHomeDir
+      ~CubicWebConchUser.getOtherGroups
+      ~CubicWebConchUser.getShell
+      ~CubicWebConchUser.getUserGroupId
+      ~CubicWebConchUser.global_cancel_tcpip_forward
+      ~CubicWebConchUser.global_tcpip_forward
+      ~CubicWebConchUser.gotGlobalRequest
+      ~CubicWebConchUser.logout
+      ~CubicWebConchUser.lookupChannel
+      ~CubicWebConchUser.lookupSubsystem
+    
+    
+    
+    
+    
+

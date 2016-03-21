@@ -1,0 +1,42 @@
+:orphan:
+
+rql_download.hooks.PostCommitFuseOperation
+==========================================
+
+.. currentmodule:: rql_download.hooks
+
+.. autoclass:: PostCommitFuseOperation
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~PostCommitFuseOperation.__init__
+      ~PostCommitFuseOperation.critical
+      ~PostCommitFuseOperation.debug
+      ~PostCommitFuseOperation.error
+      ~PostCommitFuseOperation.exception
+      ~PostCommitFuseOperation.handle_event
+      ~PostCommitFuseOperation.info
+      ~PostCommitFuseOperation.insert_index
+      ~PostCommitFuseOperation.postcommit_event
+      ~PostCommitFuseOperation.precommit_event
+      ~PostCommitFuseOperation.register
+      ~PostCommitFuseOperation.revertprecommit_event
+      ~PostCommitFuseOperation.rollback_event
+      ~PostCommitFuseOperation.warning
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~PostCommitFuseOperation.session
+    
+    
+

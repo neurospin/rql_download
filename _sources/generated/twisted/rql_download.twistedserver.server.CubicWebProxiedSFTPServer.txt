@@ -1,0 +1,37 @@
+:orphan:
+
+rql_download.twistedserver.server.CubicWebProxiedSFTPServer
+===========================================================
+
+.. currentmodule:: rql_download.twistedserver.server
+
+.. autoclass:: CubicWebProxiedSFTPServer
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~CubicWebProxiedSFTPServer.__init__
+      ~CubicWebProxiedSFTPServer.extendedRequest
+      ~CubicWebProxiedSFTPServer.getAttrs
+      ~CubicWebProxiedSFTPServer.gotVersion
+      ~CubicWebProxiedSFTPServer.makeDirectory
+      ~CubicWebProxiedSFTPServer.makeLink
+      ~CubicWebProxiedSFTPServer.openDirectory
+      ~CubicWebProxiedSFTPServer.openFile
+      ~CubicWebProxiedSFTPServer.readLink
+      ~CubicWebProxiedSFTPServer.realPath
+      ~CubicWebProxiedSFTPServer.removeDirectory
+      ~CubicWebProxiedSFTPServer.removeFile
+      ~CubicWebProxiedSFTPServer.renameFile
+      ~CubicWebProxiedSFTPServer.setAttrs
+    
+    
+    
+    
+    
+

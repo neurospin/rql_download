@@ -1,0 +1,46 @@
+:orphan:
+
+rql_download.hooks.ServerStartupFuseZombiesLoop
+===============================================
+
+.. currentmodule:: rql_download.hooks
+
+.. autoclass:: ServerStartupFuseZombiesLoop
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~ServerStartupFuseZombiesLoop.__init__
+      ~ServerStartupFuseZombiesLoop.check_events
+      ~ServerStartupFuseZombiesLoop.critical
+      ~ServerStartupFuseZombiesLoop.cw_propval
+      ~ServerStartupFuseZombiesLoop.debug
+      ~ServerStartupFuseZombiesLoop.error
+      ~ServerStartupFuseZombiesLoop.exception
+      ~ServerStartupFuseZombiesLoop.filterable_selectors
+      ~ServerStartupFuseZombiesLoop.info
+      ~ServerStartupFuseZombiesLoop.warning
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~ServerStartupFuseZombiesLoop.category
+      ~ServerStartupFuseZombiesLoop.eidfrom
+      ~ServerStartupFuseZombiesLoop.eidto
+      ~ServerStartupFuseZombiesLoop.entity
+      ~ServerStartupFuseZombiesLoop.events
+      ~ServerStartupFuseZombiesLoop.known_args
+      ~ServerStartupFuseZombiesLoop.order
+      ~ServerStartupFuseZombiesLoop.repo
+      ~ServerStartupFuseZombiesLoop.rtype
+    
+    
+

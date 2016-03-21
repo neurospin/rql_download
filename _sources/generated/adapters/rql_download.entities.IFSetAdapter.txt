@@ -1,0 +1,44 @@
+:orphan:
+
+rql_download.entities.IFSetAdapter
+==================================
+
+.. currentmodule:: rql_download.entities
+
+.. autoclass:: IFSetAdapter
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~IFSetAdapter.__init__
+      ~IFSetAdapter.actual_actions
+      ~IFSetAdapter.build_action
+      ~IFSetAdapter.critical
+      ~IFSetAdapter.cw_propval
+      ~IFSetAdapter.debug
+      ~IFSetAdapter.error
+      ~IFSetAdapter.exception
+      ~IFSetAdapter.fill_menu
+      ~IFSetAdapter.html_class
+      ~IFSetAdapter.info
+      ~IFSetAdapter.rql
+      ~IFSetAdapter.url
+      ~IFSetAdapter.warning
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~IFSetAdapter.category
+      ~IFSetAdapter.order
+      ~IFSetAdapter.submenu
+    
+    
+

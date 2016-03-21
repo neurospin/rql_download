@@ -1,0 +1,61 @@
+:orphan:
+
+rql_download.views.cwsearch_export.CubicwebConfigView
+=====================================================
+
+.. currentmodule:: rql_download.views.cwsearch_export
+
+.. autoclass:: CubicwebConfigView
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~CubicwebConfigView.__init__
+      ~CubicwebConfigView.call
+      ~CubicwebConfigView.cell_call
+      ~CubicwebConfigView.critical
+      ~CubicwebConfigView.cw_propval
+      ~CubicwebConfigView.debug
+      ~CubicwebConfigView.error
+      ~CubicwebConfigView.exception
+      ~CubicwebConfigView.field
+      ~CubicwebConfigView.html_headers
+      ~CubicwebConfigView.info
+      ~CubicwebConfigView.is_primary
+      ~CubicwebConfigView.last_modified
+      ~CubicwebConfigView.linkable
+      ~CubicwebConfigView.page_title
+      ~CubicwebConfigView.render
+      ~CubicwebConfigView.set_http_cache_headers
+      ~CubicwebConfigView.set_request_content_type
+      ~CubicwebConfigView.set_stream
+      ~CubicwebConfigView.tal_render
+      ~CubicwebConfigView.url
+      ~CubicwebConfigView.warning
+      ~CubicwebConfigView.wdata
+      ~CubicwebConfigView.whead
+      ~CubicwebConfigView.wview
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~CubicwebConfigView.add_div_section
+      ~CubicwebConfigView.add_to_breadcrumbs
+      ~CubicwebConfigView.binary
+      ~CubicwebConfigView.cache_max_age
+      ~CubicwebConfigView.category
+      ~CubicwebConfigView.content_type
+      ~CubicwebConfigView.paginable
+      ~CubicwebConfigView.templatable
+      ~CubicwebConfigView.title
+    
+    
+

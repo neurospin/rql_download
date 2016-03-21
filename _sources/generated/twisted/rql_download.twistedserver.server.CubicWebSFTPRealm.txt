@@ -1,0 +1,25 @@
+:orphan:
+
+rql_download.twistedserver.server.CubicWebSFTPRealm
+===================================================
+
+.. currentmodule:: rql_download.twistedserver.server
+
+.. autoclass:: CubicWebSFTPRealm
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~CubicWebSFTPRealm.__init__
+      ~CubicWebSFTPRealm.requestAvatar
+    
+    
+    
+    
+    
+

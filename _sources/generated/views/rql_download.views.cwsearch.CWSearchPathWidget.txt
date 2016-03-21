@@ -1,0 +1,42 @@
+:orphan:
+
+rql_download.views.cwsearch.CWSearchPathWidget
+==============================================
+
+.. currentmodule:: rql_download.views.cwsearch
+
+.. autoclass:: CWSearchPathWidget
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~CWSearchPathWidget.__init__
+      ~CWSearchPathWidget.add_media
+      ~CWSearchPathWidget.attributes
+      ~CWSearchPathWidget.format_value
+      ~CWSearchPathWidget.process_field_data
+      ~CWSearchPathWidget.render
+      ~CWSearchPathWidget.typed_value
+      ~CWSearchPathWidget.values
+      ~CWSearchPathWidget.values_and_attributes
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~CWSearchPathWidget.needs_css
+      ~CWSearchPathWidget.needs_js
+      ~CWSearchPathWidget.setdomid
+      ~CWSearchPathWidget.settabindex
+      ~CWSearchPathWidget.suffix
+      ~CWSearchPathWidget.vocabulary_widget
+    
+    
+

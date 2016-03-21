@@ -1,0 +1,42 @@
+:orphan:
+
+rql_download.schema.CWSearch
+============================
+
+.. currentmodule:: rql_download.schema
+
+.. autoclass:: CWSearch
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~CWSearch.__init__
+      ~CWSearch.add_relation
+      ~CWSearch.expand_relation_definitions
+      ~CWSearch.expand_type_definitions
+      ~CWSearch.extend
+      ~CWSearch.get_permissions
+      ~CWSearch.get_relation
+      ~CWSearch.get_relations
+      ~CWSearch.insert_relation_after
+      ~CWSearch.remove_relation
+      ~CWSearch.set_permissions
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~CWSearch.description
+      ~CWSearch.meta
+      ~CWSearch.package
+      ~CWSearch.specialized_by
+    
+    
+

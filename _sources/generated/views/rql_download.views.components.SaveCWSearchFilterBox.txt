@@ -1,0 +1,64 @@
+:orphan:
+
+rql_download.views.components.SaveCWSearchFilterBox
+===================================================
+
+.. currentmodule:: rql_download.views.components
+
+.. autoclass:: SaveCWSearchFilterBox
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~SaveCWSearchFilterBox.__init__
+      ~SaveCWSearchFilterBox.action_link
+      ~SaveCWSearchFilterBox.append
+      ~SaveCWSearchFilterBox.critical
+      ~SaveCWSearchFilterBox.cw_propval
+      ~SaveCWSearchFilterBox.debug
+      ~SaveCWSearchFilterBox.error
+      ~SaveCWSearchFilterBox.exception
+      ~SaveCWSearchFilterBox.generate_form
+      ~SaveCWSearchFilterBox.info
+      ~SaveCWSearchFilterBox.init_rendering
+      ~SaveCWSearchFilterBox.layout_render
+      ~SaveCWSearchFilterBox.layout_select_args
+      ~SaveCWSearchFilterBox.layout_widgets
+      ~SaveCWSearchFilterBox.link
+      ~SaveCWSearchFilterBox.render
+      ~SaveCWSearchFilterBox.render_body
+      ~SaveCWSearchFilterBox.render_items
+      ~SaveCWSearchFilterBox.render_title
+      ~SaveCWSearchFilterBox.search_link
+      ~SaveCWSearchFilterBox.separator
+      ~SaveCWSearchFilterBox.sorted_widgets
+      ~SaveCWSearchFilterBox.warning
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~SaveCWSearchFilterBox.categories_in_order
+      ~SaveCWSearchFilterBox.context
+      ~SaveCWSearchFilterBox.contextual
+      ~SaveCWSearchFilterBox.cssclass
+      ~SaveCWSearchFilterBox.cw_property_defs
+      ~SaveCWSearchFilterBox.domid
+      ~SaveCWSearchFilterBox.layout_args
+      ~SaveCWSearchFilterBox.layout_id
+      ~SaveCWSearchFilterBox.linkbox_template
+      ~SaveCWSearchFilterBox.needs_css
+      ~SaveCWSearchFilterBox.needs_js
+      ~SaveCWSearchFilterBox.order
+      ~SaveCWSearchFilterBox.title
+      ~SaveCWSearchFilterBox.visible
+    
+    
+

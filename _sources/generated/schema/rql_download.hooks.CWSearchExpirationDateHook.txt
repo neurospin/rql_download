@@ -1,0 +1,46 @@
+:orphan:
+
+rql_download.hooks.CWSearchExpirationDateHook
+=============================================
+
+.. currentmodule:: rql_download.hooks
+
+.. autoclass:: CWSearchExpirationDateHook
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~CWSearchExpirationDateHook.__init__
+      ~CWSearchExpirationDateHook.check_events
+      ~CWSearchExpirationDateHook.critical
+      ~CWSearchExpirationDateHook.cw_propval
+      ~CWSearchExpirationDateHook.debug
+      ~CWSearchExpirationDateHook.error
+      ~CWSearchExpirationDateHook.exception
+      ~CWSearchExpirationDateHook.filterable_selectors
+      ~CWSearchExpirationDateHook.info
+      ~CWSearchExpirationDateHook.warning
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~CWSearchExpirationDateHook.category
+      ~CWSearchExpirationDateHook.eidfrom
+      ~CWSearchExpirationDateHook.eidto
+      ~CWSearchExpirationDateHook.entity
+      ~CWSearchExpirationDateHook.events
+      ~CWSearchExpirationDateHook.known_args
+      ~CWSearchExpirationDateHook.order
+      ~CWSearchExpirationDateHook.repo
+      ~CWSearchExpirationDateHook.rtype
+    
+    
+

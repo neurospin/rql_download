@@ -1,0 +1,320 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  
+    <title>RQL Download &mdash; Rql upload</title>
+  <!-- htmltitle is before nature.css - we use this hack to load bootstrap first -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../../_static/css/bootstrap.min.css" media="screen" />
+  <link rel="stylesheet" href="../../_static/css/bootstrap-responsive.css"/>
+
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Rql upload" href="../../index.html" />
+  
+   
+       <script type="text/javascript" src="../../_static/sidebar.js"></script>
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../../_static/js/bootstrap.min.js" type="text/javascript"></script>
+  <!-- <link rel="canonical" href="https://bioproj.extra.cea.fr/redmine/projects/nsap/generated/twisted/rql_download.fuse.fuse_mount.VirtualDirectory.html" /> -->
+
+  <script type="text/javascript">
+    $("div.buttonNext, div.buttonPrevious").hover(
+       function () {
+           $(this).css('background-color', '#FF9C34');
+       },
+       function () {
+           $(this).css('background-color', '#A7D6E2');
+       }
+    );
+    var bodywrapper = $('.bodywrapper');
+    var sidebarbutton = $('#sidebarbutton');
+    sidebarbutton.css({'height': '900px'});
+  </script>
+
+  </head>
+  <body role="document">
+
+<div class="header-wrapper">
+  <div class="header">
+    <p class="logo">
+      <a href="../../index.html">
+        <img src="../../_static/nsap.png" alt="Logo"/>
+      </a>
+    </p><div class="navbar">
+      <ul>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../installation.html">Installation</a></li>
+        <li class="btn-li">
+          <div class="btn-group">
+		    <a href="../../documentation.html">Documentation</a>
+		    <a class="btn dropdown-toggle" data-toggle="dropdown">
+		      <span class="caret"></span>
+		    </a>
+		    <ul class="dropdown-menu">
+	          <li class="link-title">RQL Download</li>
+			  <li class="divider"></li>
+			  <li><a href="../../cwbrowser.html">CWBrowser</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../fuse.html">Fuse virual folders</a></li>
+			  <li><a href="../../twisted.html">Twisted SFTP server</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../schema.html">Schema modifications</a></li>
+			  <li><a href="../../views.html">The search mechanism</a></li>
+			  <li class="divider"></li>
+		    </ul>
+		  </div>
+        </li>
+        <li><a href="http://neurospin-wiki.org/">NeuroSpin Wiki</a></li>
+      </ul>
+    </div> <!-- end navbar --></div>
+</div>
+
+
+<div class="content-wrapper">
+    <div class="sphinxsidebar">
+      <div class="sphinxsidebarwrapper">
+
+        <!-- info setup -->
+          <p class="doc-version">
+           This documentation is for Rql Download <strong>version 2.0.0</strong>
+          </p>
+        <p class="citing">
+          If you use the software, please do not hesitate to
+          <a href="https://github.com/neurospin/rql_download">report a bug</a>.
+        </p>
+
+      <!-- toc tree -->
+      <ul>
+<li><a class="reference internal" href="#">rql_download.fuse.fuse_mount.VirtualDirectory</a></li>
+</ul>
+
+
+      </div>
+    </div>
+  
+
+  <div class="content">
+      
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rql-download-fuse-fuse-mount-virtualdirectory">
+<h1>rql_download.fuse.fuse_mount.VirtualDirectory<a class="headerlink" href="#rql-download-fuse-fuse-mount-virtualdirectory" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rql_download.fuse.fuse_mount.VirtualDirectory">
+<em class="property">class </em><code class="descclassname">rql_download.fuse.fuse_mount.</code><code class="descname">VirtualDirectory</code><span class="sig-paren">(</span><em>root_data_dir</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#VirtualDirectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.VirtualDirectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build an internal representation of a full virtual directory to allow
+easy and fast usge of this directory with fuse.</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">__init__</span></code>(root_data_dir)</td>
+<td>Creates an empty virtual directory.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.VirtualDirectory.add_file" title="rql_download.fuse.fuse_mount.VirtualDirectory.add_file"><code class="xref py py-obj docutils literal"><span class="pre">add_file</span></code></a>(path,&nbsp;real_path,&nbsp;uid,&nbsp;gid)</td>
+<td>Create a virtual file &#8216;pointing to&#8217; a real file.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.VirtualDirectory.get_real_path" title="rql_download.fuse.fuse_mount.VirtualDirectory.get_real_path"><code class="xref py py-obj docutils literal"><span class="pre">get_real_path</span></code></a>(path)</td>
+<td>For a file, returns the real path for a given virtual path.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.VirtualDirectory.listdir" title="rql_download.fuse.fuse_mount.VirtualDirectory.listdir"><code class="xref py py-obj docutils literal"><span class="pre">listdir</span></code></a>(path)</td>
+<td>Return a generator yielding the content of a virtual directory.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.VirtualDirectory.make_directory" title="rql_download.fuse.fuse_mount.VirtualDirectory.make_directory"><code class="xref py py-obj docutils literal"><span class="pre">make_directory</span></code></a>(path,&nbsp;uid,&nbsp;gid,&nbsp;time)</td>
+<td>Create a virtual directory.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#rql_download.fuse.fuse_mount.VirtualDirectory.stat" title="rql_download.fuse.fuse_mount.VirtualDirectory.stat"><code class="xref py py-obj docutils literal"><span class="pre">stat</span></code></a>(path)</td>
+<td>Return a dictionary similar to the result of os.fstat for the given virtual path.</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rql_download.fuse.fuse_mount.VirtualDirectory.__module__">
+<code class="descname">__module__</code><em class="property"> = 'rql_download.fuse.fuse_mount'</em><a class="headerlink" href="#rql_download.fuse.fuse_mount.VirtualDirectory.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.VirtualDirectory.add_file">
+<code class="descname">add_file</code><span class="sig-paren">(</span><em>path</em>, <em>real_path</em>, <em>uid</em>, <em>gid</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#VirtualDirectory.add_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.VirtualDirectory.add_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a virtual file &#8216;pointing to&#8217; a real file.</p>
+<p>The parent directory must have been created before.
+The virtual file will be owned by the given uid and gid.
+Its access mode will be the same as the real file without write access.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the virtual file path we want to create.</p>
+</div></blockquote>
+<p><strong>real_path: str (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the real file location, where the virtual file point to.</p>
+</div></blockquote>
+<p><strong>uid: str (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the user identifier.</p>
+</div></blockquote>
+<p><strong>gid: str (mandatory)</strong> :</p>
+<blockquote class="last">
+<div><p>the user group identifier.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.VirtualDirectory.get_real_path">
+<code class="descname">get_real_path</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#VirtualDirectory.get_real_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.VirtualDirectory.get_real_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a file, returns the real path for a given virtual path.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">raise a &#8216;FuseOSError&#8217; exception if the path does not exist or
+the path is not a file.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str (mandatory)</strong> :</p>
+<blockquote class="last">
+<div><p>a virtual file from which we want to extract his real path.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.VirtualDirectory.listdir">
+<code class="descname">listdir</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#VirtualDirectory.listdir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.VirtualDirectory.listdir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator yielding the content of a virtual directory.</p>
+<p>Behave much like os.listdir() but the result also contains &#8216;.&#8217; and
+&#8216;..&#8217; at the begining.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">raise a &#8216;FuseOSError&#8217; exception if the path does not exist or
+the path is not a directory.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str (mandatory)</strong> :</p>
+<blockquote class="last">
+<div><p>a virtual path we want to list.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.VirtualDirectory.make_directory">
+<code class="descname">make_directory</code><span class="sig-paren">(</span><em>path</em>, <em>uid</em>, <em>gid</em>, <em>time</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#VirtualDirectory.make_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.VirtualDirectory.make_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a virtual directory.</p>
+<p>The parent directory must have been created before.
+The new directory will be owned by the given uid and
+gid.
+Its access mode will be 0500 (read and executable for user only).
+At each access, a modification times will be set to the given time.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the virtual path we want to create.</p>
+</div></blockquote>
+<p><strong>uid: str (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the user identifier.</p>
+</div></blockquote>
+<p><strong>gid: str (mandatory)</strong> :</p>
+<blockquote>
+<div><p>the user group identifier.</p>
+</div></blockquote>
+<p><strong>time: str (mandatory)</strong> :</p>
+<blockquote class="last">
+<div><p>the create time that will be set to the created path.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rql_download.fuse.fuse_mount.VirtualDirectory.stat">
+<code class="descname">stat</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/rql_download/fuse/fuse_mount.html#VirtualDirectory.stat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rql_download.fuse.fuse_mount.VirtualDirectory.stat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary similar to the result of os.fstat for the
+given virtual path.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">raise a &#8216;FuseOSError&#8217; exception if the path does not exist.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str (mandatory)</strong> :</p>
+<blockquote class="last">
+<div><p>a virtual path we want to check.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer">
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+    &copy; 2015, CWBROWSER developers &lt;antoine.grigis@cea.fr&gt;.
+</div>
+  </body>
+</html>

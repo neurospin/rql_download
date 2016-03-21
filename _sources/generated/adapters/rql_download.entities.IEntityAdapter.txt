@@ -1,0 +1,44 @@
+:orphan:
+
+rql_download.entities.IEntityAdapter
+====================================
+
+.. currentmodule:: rql_download.entities
+
+.. autoclass:: IEntityAdapter
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~IEntityAdapter.__init__
+      ~IEntityAdapter.actual_actions
+      ~IEntityAdapter.build_action
+      ~IEntityAdapter.critical
+      ~IEntityAdapter.cw_propval
+      ~IEntityAdapter.debug
+      ~IEntityAdapter.error
+      ~IEntityAdapter.exception
+      ~IEntityAdapter.fill_menu
+      ~IEntityAdapter.html_class
+      ~IEntityAdapter.info
+      ~IEntityAdapter.rql
+      ~IEntityAdapter.url
+      ~IEntityAdapter.warning
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~IEntityAdapter.category
+      ~IEntityAdapter.order
+      ~IEntityAdapter.submenu
+    
+    
+

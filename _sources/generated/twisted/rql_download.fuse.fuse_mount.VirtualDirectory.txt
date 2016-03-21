@@ -1,0 +1,29 @@
+:orphan:
+
+rql_download.fuse.fuse_mount.VirtualDirectory
+=============================================
+
+.. currentmodule:: rql_download.fuse.fuse_mount
+
+.. autoclass:: VirtualDirectory
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~VirtualDirectory.__init__
+      ~VirtualDirectory.add_file
+      ~VirtualDirectory.get_real_path
+      ~VirtualDirectory.listdir
+      ~VirtualDirectory.make_directory
+      ~VirtualDirectory.stat
+    
+    
+    
+    
+    
+

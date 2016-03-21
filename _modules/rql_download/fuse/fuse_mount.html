@@ -1,0 +1,930 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  
+    <title>RQL Download &mdash; Rql upload</title>
+  <!-- htmltitle is before nature.css - we use this hack to load bootstrap first -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../../../_static/css/bootstrap.min.css" media="screen" />
+  <link rel="stylesheet" href="../../../_static/css/bootstrap-responsive.css"/>
+
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Rql upload" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+   
+       <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../../../_static/js/bootstrap.min.js" type="text/javascript"></script>
+  <!-- <link rel="canonical" href="https://bioproj.extra.cea.fr/redmine/projects/nsap/_modules/rql_download/fuse/fuse_mount.html" /> -->
+
+  <script type="text/javascript">
+    $("div.buttonNext, div.buttonPrevious").hover(
+       function () {
+           $(this).css('background-color', '#FF9C34');
+       },
+       function () {
+           $(this).css('background-color', '#A7D6E2');
+       }
+    );
+    var bodywrapper = $('.bodywrapper');
+    var sidebarbutton = $('#sidebarbutton');
+    sidebarbutton.css({'height': '900px'});
+  </script>
+
+  </head>
+  <body role="document">
+
+<div class="header-wrapper">
+  <div class="header">
+    <p class="logo">
+      <a href="../../../index.html">
+        <img src="../../../_static/nsap.png" alt="Logo"/>
+      </a>
+    </p><div class="navbar">
+      <ul>
+        <li><a href="../../../index.html">Home</a></li>
+        <li><a href="../../../installation.html">Installation</a></li>
+        <li class="btn-li">
+          <div class="btn-group">
+		    <a href="../../../documentation.html">Documentation</a>
+		    <a class="btn dropdown-toggle" data-toggle="dropdown">
+		      <span class="caret"></span>
+		    </a>
+		    <ul class="dropdown-menu">
+	          <li class="link-title">RQL Download</li>
+			  <li class="divider"></li>
+			  <li><a href="../../../cwbrowser.html">CWBrowser</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../../fuse.html">Fuse virual folders</a></li>
+			  <li><a href="../../../twisted.html">Twisted SFTP server</a></li>
+			  <li class="divider"></li>
+			  <li><a href="../../../schema.html">Schema modifications</a></li>
+			  <li><a href="../../../views.html">The search mechanism</a></li>
+			  <li class="divider"></li>
+		    </ul>
+		  </div>
+        </li>
+        <li><a href="http://neurospin-wiki.org/">NeuroSpin Wiki</a></li>
+      </ul>
+    </div> <!-- end navbar --></div>
+</div>
+
+
+<div class="content-wrapper">
+    <div class="sphinxsidebar">
+      <div class="sphinxsidebarwrapper">
+
+        <!-- info setup -->
+          <p class="doc-version">
+           This documentation is for Rql Download <strong>version 2.0.0</strong>
+          </p>
+        <p class="citing">
+          If you use the software, please do not hesitate to
+          <a href="https://github.com/neurospin/rql_download">report a bug</a>.
+        </p>
+
+      <!-- toc tree -->
+      
+
+      </div>
+    </div>
+  
+
+  <div class="content">
+      
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for rql_download.fuse.fuse_mount</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1">##########################################################################</span>
+<span class="c1"># NSAp - Copyright (C) CEA, 2013</span>
+<span class="c1"># Distributed under the terms of the CeCILL-B license, as published by</span>
+<span class="c1"># the CEA-CNRS-INRIA. Refer to the LICENSE file or to</span>
+<span class="c1"># http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html</span>
+<span class="c1"># for details.</span>
+<span class="c1">##########################################################################</span>
+
+<span class="c1"># System import</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">stat</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">pwd</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="c1"># CW import</span>
+<span class="kn">from</span> <span class="nn">cubicweb.cwconfig</span> <span class="kn">import</span> <span class="n">CubicWebConfiguration</span> <span class="k">as</span> <span class="n">cwcfg</span>
+
+<span class="c1"># Fuse import</span>
+<span class="kn">from</span> <span class="nn">cubes.rql_download.fuse.fuse</span> <span class="kn">import</span> <span class="p">(</span><span class="n">FUSE</span><span class="p">,</span>
+                                          <span class="n">FuseOSError</span><span class="p">,</span>
+                                          <span class="n">Operations</span><span class="p">,</span>
+                                          <span class="n">ENOENT</span><span class="p">,</span>
+                                          <span class="n">ENOTDIR</span><span class="p">,</span>
+                                          <span class="n">EROFS</span><span class="p">,</span>
+                                          <span class="n">ENOTSUP</span><span class="p">)</span>
+<span class="c1"># Define the logger</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;fuse.log-mixin&quot;</span><span class="p">)</span>
+
+<span class="c1"># Define a mapping between cw export vid and file extension</span>
+<span class="n">VID_TO_EXT</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;csvexport&quot;</span><span class="p">:</span> <span class="s2">&quot;.csv&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;jsonexport&quot;</span><span class="p">:</span> <span class="s2">&quot;.json&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ecsvexport&quot;</span><span class="p">:</span> <span class="s2">&quot;.csv&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ejsonexport&quot;</span><span class="p">:</span> <span class="s2">&quot;.json&quot;</span>
+<span class="p">}</span>
+
+<span class="c1"># The following import can be used to help debugging but is dangerous because</span>
+<span class="c1"># the content of all fuse actions (even the binary content of files) is</span>
+<span class="c1"># printed on the log. In order to debug is also necessary to add LoggingMixIn</span>
+<span class="c1"># to FuseRset below.</span>
+<span class="c1"># from cubes.rql_download.fuse.fuse import LoggingMixIn</span>
+
+
+<span class="k">class</span> <span class="nc">Suicide</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="get_cw_connection"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.get_cw_connection.html#rql_download.fuse.fuse_mount.get_cw_connection">[docs]</a><span class="k">def</span> <span class="nf">get_cw_connection</span><span class="p">(</span><span class="n">instance_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Connect to a local instance using an in memory connection.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    instance_name: str (mandatory)</span>
+<span class="sd">        the name of the cw instance we want to connect.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mih: cubicweb.server.migractions.ServerMigrationHelper</span>
+<span class="sd">        the server migration object that contains a &#39;session&#39; and &#39;shutdown&#39;</span>
+<span class="sd">        attributes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Parse/configure the all in one configuration</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">cwcfg</span><span class="o">.</span><span class="n">config_for</span><span class="p">(</span><span class="n">instance_name</span><span class="p">)</span>
+    <span class="n">sources</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,)</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">set_sources_mode</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">repairing</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="c1"># Create server migration helper</span>
+    <span class="n">mih</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">migration_handler</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">mih</span></div>
+
+
+<div class="viewcode-block" id="get_cw_option"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.get_cw_option.html#rql_download.fuse.fuse_mount.get_cw_option">[docs]</a><span class="k">def</span> <span class="nf">get_cw_option</span><span class="p">(</span><span class="n">instance_name</span><span class="p">,</span> <span class="n">cw_option</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Get a cw option.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    instance_name: str (mandatory)</span>
+<span class="sd">        the name of the cw instance we want to connect.</span>
+<span class="sd">    cw_option: str (mandatory)</span>
+<span class="sd">        the cw option name.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    basedir: str</span>
+<span class="sd">        part of the image path to hide in the virtual fs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get the configuration file</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">cwcfg</span><span class="o">.</span><span class="n">config_for</span><span class="p">(</span><span class="n">instance_name</span><span class="p">)</span>
+    <span class="n">config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">sources_file</span><span class="p">()),</span> <span class="s2">&quot;all-in-one.conf&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Parse the configuration file and retrive the basedir</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">open_file</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">open_file</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">r&quot;^(\w+)=(\S*)$&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">cw_option</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">value</span>
+
+    <span class="c1"># If the basedir parameter is nor found raise an exception</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No &#39;{0}&#39; option has been declared in the &#39;{1}&#39; &quot;</span>
+                    <span class="s2">&quot;configuration file.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cw_option</span><span class="p">,</span> <span class="n">config_file</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="VirtualDirectory"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.VirtualDirectory.html#rql_download.fuse.fuse_mount.VirtualDirectory">[docs]</a><span class="k">class</span> <span class="nc">VirtualDirectory</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Build an internal representation of a full virtual directory to allow</span>
+<span class="sd">    easy and fast usge of this directory with fuse.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_data_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Creates an empty virtual directory.</span>
+
+<span class="sd">        The virtual directory can be populated with make_directory()</span>
+<span class="sd">        and add_file().</span>
+<span class="sd">        Its content can be accessed with stat(), listdir() and get_real_path().</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        root_data_dir: str (mandatory)</span>
+<span class="sd">            parameter used to mask a part of the file path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Class parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_data_dir</span> <span class="o">=</span> <span class="n">root_data_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rset_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="VirtualDirectory.make_directory"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.VirtualDirectory.html#rql_download.fuse.fuse_mount.VirtualDirectory.make_directory">[docs]</a>    <span class="k">def</span> <span class="nf">make_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">gid</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create a virtual directory.</span>
+
+<span class="sd">        The parent directory must have been created before.</span>
+<span class="sd">        The new directory will be owned by the given uid and</span>
+<span class="sd">        gid.</span>
+<span class="sd">        Its access mode will be 0500 (read and executable for user only).</span>
+<span class="sd">        At each access, a modification times will be set to the given time.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str (mandatory)</span>
+<span class="sd">            the virtual path we want to create.</span>
+<span class="sd">        uid: str (mandatory)</span>
+<span class="sd">            the user identifier.</span>
+<span class="sd">        gid: str (mandatory)</span>
+<span class="sd">            the user group identifier.</span>
+<span class="sd">        time: str (mandatory)</span>
+<span class="sd">            the create time that will be set to the created path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Try to get the path informations: get something if the</span>
+        <span class="c1"># the path has already been created</span>
+        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="c1"># Create a special mask for the root element in irder to be able to</span>
+        <span class="c1"># update fuse as the cw master</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="mo">0500</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="mo">0555</span>
+
+        <span class="c1"># If the path is already created, check the that the path information</span>
+        <span class="c1"># are correct</span>
+        <span class="k">if</span> <span class="n">path_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">path_info</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">!=</span> <span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">gid</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Virtual directory &#39;{0}&#39; already exists&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
+        <span class="c1"># Otherwise, create a new virtual path</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Path creation</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">=</span> <span class="p">([],</span> <span class="n">uid</span><span class="p">,</span> <span class="n">gid</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+
+            <span class="c1"># Link the current path to the global tree</span>
+            <span class="c1"># &gt; get the parent directory name and current directory name</span>
+            <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+                <span class="n">parentdir_name</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="n">currentdir_name</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">parentdir_name</span><span class="p">,</span> <span class="n">currentdir_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="c1"># &gt; get the parant path informations</span>
+            <span class="n">parentpath_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">parentdir_name</span><span class="p">)</span>
+            <span class="c1"># &gt; add the current path to the parent info structure</span>
+            <span class="k">if</span> <span class="n">parentpath_info</span><span class="p">:</span>
+                <span class="n">parentpath_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">currentdir_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VirtualDirectory.add_file"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.VirtualDirectory.html#rql_download.fuse.fuse_mount.VirtualDirectory.add_file">[docs]</a>    <span class="k">def</span> <span class="nf">add_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">real_path</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">gid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create a virtual file &#39;pointing to&#39; a real file.</span>
+
+<span class="sd">        The parent directory must have been created before.</span>
+<span class="sd">        The virtual file will be owned by the given uid and gid.</span>
+<span class="sd">        Its access mode will be the same as the real file without write access.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str (mandatory)</span>
+<span class="sd">            the virtual file path we want to create.</span>
+<span class="sd">        real_path: str (mandatory)</span>
+<span class="sd">            the real file location, where the virtual file point to.</span>
+<span class="sd">        uid: str (mandatory)</span>
+<span class="sd">            the user identifier.</span>
+<span class="sd">        gid: str (mandatory)</span>
+<span class="sd">            the user group identifier.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Try to get the file informations: get something if the</span>
+        <span class="c1"># the file has already been created</span>
+        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="c1"># If the file is already created, check the that the file information</span>
+        <span class="c1"># are correct</span>
+        <span class="k">if</span> <span class="n">path_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">path_info</span> <span class="o">!=</span> <span class="p">(</span><span class="n">real_path</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">gid</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Virtual file &#39;{0}&#39; already exists&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
+        <span class="c1"># Otherwise, create a new virtual file pointing to a real one</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># File creation: point to the real file</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">real_path</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">gid</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+            <span class="c1"># Link the current file to the global tree</span>
+            <span class="c1"># &gt; get the parent directory name and current file name</span>
+            <span class="n">parentdir_name</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="c1"># &gt; get the parant path informations</span>
+            <span class="n">parentpath_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">parentdir_name</span><span class="p">)</span>
+            <span class="c1"># &gt; add the current file to the parent info structure</span>
+            <span class="k">if</span> <span class="n">parentpath_info</span><span class="p">:</span>
+                <span class="n">parentpath_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Virtual directory &#39;{0}&#39; does not exist&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">parentdir_name</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="VirtualDirectory.stat"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.VirtualDirectory.html#rql_download.fuse.fuse_mount.VirtualDirectory.stat">[docs]</a>    <span class="k">def</span> <span class="nf">stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return a dictionary similar to the result of os.fstat for the</span>
+<span class="sd">        given virtual path.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            raise a &#39;FuseOSError&#39; exception if the path does not exist.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str (mandatory)</span>
+<span class="sd">            a virtual path we want to check.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Try to get the path informations: get something if the</span>
+        <span class="c1"># the path exists</span>
+        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="c1"># If the path does not exist, raise a &#39;FuseOSError&#39; exception</span>
+        <span class="k">if</span> <span class="n">path_info</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOENT</span><span class="p">)</span>
+
+        <span class="c1"># Unpack path information</span>
+        <span class="n">real_path</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">gid</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">ctime</span> <span class="o">=</span> <span class="n">path_info</span>
+
+        <span class="c1"># Initilaize the output</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">st_uid</span><span class="o">=</span><span class="n">uid</span><span class="p">,</span> <span class="n">st_gid</span><span class="o">=</span><span class="n">gid</span><span class="p">)</span>
+
+        <span class="c1"># Path link to a real file</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">real_path</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+
+            <span class="c1"># Deal with rset binary file</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;request_result&quot;</span><span class="p">):</span>
+                <span class="n">cwsearch_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">rset_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">cwsearch_name</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s2">&quot;st_ctime&quot;</span><span class="p">:</span> <span class="n">rset_time</span><span class="p">,</span>
+                    <span class="s2">&quot;st_mtime&quot;</span><span class="p">:</span> <span class="n">rset_time</span><span class="p">,</span>
+                    <span class="s2">&quot;st_nlink&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s2">&quot;st_mode&quot;</span><span class="p">:</span> <span class="mi">33204</span><span class="p">,</span>
+                    <span class="s2">&quot;st_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rset_data</span><span class="p">[</span><span class="n">cwsearch_name</span><span class="p">]</span><span class="o">.</span><span class="n">len</span><span class="p">,</span>
+                    <span class="s2">&quot;st_atime&quot;</span><span class="p">:</span> <span class="n">rset_time</span>
+                <span class="p">})</span>
+
+            <span class="c1"># File on the file system</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">lstat</span><span class="p">(</span><span class="n">real_path</span><span class="p">)</span>
+                <span class="c1"># TODO: Remove write access on st_mode</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="nb">dict</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+                         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;st_atime&quot;</span><span class="p">,</span> <span class="s2">&quot;st_ctime&quot;</span><span class="p">,</span> <span class="s2">&quot;st_mode&quot;</span><span class="p">,</span>
+                                     <span class="s2">&quot;st_mtime&quot;</span><span class="p">,</span> <span class="s2">&quot;st_nlink&quot;</span><span class="p">,</span> <span class="s2">&quot;st_size&quot;</span><span class="p">)))</span>
+        <span class="c1"># Path is a virtual directory</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;st_mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IFDIR</span> <span class="o">+</span> <span class="n">mode</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;st_atime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctime</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;st_ctime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctime</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;st_mtime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctime</span>
+            <span class="c1"># st_nlinks is the number of reference to the directory a:</span>
+            <span class="c1"># the number of sub folders in a pointing to a +</span>
+            <span class="c1"># a has a referece to itself and the parent directory has</span>
+            <span class="c1"># a reference to a.</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;st_nlink&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">real_path</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;st_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4096</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="VirtualDirectory.listdir"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.VirtualDirectory.html#rql_download.fuse.fuse_mount.VirtualDirectory.listdir">[docs]</a>    <span class="k">def</span> <span class="nf">listdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return a generator yielding the content of a virtual directory.</span>
+
+<span class="sd">        Behave much like os.listdir() but the result also contains &#39;.&#39; and</span>
+<span class="sd">        &#39;..&#39; at the begining.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            raise a &#39;FuseOSError&#39; exception if the path does not exist or</span>
+<span class="sd">            the path is not a directory.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str (mandatory)</span>
+<span class="sd">            a virtual path we want to list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Try to get the path informations: get something if the</span>
+        <span class="c1"># the path exists</span>
+        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="c1"># If the path does not exist, raise a &#39;FuseOSError&#39; exception</span>
+        <span class="k">if</span> <span class="n">path_info</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOENT</span><span class="p">)</span>
+
+        <span class="c1"># Unpack path information</span>
+        <span class="n">real_path</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">gid</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">ctime</span> <span class="o">=</span> <span class="n">path_info</span>
+
+        <span class="c1"># Path is a virtual directory</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">real_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="s2">&quot;.&quot;</span>
+            <span class="k">yield</span> <span class="s2">&quot;..&quot;</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">real_path</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">path</span>
+        <span class="c1"># Otherwise raise an exception</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOTDIR</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VirtualDirectory.get_real_path"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.VirtualDirectory.html#rql_download.fuse.fuse_mount.VirtualDirectory.get_real_path">[docs]</a>    <span class="k">def</span> <span class="nf">get_real_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; For a file, returns the real path for a given virtual path.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            raise a &#39;FuseOSError&#39; exception if the path does not exist or</span>
+<span class="sd">            the path is not a file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str (mandatory)</span>
+<span class="sd">            a virtual file from which we want to extract his real path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Try to get the file informations: get something if the</span>
+        <span class="c1"># the path exists</span>
+        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="c1"># If the path does not exist, raise a &#39;FuseOSError&#39; exception</span>
+        <span class="k">if</span> <span class="n">path_info</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOENT</span><span class="p">)</span>
+
+        <span class="c1"># Unpack path information</span>
+        <span class="n">real_path</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">gid</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">ctime</span> <span class="o">=</span> <span class="n">path_info</span>
+
+        <span class="c1"># Path is a virtual file</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">real_path</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">real_path</span>
+        <span class="c1"># Otherwise raise an exception</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOTDIR</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># If debug is necessary, add LoggingMixIn to FuseRset base classes</span>
+<span class="c1"># class FuseRset(LoggingMixIn, Operations):</span>
+<div class="viewcode-block" id="FuseRset"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset">[docs]</a><span class="k">class</span> <span class="nc">FuseRset</span><span class="p">(</span><span class="n">Operations</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Class that create a mount point containing virtual path representing</span>
+<span class="sd">    the CWSearch entities of a cw user.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">login</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initilize the FuseRset class.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            a user with &#39;login&#39; login must exist on the system through ldap</span>
+<span class="sd">            or the adduser command.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        instance: str (mandatory)</span>
+<span class="sd">            the cw instance name we want to connect</span>
+<span class="sd">        login: str (mandatory)</span>
+<span class="sd">            the cw login</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Class parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instance</span> <span class="o">=</span> <span class="n">instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">login</span> <span class="o">=</span> <span class="n">login</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vdir</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c1"># the virtual directory object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_root_dir</span> <span class="o">=</span> <span class="n">get_cw_option</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="s2">&quot;basedir&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get the directory where to generate the user acces log</span>
+        <span class="c1"># Check the permissions</span>
+        <span class="n">log_dir</span> <span class="o">=</span> <span class="n">get_cw_option</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="s2">&quot;rql_download_log&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_log</span> <span class="o">=</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">F_OK</span><span class="p">)</span> <span class="ow">and</span>
+                             <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">W_OK</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_log</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">log_dir</span><span class="p">,</span> <span class="s2">&quot;rql_download_{0}.log&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">)),</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get the user uid and gid</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pw</span> <span class="o">=</span> <span class="n">pwd</span><span class="o">.</span><span class="n">getpwnam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown user &#39;{0}&#39;. A user with &#39;login&#39; login &quot;</span>
+                            <span class="s2">&quot;must exist on the system through ldap or the &quot;</span>
+                            <span class="s2">&quot;adduser command.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">login</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uid</span> <span class="o">=</span> <span class="n">pw</span><span class="o">.</span><span class="n">pw_uid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gid</span> <span class="o">=</span> <span class="n">pw</span><span class="o">.</span><span class="n">pw_gid</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;! login = {0}; uid = {1}; gid = {2}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gid</span><span class="p">))</span>
+
+        <span class="c1"># Create the virtual directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+<div class="viewcode-block" id="FuseRset.update"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method that create a virtual directory from a user CWSearch</span>
+<span class="sd">        entities results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Message</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;! starting virtual direcotry update&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get a Cubicweb in memory connection</span>
+        <span class="n">cw_connection</span> <span class="o">=</span> <span class="n">get_cw_connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Get the cw session to execute rql requests</span>
+            <span class="n">cw_session</span> <span class="o">=</span> <span class="n">cw_connection</span><span class="o">.</span><span class="n">session</span>
+
+            <span class="c1"># From the cw configuration file, get the mask we will apply</span>
+            <span class="c1"># on the virtual tree</span>
+            <span class="n">data_root_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_root_dir</span>
+
+            <span class="c1"># Create an empty virtual directory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vdir</span> <span class="o">=</span> <span class="n">VirtualDirectory</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">)</span>
+
+            <span class="c1"># Get the current time for virtual directories times</span>
+            <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+            <span class="c1"># Go through all the user CWSearch entities</span>
+            <span class="n">rql</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Any S, N WHERE S is CWSearch, S title N, S owned_by U, &quot;</span>
+                   <span class="s2">&quot;U login &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">cwsearch_eid</span><span class="p">,</span> <span class="n">cwsearch_name</span> <span class="ow">in</span> <span class="n">cw_session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">rql</span><span class="p">):</span>
+
+                <span class="c1"># Message</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;! Processing CWSearch &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cwsearch_name</span><span class="p">))</span>
+
+                <span class="c1"># Get the files associated to the current CWSearch</span>
+                <span class="n">rql</span> <span class="o">=</span> <span class="s2">&quot;Any D WHERE S eid &#39;{0}&#39;, S result F, F data D&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">cwsearch_eid</span><span class="p">)</span>
+                <span class="n">files_data</span> <span class="o">=</span> <span class="n">cw_session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">rql</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="c1"># Get the downloadable files path from the json</span>
+                <span class="n">files</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">files_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="s2">&quot;files&quot;</span><span class="p">]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;! Found {0} valid files for &#39;{1}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">),</span> <span class="n">cwsearch_name</span><span class="p">))</span>
+
+                <span class="c1"># Get the rset binary associated to the current CWSearch</span>
+                <span class="n">rql</span> <span class="o">=</span> <span class="s2">&quot;Any D WHERE S eid &#39;{0}&#39;, S rset F, F data D&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">cwsearch_eid</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">vdir</span><span class="o">.</span><span class="n">rset_data</span><span class="p">[</span><span class="n">cwsearch_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">cw_session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">rql</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+                <span class="c1"># Add the rset to the build tree, add the appropriate</span>
+                <span class="c1"># file extension</span>
+                <span class="n">rql</span> <span class="o">=</span> <span class="s2">&quot;Any T WHERE S eid &#39;{0}&#39;, S rset_type T&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">cwsearch_eid</span><span class="p">)</span>
+                <span class="n">fext</span> <span class="o">=</span> <span class="n">VID_TO_EXT</span><span class="p">[</span><span class="n">cw_session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">rql</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">,</span> <span class="s2">&quot;request_result&quot;</span> <span class="o">+</span> <span class="n">fext</span><span class="p">))</span>
+
+                <span class="c1"># Go through all files and create the virtual direcotry</span>
+                <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+
+                    <span class="c1"># Apply the mask: remove &#39;data_root_dir&#39; from the</span>
+                    <span class="c1"># begining of the path</span>
+                    <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">):</span>
+                        <span class="n">path</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">):]</span>
+
+                    <span class="c1"># Add the CWSearch name to the path</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cwsearch_name</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cwsearch_name</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+
+                    <span class="c1"># Paths send by fuse are absolute =&gt; adds os.path.sep at</span>
+                    <span class="c1"># the begining</span>
+                    <span class="n">virtual_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+                    <span class="n">virtual_path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+
+                    <span class="c1"># Make sure all parent virtual directories are created</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">virtual_path</span><span class="p">)):</span>
+                        <span class="n">dir_full_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">virtual_path</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">vdir</span><span class="o">.</span><span class="n">make_directory</span><span class="p">(</span>
+                            <span class="n">dir_full_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gid</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
+
+                    <span class="c1"># Add the file to the fuse virtual tree</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">vdir</span><span class="o">.</span><span class="n">add_file</span><span class="p">(</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">virtual_path</span><span class="p">),</span> <span class="n">fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gid</span><span class="p">)</span>
+
+        <span class="c1"># Shut down the cw connection</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cw_connection</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+
+        <span class="c1"># Message</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;! update done&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.suicide"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.suicide">[docs]</a>    <span class="k">def</span> <span class="nf">suicide</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        unmount Fuse and suicide</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mount_base</span> <span class="o">=</span> <span class="n">get_cw_option</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance_name</span><span class="p">,</span> <span class="s2">&quot;mountdir&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Fuse: unmounting {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mount_base</span><span class="p">,</span>
+                                                               <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span>
+                                                               <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">)))</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;fusermount&#39;</span><span class="p">,</span> <span class="s2">&quot;-uz&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mount_base</span><span class="p">,</span>
+                                                            <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span>
+                                                            <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">)])</span>
+
+        <span class="c1"># Now kill the process</span>
+        <span class="k">raise</span> <span class="n">Suicide</span><span class="p">(</span><span class="s2">&quot;Servershutdown: self-kill for fuse subprocess&quot;</span><span class="p">)</span></div>
+
+    <span class="c1">########################################################################</span>
+    <span class="c1"># Filesystem methods</span>
+    <span class="c1">########################################################################</span>
+
+    <span class="c1"># access is not called if &#39;default_permissions&#39; mount option is used</span>
+    <span class="c1"># def access(self, path, mode):</span>
+    <span class="c1">#    return 0</span>
+
+<div class="viewcode-block" id="FuseRset.getattr"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.getattr">[docs]</a>    <span class="k">def</span> <span class="nf">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">fh</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; File-class version of &#39;getattr&#39;.</span>
+<span class="sd">        Retrieves information about a file (the &quot;stat&quot; of a file).</span>
+
+<span class="sd">        Return a dict with stats on the given virtual path.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            when the stat method is called on the &#39;/.isalive&#39; fake folder,</span>
+<span class="sd">            the method return a fake folder stat but do not raise an exception.</span>
+<span class="sd">            This in turns unables us to check if the fuse process is running.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            when the stat method is called on the &#39;/.update&#39; fake folder,</span>
+<span class="sd">            the virtual direcotry is recreated and the process may not be</span>
+<span class="sd">            available during this operation.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            when the stat method is called on the &#39;/.kill&#39; fake folder,</span>
+<span class="sd">            the fuse repository is unmounted and the process terminates by</span>
+<span class="sd">            raising an exception.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str (mandatory)</span>
+<span class="sd">            a virtual path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create a fake folder stat</span>
+        <span class="n">fstat</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;st_ctime&quot;</span><span class="p">:</span> <span class="mf">1.</span><span class="p">,</span>
+            <span class="s2">&quot;st_mtime&quot;</span><span class="p">:</span> <span class="mf">1.</span><span class="p">,</span>
+            <span class="s2">&quot;st_nlink&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;st_mode&quot;</span><span class="p">:</span> <span class="mi">16704</span><span class="p">,</span>
+            <span class="s2">&quot;st_size&quot;</span><span class="p">:</span> <span class="mi">4096</span><span class="p">,</span>
+            <span class="s2">&quot;st_gid&quot;</span><span class="p">:</span> <span class="mi">5009</span><span class="p">,</span>
+            <span class="s2">&quot;st_uid&quot;</span><span class="p">:</span> <span class="mi">5009</span><span class="p">,</span>
+            <span class="s2">&quot;st_atime&quot;</span><span class="p">:</span> <span class="mf">1.</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Check if the fuse mount is alive</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">&quot;/.isalive&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fstat</span>
+
+        <span class="c1"># kill subprocess (occurs during server shutdown)</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">&quot;./kill&quot;</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;killing {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">suicide</span><span class="p">()</span>
+
+        <span class="c1"># Start the fuse update: the process is not avalaible during the update</span>
+        <span class="k">elif</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">&quot;/.update&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">fstat</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vdir</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.opendir"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.opendir">[docs]</a>    <span class="k">def</span> <span class="nf">opendir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; This method is useless here because the path is always given to</span>
+<span class="sd">        readdir().</span>
+<span class="sd">        Always return 0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="FuseRset.readdir"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.readdir">[docs]</a>    <span class="k">def</span> <span class="nf">readdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">fh</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; List the content of a directory.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str (mandatory)</span>
+<span class="sd">            a virtual path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vdir</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.releasedir"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.releasedir">[docs]</a>    <span class="k">def</span> <span class="nf">releasedir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">fh</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; As for opendir, we do not use releasedir.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
+
+    <span class="c1">########################################################################</span>
+    <span class="c1"># Implemented file methods</span>
+    <span class="c1">########################################################################</span>
+
+<div class="viewcode-block" id="FuseRset.open"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; File-class version of &#39;open&#39;.</span>
+<span class="sd">        Open a file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;open {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="c1"># Update the log file if requested</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_log</span><span class="p">:</span>
+            <span class="n">realpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="mi">2</span><span class="p">:])</span>
+            <span class="n">abspath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root_dir</span><span class="p">,</span> <span class="n">realpath</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span>
+                 <span class="n">abspath</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">abspath</span><span class="p">))]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_file</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">O_RDWR</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">O_WRONLY</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span>
+
+        <span class="c1"># Special case for the rset binary file</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;request_result&quot;</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vdir</span><span class="o">.</span><span class="n">get_real_path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">flags</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.read"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">fh</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; File-class version of &#39;read&#39;.</span>
+<span class="sd">        Get all or part of the contents of a file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;read {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="c1"># Special case for the rset binary file</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;request_result&quot;</span><span class="p">):</span>
+            <span class="n">cwsearch_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vdir</span><span class="o">.</span><span class="n">rset_data</span><span class="p">[</span><span class="n">cwsearch_name</span><span class="p">]</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vdir</span><span class="o">.</span><span class="n">rset_data</span><span class="p">[</span><span class="n">cwsearch_name</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+        <span class="c1"># The file exists on the file system</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">lseek</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">SEEK_SET</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.release"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.release">[docs]</a>    <span class="k">def</span> <span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">fh</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; File-class version of &#39;release&#39;.</span>
+<span class="sd">        Closes an open file. Allows filesystem to clean up.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;realease {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="c1"># Special case for the rset binary file</span>
+        <span class="c1"># Keep binary file in memory</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;request_result&quot;</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="c1"># Close file from descriptor</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.flush"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">fh</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; File-class version of &#39;flush&quot;.</span>
+<span class="sd">        Flush cached data to the file system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;flush {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span></div>
+        <span class="c1"># raise FuseOSError(ENOTSUP)</span>
+
+    <span class="c1">########################################################################</span>
+    <span class="c1"># Forbidden methods</span>
+    <span class="c1">########################################################################</span>
+
+<div class="viewcode-block" id="FuseRset.chmod"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.chmod">[docs]</a>    <span class="k">def</span> <span class="nf">chmod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;chmod&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.chown"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.chown">[docs]</a>    <span class="k">def</span> <span class="nf">chown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">gid</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;chown&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.create"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">fi</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;create&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.fsync"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.fsync">[docs]</a>    <span class="k">def</span> <span class="nf">fsync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">datasync</span><span class="p">,</span> <span class="n">fh</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;fsync&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOTSUP</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.fsyncdir"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.fsyncdir">[docs]</a>    <span class="k">def</span> <span class="nf">fsyncdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">datasync</span><span class="p">,</span> <span class="n">fh</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;fsyncdir&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOTSUP</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.link"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.link">[docs]</a>    <span class="k">def</span> <span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;link&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.mkdir"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.mkdir">[docs]</a>    <span class="k">def</span> <span class="nf">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;mkdir&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.mknod"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.mknod">[docs]</a>    <span class="k">def</span> <span class="nf">mknod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">dev</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;mknod&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.readlink"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.readlink">[docs]</a>    <span class="k">def</span> <span class="nf">readlink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;readlink&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOTSUP</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.removexattr"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.removexattr">[docs]</a>    <span class="k">def</span> <span class="nf">removexattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;removexattr&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOTSUP</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.rename"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.rename">[docs]</a>    <span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;rename&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.rmdir"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.rmdir">[docs]</a>    <span class="k">def</span> <span class="nf">rmdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;rmdir&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.setxattr"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.setxattr">[docs]</a>    <span class="k">def</span> <span class="nf">setxattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;setxattr&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOTSUP</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.statfs"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.statfs">[docs]</a>    <span class="k">def</span> <span class="nf">statfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;statfs&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOTSUP</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.symlink"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.symlink">[docs]</a>    <span class="k">def</span> <span class="nf">symlink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;symlink&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.truncate"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.truncate">[docs]</a>    <span class="k">def</span> <span class="nf">truncate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">fh</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;truncate&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.unlink"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.unlink">[docs]</a>    <span class="k">def</span> <span class="nf">unlink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;unlink&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.utimens"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.utimens">[docs]</a>    <span class="k">def</span> <span class="nf">utimens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;utimens&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">ENOTSUP</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FuseRset.write"><a class="viewcode-back" href="../../../generated/twisted/rql_download.fuse.fuse_mount.FuseRset.html#rql_download.fuse.fuse_mount.FuseRset.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">fh</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;write&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">FuseOSError</span><span class="p">(</span><span class="n">EROFS</span><span class="p">)</span></div></div>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="c1"># Setup the logger: cubicweb change the logging config and thus</span>
+    <span class="c1"># we setup en axtra stream handler</span>
+    <span class="c1"># ToDo: fix it</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">())</span>
+
+    <span class="c1"># Command line parameters</span>
+    <span class="n">instance_name</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">login</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">mount_base</span> <span class="o">=</span> <span class="n">get_cw_option</span><span class="p">(</span><span class="n">instance_name</span><span class="p">,</span> <span class="s2">&quot;mountdir&quot;</span><span class="p">)</span>
+    <span class="n">mount_point</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mount_base</span><span class="p">,</span> <span class="n">login</span><span class="p">,</span> <span class="n">instance_name</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Command line parameters: instance name = {0}, login = {1} fuse &quot;</span>
+                 <span class="s2">&quot;mount point = {2}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">instance_name</span><span class="p">,</span> <span class="n">login</span><span class="p">,</span> <span class="n">mount_point</span><span class="p">))</span>
+
+    <span class="c1"># Check if the user fuse mount point is available</span>
+    <span class="n">isalive</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mount_point</span><span class="p">,</span> <span class="s2">&quot;.isalive&quot;</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">isalive</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="c1"># Add the new search to the user fuse mount point:</span>
+    <span class="c1"># if the process is already created, just start the update,</span>
+    <span class="c1"># otherwise create a fuse loop</span>
+    <span class="k">if</span> <span class="n">isalive</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mount_point</span><span class="p">,</span> <span class="s2">&quot;.update&quot;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Create the fuse mount point</span>
+        <span class="n">FUSE</span><span class="p">(</span><span class="n">FuseRset</span><span class="p">(</span><span class="n">instance_name</span><span class="p">,</span> <span class="n">login</span><span class="p">),</span>
+             <span class="n">mount_point</span><span class="p">,</span>
+             <span class="n">foreground</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+             <span class="n">allow_other</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+             <span class="n">default_permissions</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer">
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+    &copy; 2015, CWBROWSER developers &lt;antoine.grigis@cea.fr&gt;.
+</div>
+  </body>
+</html>

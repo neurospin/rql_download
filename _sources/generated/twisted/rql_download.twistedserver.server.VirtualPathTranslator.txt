@@ -1,0 +1,45 @@
+:orphan:
+
+rql_download.twistedserver.server.VirtualPathTranslator
+=======================================================
+
+.. currentmodule:: rql_download.twistedserver.server
+
+.. autoclass:: VirtualPathTranslator
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~VirtualPathTranslator.__init__
+      ~VirtualPathTranslator.attrs_from_stat
+      ~VirtualPathTranslator.dir_content
+      ~VirtualPathTranslator.filter_files
+      ~VirtualPathTranslator.get_attrs
+      ~VirtualPathTranslator.get_attrs_file_entity
+      ~VirtualPathTranslator.is_file_entity
+      ~VirtualPathTranslator.list_directory
+      ~VirtualPathTranslator.open_cw_file
+      ~VirtualPathTranslator.real_path
+      ~VirtualPathTranslator.split_virtual_path
+      ~VirtualPathTranslator.stat
+      ~VirtualPathTranslator.stat_file_entity
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~VirtualPathTranslator.BASE_REAL_DIR
+      ~VirtualPathTranslator.INSTANCE_NAMES
+      ~VirtualPathTranslator.dir_perm
+      ~VirtualPathTranslator.file_entity_re
+      ~VirtualPathTranslator.file_perm
+    
+    
+

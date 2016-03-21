@@ -1,0 +1,46 @@
+:orphan:
+
+rql_download.hooks.CWSearchDelete
+=================================
+
+.. currentmodule:: rql_download.hooks
+
+.. autoclass:: CWSearchDelete
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~CWSearchDelete.__init__
+      ~CWSearchDelete.check_events
+      ~CWSearchDelete.critical
+      ~CWSearchDelete.cw_propval
+      ~CWSearchDelete.debug
+      ~CWSearchDelete.error
+      ~CWSearchDelete.exception
+      ~CWSearchDelete.filterable_selectors
+      ~CWSearchDelete.info
+      ~CWSearchDelete.warning
+    
+    
+    
+    
+    .. rubric:: Attributes
+    .. autosummary::
+    
+      ~CWSearchDelete.category
+      ~CWSearchDelete.eidfrom
+      ~CWSearchDelete.eidto
+      ~CWSearchDelete.entity
+      ~CWSearchDelete.events
+      ~CWSearchDelete.known_args
+      ~CWSearchDelete.order
+      ~CWSearchDelete.repo
+      ~CWSearchDelete.rtype
+    
+    
+

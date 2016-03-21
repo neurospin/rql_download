@@ -1,0 +1,29 @@
+:orphan:
+
+rql_download.twistedserver.server.CubicwebFile
+==============================================
+
+.. currentmodule:: rql_download.twistedserver.server
+
+.. autoclass:: CubicwebFile
+    :members:
+    :private-members:
+    :special-members: __module__, __regid__, __call__
+    :undoc-members:
+    
+    
+    .. rubric:: Methods
+    .. autosummary::
+    
+      ~CubicwebFile.__init__
+      ~CubicwebFile.close
+      ~CubicwebFile.getAttrs
+      ~CubicwebFile.readChunk
+      ~CubicwebFile.setAttrs
+      ~CubicwebFile.writeChunk
+    
+    
+    
+    
+    
+
