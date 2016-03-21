@@ -31,11 +31,15 @@ Install the python package with *pip*
 
 **Install the package without the root privilege**
 
->>> pip install --user cwbrowser
+::
+
+    pip install --user cwbrowser
 
 **Install the package with the root privilege**
 
->>> sudo pip install cwbrowser
+::
+
+    sudo pip install cwbrowser
 
 
 Installing the current version
@@ -46,12 +50,16 @@ Install from *github*
 
 **Clone the project**
 
->>> cd $CLONEDIR
->>> git clone https://github.com/neurospin/rql_download.git
+::
+
+    cd $CLONEDIR
+    git clone https://github.com/neurospin/rql_download.git
 
 **Update your PYTHONPATH**
 
->>> export PYTHONPATH=$CLONE_DIR/rql_download:$PYTHONPATH
+::
+
+    export PYTHONPATH=$CLONE_DIR/rql_download:$PYTHONPATH
 
 
 
@@ -68,38 +76,52 @@ Install from *github*
 
 **Clone the project**
 
->>> cd $CLONEDIR
->>> git clone https://github.com/neurospin/rql_download.git
+::
+
+    cd $CLONEDIR
+    git clone https://github.com/neurospin/rql_download.git
 
 **Update your CW_CUBES_PATH**
 
->>> export CW_CUBES_PATH=$CLONE_DIR/rql_download:$CW_CUBES_PATH
+::
+
+    export CW_CUBES_PATH=$CLONE_DIR/rql_download:$CW_CUBES_PATH
 
 Make sure the cube is in CubicWeb's path
 ----------------------------------------
 
->>> cubicweb-ctl list
+::
+
+    cubicweb-ctl list
 
 Create an instance of the cube
 ------------------------------
 
->>> cubicweb-ctl create rql_download toy_instance
+::
+
+    cubicweb-ctl create rql_download toy_instance
 
 You can then run the instance in debug mode:
 
->>> cubicweb-ctl start -D toy_instance
+::
+
+    cubicweb-ctl start -D toy_instance
 
 The last line of the prompt will indicate which url the 
 instance can be reached by:
 
->>> (cubicweb.twisted) INFO: instance started on http://url:port/
+::
+
+    (cubicweb.twisted) INFO: instance started on http://url:port/
 
 Change configuration
 --------------------
 
 The configuration file is stored on your system:
 
->>> ...etc/cubicweb.d/toy_instance/all-in-one.conf
+::
+
+    ...etc/cubicweb.d/toy_instance/all-in-one.conf
 
 
 
