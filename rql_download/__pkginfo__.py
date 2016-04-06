@@ -4,7 +4,7 @@
 modname = 'rql_download'
 distname = 'cubicweb-rql-download'
 
-numversion = (2, 0, 0)
+numversion = (2, 0, 1)
 version = '.'.join(str(num) for num in numversion)
 
 license = 'LGPL'
@@ -13,7 +13,7 @@ author_email = 'contact@logilab.fr'
 description = 'Cube to download CWSearch.'
 web = 'http://www.cubicweb.org/project/%s' % distname
 
-__depends__ = {'cubicweb': '>= 3.17.2'}
+__depends__ = {'cubicweb': '>= 3.20.9'}
 __recommends__ = {}
 
 classifiers = [
