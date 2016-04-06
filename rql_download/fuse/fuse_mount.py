@@ -423,7 +423,7 @@ class FuseRset(Operations):
         """
 
         # Message
-        logger.debug("! starting virtual direcotry update")
+        logger.debug("! starting virtual directory update")
 
         # Get a Cubicweb in memory connection
         cw_connection = get_cw_connection(self.instance)
@@ -475,7 +475,7 @@ class FuseRset(Operations):
                 files.append(
                     os.path.join(data_root_dir, "request_result" + fext))
 
-                # Go through all files and create the virtual direcotry
+                # Go through all files and create the virtual directory
                 for fname in files:
 
                     # Apply the mask: remove 'data_root_dir' from the
@@ -544,7 +544,7 @@ class FuseRset(Operations):
 
         .. note::
             when the stat method is called on the '/.update' fake folder,
-            the virtual direcotry is recreated and the process may not be
+            the virtual directory is recreated and the process may not be
             available during this operation.
 
         .. note::
