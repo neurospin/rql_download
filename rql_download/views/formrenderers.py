@@ -22,5 +22,6 @@ class CWSearchEntityFormRenderer(EntityFormRenderer):
                 form.form_buttons.remove(button)
         super(CWSearchEntityFormRenderer, self).render_buttons(w, form)
 
+
 def registration_callback(vreg):
     vreg.register(CWSearchEntityFormRenderer)

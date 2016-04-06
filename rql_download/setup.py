@@ -82,6 +82,7 @@ def ensure_scripts(linux_scripts):
         scripts_ = linux_scripts
     return scripts_
 
+
 def export(from_dir, to_dir,
            blacklist=BASE_BLACKLIST,
            ignore_ext=IGNORED_EXTENSIONS,
@@ -154,6 +155,7 @@ if USE_SETUPTOOLS:
         # monkey patch: Crack SandboxViolation verification
         from setuptools.sandbox import DirectorySandbox as DS
         old_ok = DS._ok
+
         def _ok(self, path):
             """Return True if ``path`` can be written during installation."""
             out = old_ok(self, path)  # here for side effect from setuptools
@@ -162,9 +164,11 @@ if USE_SETUPTOOLS:
             if realpath.startswith(allowed_path):
                 out = True
             return out
+
         DS._ok = _ok
     except ImportError:
         pass
+
 
 def install(**kwargs):
     """setup entry point"""

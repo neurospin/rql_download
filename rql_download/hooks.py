@@ -118,7 +118,7 @@ class CWSearchAdd(hook.Hook):
 
         # Find the constant nodes
         constant_nodes = {}
-	
+
         self._find_constant_nodes(rset.syntax_tree().children, constant_nodes)
 
         # Check we can associated rset entities with their rql labels

@@ -136,7 +136,7 @@ class CWInstanceConnection(object):
         Returns
         -------
         rset: list of list of str
-            a list that contains the requested entity parameters.        
+            a list that contains the requested entity parameters.
         """
         # Debug message
         logger.debug("Executing rql: '%s'", rql)
@@ -152,10 +152,10 @@ class CWInstanceConnection(object):
             "rql": rql,
             "vid": export_type + "export",
         }
-        
+
         try_count = 0
         while True:
-            try: # Get the result set, it will always try at least once
+            try:  # Get the result set, it will always try at least once
                 try_count += 1
                 response = self.opener.open(self.url, urllib.urlencode(data),
                                                              timeout=timeout)
@@ -169,7 +169,7 @@ class CWInstanceConnection(object):
                                  "Request: {}").format(nb_tries, timeout,
                                                                 data['rql'])
                     raise e
-                time.sleep(1) # wait 1 second before retrying
+                time.sleep(1)  # wait 1 second before retrying
 
         # Debug message
         logger.debug("RQL result: '%s'", rset)
@@ -198,7 +198,7 @@ class CWInstanceConnection(object):
         rset: list of list or list of dict
             a list that contains the requested cubicweb database parameters
             when a json rset is generated, a list of dictionaries if a csv
-            rset is generated.       
+            rset is generated.
         """
         # Create the CWSearch
         self._create_cwsearch(rql)
@@ -263,7 +263,7 @@ class CWInstanceConnection(object):
             for rset_items in rset:
                 for item_index in range(len(rset_items)):
                     item = rset_items[item_index]
-                    if (isinstance(item, basestring) and 
+                    if (isinstance(item, basestring) and
                        item.startswith(cw_params["basedir"])):
                         rset_items[item_index] = item.replace(
                             cw_params["basedir"], local_dir)
@@ -272,7 +272,7 @@ class CWInstanceConnection(object):
         elif filext == ".csv":
             with open(rset_file) as csv_data:
                 data = csv.DictReader(csv_data, delimiter=";", quotechar="|")
-                rset = [item for item in data]      
+                rset = [item for item in data]
 
         # > raise an error when the file extension is not supported
         else:
@@ -381,7 +381,7 @@ class CWInstanceConnection(object):
         """ Method that creates a CWSearch entity from a rql.
 
         .. note::
-        
+
             The CWSearch title has to be unique, build automatically title
             of the form 'auto_generated_title_x' where x is incremented
             each time an element is inserted in the data base.
@@ -410,7 +410,7 @@ class CWInstanceConnection(object):
         Parameters
         ----------
         password: str (mandatory)
-            the cw user password.       
+            the cw user password.
         """
         # Create the handlers and the associated opener
         self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())

@@ -17,7 +17,7 @@ options = (
       "group": "rql_download", "level": 0,
       }),
     ("default_expiration_delay",
-     {"type": "int",
+      {"type": "int",
       "default": 15,
       "help": "specifies expiration delay of CWSearch (in days)",
       "group": "rql_download", "level": 0,
@@ -52,4 +52,3 @@ options = (
       "group": "rql_download", "level": 0,
       }),
 )
-

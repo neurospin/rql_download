@@ -21,7 +21,7 @@ classifiers = [
     'Framework :: CubicWeb',
     'Programming Language :: Python',
     'Programming Language :: JavaScript',
-    ]
+]
 
 from os import listdir as _listdir
 from os.path import join, isdir
@@ -39,7 +39,7 @@ def listdir(dirpath):
 data_files = [
     # common files
     [THIS_CUBE_DIR, [fname for fname in glob('*.py') if fname != 'setup.py']],
-    ]
+]
 # check for possible extended cube layout
 for dname in ('entities', 'views', 'sobjects', 'hooks', 'schema', 'data', 'wdoc', 'i18n', 'migration'):
     if isdir(dname):

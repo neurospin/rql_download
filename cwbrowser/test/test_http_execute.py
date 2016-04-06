@@ -68,6 +68,7 @@ class TestHTTPExecuteTwisted(unittest.TestCase):
         rset = self.connection.execute_with_sync(self.rql2, "/tmp/sync_twisted",
                                                  timer=1)
 
+
 class TestHTTPExecuteFuse(unittest.TestCase):
     """ Class to test http execute method with fuse virtual folders and
     sftp.
@@ -106,8 +107,7 @@ class TestHTTPExecuteFuse(unittest.TestCase):
             self.assertTrue(os.path.isfile(item[0]))
 
         rset = self.connection.execute_with_sync(self.rql1, "/tmp/sync_fuse",
-                                                 timer=1)             
-            
+                                                 timer=1)
 
 
 def test_twisted():
