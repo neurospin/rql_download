@@ -513,15 +513,12 @@ class FuseRset(Operations):
 
     def suicide():
         """
-        unmount Fuse and suicide
+        Unmount Fuse and suicide.
         """
         mount_base = get_cw_option(self.instance_name, "mountdir")
-        logger.info("Fuse: unmounting {0}".format(os.path.join(mount_base,
-                                                               self.login,
-                                                               self.instance)))
-        subprocess.Popen(['fusermount', "-uz", os.path.join(mount_base,
-                                                            self.login,
-                                                            self.instance)])
+        mount_point = os.path.join(mount_base, self.login, self.instance)
+        logger.info("Fuse: unmounting {0}".format(mount_point))
+        subprocess.check_call(["fusermount", "-uz", mount_point])
 
         # Now kill the process
         raise Suicide("Servershutdown: self-kill for fuse subprocess")
@@ -578,7 +575,7 @@ class FuseRset(Operations):
             return fstat
 
         # kill subprocess (occurs during server shutdown)
-        if path == "./kill":
+        if path == "/.kill":
             logger.info("killing {0}".format(path))
             self.suicide()
 

@@ -399,16 +399,24 @@ class ServerShutdownKillFuseProcess(hook.Hook):
     def __call__(self):
         """ Start a loop to clean fuse processes and unmount fuse repository.
         """
+        # Get the chroot dir
+        mount_base = self.repo.config.get("mountdir")
+        if not os.path.isdir(mount_base):
+            return
 
-        # get all fuse folders
-        mount_base = self.repo.config.get("mountdir", None)
+        # Deal with all users in the chroor dir
+        for uid in os.listdir(mount_base):
 
-        for fuse_folder in os.listdir(mount_base):
-            # send the kill signal
+            # Get the fuse mount point
             mount_point = os.path.join(mount_base, fuse_folder,
                                        self.repo.schema.name)
+
+            # Kill the fuse mount if fuse mount is active
             if os.path.isdir(mount_point):
-                os.stat(os.path.join(mount_point, ".kill"))
+                try:
+                    os.stat(os.path.join(mount_point, ".kill"))
+                except:
+                    pass
 
 
 ###############################################################################
