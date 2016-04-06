@@ -408,8 +408,7 @@ class ServerShutdownKillFuseProcess(hook.Hook):
         for uid in os.listdir(mount_base):
 
             # Get the fuse mount point
-            mount_point = os.path.join(mount_base, fuse_folder,
-                                       self.repo.schema.name)
+            mount_point = os.path.join(mount_base, uid, self.repo.schema.name)
 
             # Kill the fuse mount if fuse mount is active
             if os.path.isdir(mount_point):
