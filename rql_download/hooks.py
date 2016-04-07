@@ -128,9 +128,9 @@ class CWSearchAdd(hook.Hook):
             if etype not in rql_etypes or len(rql_etypes[etype]) != 1:
                 raise ValidationError(
                     "CWSearch", {
-                        "rql": _('cannot find entity description in the'
-                                 'request {0}. Expect something like "Any X'
-                                 ' Where X is '
+                        "rql": _('cannot find entity description in '
+                                 'request {0}. Expect something like "Any X '
+                                 'Where X is '
                                  '{1}, ..."'.format(rql, etype))})
 
         # Get all the rqldownload declared adapters
