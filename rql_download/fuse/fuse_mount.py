@@ -511,18 +511,6 @@ class FuseRset(Operations):
         # Message
         logger.debug("! update done")
 
-    def suicide():
-        """
-        Unmount Fuse and suicide.
-        """
-        mount_base = get_cw_option(self.instance_name, "mountdir")
-        mount_point = os.path.join(mount_base, self.login, self.instance)
-        logger.info("Fuse: unmounting {0}".format(mount_point))
-        subprocess.check_call(["fusermount", "-uz", mount_point])
-
-        # Now kill the process
-        raise Suicide("Servershutdown: self-kill for fuse subprocess")
-
     ########################################################################
     # Filesystem methods
     ########################################################################
@@ -547,12 +535,6 @@ class FuseRset(Operations):
             the virtual directory is recreated and the process may not be
             available during this operation.
 
-        .. note::
-            when the stat method is called on the '/.kill' fake folder,
-            the fuse repository is unmounted and the process terminates by
-            raising an exception.
-
-
         Parameters
         ----------
         path: str (mandatory)
@@ -573,11 +555,6 @@ class FuseRset(Operations):
         # Check if the fuse mount is alive
         if path == "/.isalive":
             return fstat
-
-        # kill subprocess (occurs during server shutdown)
-        if path == "/.kill":
-            logger.info("killing {0}".format(path))
-            self.suicide()
 
         # Start the fuse update: the process is not avalaible during the update
         elif path == "/.update":
