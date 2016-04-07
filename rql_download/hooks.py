@@ -130,7 +130,7 @@ class CWSearchAdd(hook.Hook):
                     "CWSearch", {
                         "rql": _('cannot find entity description in the'
                                  'request {0}. Expect something like "Any X'
-                                 'Where X is '
+                                 ' Where X is '
                                  '{1}, ..."'.format(rql, etype))})
 
         # Get all the rqldownload declared adapters
@@ -387,37 +387,6 @@ class ServerStartupFuseZombiesLoop(hook.Hook):
         self.repo.looping_task(dt.total_seconds(), cleaning_cw_fuse_zombies)
 
 
-class ServerShutdownKillFuseProcess(hook.Hook):
-    """
-    When the server is going down, kill the Fuse process and unmount the
-    user's repository. They will be automatically restored when server starts
-    again.
-    """
-    __regid__ = "rqldownload.shutdown_fuse_process"
-    events = ("server_shutdown", )
-
-    def __call__(self):
-        """ Start a loop to clean fuse processes and unmount fuse repository.
-        """
-        # Get the chroot dir
-        mount_base = self.repo.config.get("mountdir")
-        if not os.path.isdir(mount_base):
-            return
-
-        # Deal with all users in the chroor dir
-        for uid in os.listdir(mount_base):
-
-            # Get the fuse mount point
-            mount_point = os.path.join(mount_base, uid, self.repo.schema.name)
-
-            # Kill the fuse mount if fuse mount is active
-            if os.path.isdir(mount_point):
-                try:
-                    os.stat(os.path.join(mount_point, ".kill"))
-                except:
-                    pass
-
-
 ###############################################################################
 # CW search twisted hook
 ###############################################################################
@@ -436,8 +405,7 @@ class LaunchTwistedFTPServer(hook.Hook):
         'start_sftp_server' option is set to True.
         """
         if self.repo.vreg.config["start_sftp_server"]:
-            cube_path = os.path.join(os.path.dirname(
-                os.path.abspath(__file__)))
+            cube_path = os.path.dirname(os.path.abspath(__file__))
             ftpserver_path = os.path.join(cube_path,
                                           "twistedserver/main.py")
             basedir_opt = ""
