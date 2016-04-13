@@ -116,6 +116,3 @@ Hooks
     :template: class_private.rst
 
     hooks.LaunchTwistedFTPServer
-
-
-
