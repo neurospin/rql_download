@@ -1,5 +1,5 @@
 ============
-RQL_download
+RQL Download
 ============
 
 Summary
@@ -12,8 +12,8 @@ documentation.
 Content
 =======
 
-CW_Browser
-----------
+cwbrowser
+---------
 
 This module allows remote quering in the database. It's available on pypi:
 
@@ -36,7 +36,7 @@ It provides meethods to script requests to a cubicweb database and inherits from
                  :alt: License
 
 
-RQL_download
+rql_download
 ------------
 
 This module allows to setup a SFTP service on the server hosting your database. Thus, all query results are accessible (we use the python_fuse_ package or Twisted_ to build the filesystem) through a predefinite SFTP repository. Users can then access and download their data using the SFTP protocol.

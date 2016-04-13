@@ -2,7 +2,7 @@
 .. _install_guid:
 
 =========================
-Installing `Rql Download`
+Installing `RQL Download`
 =========================
 
 This tutorial will walk you through the process of intalling Rql Download:
@@ -122,7 +122,3 @@ The configuration file is stored on your system:
 ::
 
     ...etc/cubicweb.d/toy_instance/all-in-one.conf
-
-
-
-
