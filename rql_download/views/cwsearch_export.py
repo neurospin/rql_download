@@ -8,8 +8,8 @@
 ##########################################################################
 
 # System import
-import traceback
 import json
+import sys
 
 # CW import
 from cubicweb.view import View
@@ -82,12 +82,13 @@ class CWSearchRsetView(View):
             except:
                 self._cw.cnx.rollback()
                 status = {"exitcode": 1,
-                          "stderr": unicode(traceback.format_exc())}
+                          "stderr": unicode(sys.exc_info()[1])}
             self.w(unicode(json.dumps(status)))
 
         else:
             status = {"exitcode": 0, "stderr": u""}
             self.w(unicode(json.dumps(status)))
+
 
 class CubicwebConfigView(JsonMixIn, View):
     """ Dumps the fuse configuration in JSON format.
