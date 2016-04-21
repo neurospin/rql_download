@@ -48,6 +48,9 @@ class CWInstanceConnection(object):
 
     .. code-block:: python
 
+        # Import Connection module
+        from cwbrowser.cw_connection import CWInstanceConnection
+
         # Create dummy rqls
         rql1 = ("Any C, G Where X is Subject, X code_in_study C, "
                 "X handedness 'ambidextrous', X gender G")
@@ -57,13 +60,14 @@ class CWInstanceConnection(object):
 
         # HTTP test
         url = @HTTPURL; login = @LOGIN; password = @PWD
-        connection = CWInstanceConnection(url, login, password)
+        connection = CWInstanceConnection(url, login, password, port=9191)
         connection.execute(rql1, export_type="json")
-        connection.execute_with_fuse(rql2, "/tmp/fuse", timer=1)
+        connection.execute_with_sync(rql2, "/tmp/fuse", timer=1)
 
         # HTTPS test
         url = @HTTPSURL; login = @LOGIN; password = @PWD
-        connection = CWInstanceConnection(url, login, password, realm="Imagen")
+        connection = CWInstanceConnection(url, login, password, realm="Imagen",
+                                          server_root="/home/$login")
         connection.execute(rql)
 
     Attributes
@@ -81,10 +85,11 @@ class CWInstanceConnection(object):
         "json": json.load,
         "csv": load_csv,
         "cw": json.load,
+        "cwsearch": json.load
     }
 
     def __init__(self, url, login, password, realm=None, port=22,
-                 server_root=os.path.sep):
+                 server_root=os.path.sep, verbosity="warning"):
         """ Initilize the HTTPConnection class.
 
         Parameters
@@ -103,7 +108,31 @@ class CWInstanceConnection(object):
         server_root: str (optional default '/')
             the server root directory where the user mount points (chroot) are
             mapped.
+        verbosity: str (optional default 'warning')
+            the debug level that must be in ['debug', 'info', 'warning',
+            'error', 'critical']
         """
+        # Create logging config
+        levels = {
+            "debug": logging.DEBUG,
+            "info": logging.INFO,
+            "warning": logging.WARNING,
+            "error": logging.ERROR,
+            "critical": logging.CRITICAL
+        }
+        logging_format = ("[%(asctime)s] "
+                          "{%(pathname)s:%(lineno)d} "
+                          "%(levelname)s - %(message)s")
+        date_format = "%Y-%m-%d %H:%M:%S"
+        # If someone tried to log something before basicConfig is called,
+        # Python creates a default handler that goes to the console and
+        # will ignore further basicConfig calls: we need to remove the
+        # handlers if there is one.
+        while len(logging.root.handlers) > 0:
+            logging.root.removeHandler(logging.root.handlers[-1])
+        logging.basicConfig(level=levels[verbosity], format=logging_format,
+                            datefmt=date_format)
+
         # Class parameters
         self.url = url
         self.login = login
@@ -151,14 +180,17 @@ class CWInstanceConnection(object):
         data = {
             "rql": rql,
             "vid": export_type + "export",
+            "_binary": 1
         }
+        if export_type == "cw":
+            del data["_binary"]
         
         try_count = 0
         while True:
             try: # Get the result set, it will always try at least once
                 try_count += 1
                 response = self.opener.open(self.url, urllib.urlencode(data),
-                                                             timeout=timeout)
+                                            timeout=timeout)
                 rset = self.importers[export_type](response)
                 break
             except Exception as e:
@@ -167,7 +199,7 @@ class CWInstanceConnection(object):
                     e.message += ("\nFailed to get data after {} tries.\n"
                                  "Timeout was set to: {} seconds\n"
                                  "Request: {}").format(nb_tries, timeout,
-                                                                data['rql'])
+                                                       data['rql'])
                     raise e
                 time.sleep(1) # wait 1 second before retrying
 
@@ -185,7 +217,7 @@ class CWInstanceConnection(object):
         rql: str (mandatory)
             the rql rquest that will be executed on the cw instance.
         sync_dir: str (mandatory)
-            the destination folder where the rql data are synchronized.
+            the destination folder where the rql data are.
         timer: int (optional default 3)
             the time in seconds we are waiting for the fuse or twisted
             server update.
@@ -266,7 +298,7 @@ class CWInstanceConnection(object):
                     if (isinstance(item, basestring) and 
                        item.startswith(cw_params["basedir"])):
                         rset_items[item_index] = item.replace(
-                            cw_params["basedir"], local_dir)
+                            cw_params["basedir"], local_dir, 1)
 
         # > deal with csv file
         elif filext == ".csv":
@@ -403,6 +435,10 @@ class CWInstanceConnection(object):
 
         # Get the result set
         response = self.opener.open(self.url, urllib.urlencode(data))
+        status = self.importers[export_type](response)
+        if status["exitcode"] != 0:
+            raise ValueError("Can't create 'CWSearch' from RQL '{0}': "
+                             "{1}.".format(rql, status["stderr"]))
 
     def _connect(self, password):
         """ Method to create an object that handle opening of HTTP/HTTPS URLs.
