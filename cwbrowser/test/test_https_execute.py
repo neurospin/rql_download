@@ -47,8 +47,8 @@ class TestHTTPSExecute(unittest.TestCase):
         """
         rset = self.connection.execute(self.rql, export_type="json")
         self.assertTrue(len(rset) > 0)
-      
-            
+
+
 def test():
     """ Function to execute unitest.
     """

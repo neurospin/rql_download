@@ -39,7 +39,7 @@ class BaseIDownloadAdapter(Action):
         * A 'rql' method has to be implemented in child classes.
         * We assume the database intergrity (ie. all file pathes inserted in
           the db exist on the file system) and thus do not check in the hooks
-          to speed speed the search creation.        
+          to speed speed the search creation.
     """
     __regid__ = "rqldownload-adapters"
     __abstract__ = True
@@ -86,7 +86,7 @@ class IFSetAdapter(BaseIDownloadAdapter):
         global_rql: str
             the adapted rql.
         nb_files: int
-            the number of files returned at the begining of the result set.        
+            the number of files returned at the begining of the result set.
         """
         # Define reserved labels
         reserved_labels = [
@@ -110,7 +110,7 @@ class IFSetAdapter(BaseIDownloadAdapter):
         # Complete the rql in order to access file pathes
         global_rql = (
             "Any {0}, {1}, {2} external_files {3}, "
-            "{3} filepath {0}".format(reserved_labels[0], formated_rql, 
+            "{3} filepath {0}".format(reserved_labels[0], formated_rql,
                                       parameter_name, reserved_labels[1]))
 
         return global_rql, 1
@@ -150,7 +150,7 @@ class IFileAdapter(BaseIDownloadAdapter):
         global_rql: str
             the adapted rql.
         nb_files: int
-            the number of files returned at the begining of the result set.        
+            the number of files returned at the begining of the result set.
         """
         # Define reserved labels
         reserved_labels = [
@@ -221,7 +221,7 @@ class IEntityFSetAdapter(BaseIDownloadAdapter):
         global_rql: str
             the adapted rql.
         nb_files: int
-            the number of files returned at the begining of the result set.        
+            the number of files returned at the begining of the result set.
         """
         # Define reserved labels
         reserved_labels = [
@@ -251,12 +251,12 @@ class IEntityFSetAdapter(BaseIDownloadAdapter):
             fileset_label = fileset_label.strip()
             global_rql = (
                 "Any {0}, {1}, {2} external_files {3}, "
-                "{3} filepath {0}".format(reserved_labels[0], formated_rql, 
+                "{3} filepath {0}".format(reserved_labels[0], formated_rql,
                                           fileset_label, reserved_labels[2]))
         else:
             global_rql = (
                 "Any {0}, {1}, {2} filesets {3}, {3} external_files {4}, "
-                "{4} filepath {0}".format(reserved_labels[0], formated_rql, 
+                "{4} filepath {0}".format(reserved_labels[0], formated_rql,
                                           parameter_name, reserved_labels[1],
                                           reserved_labels[2]))
 

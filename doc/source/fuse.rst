@@ -141,5 +141,3 @@ Operations
     :template: class_private.rst
 
     hooks.PostCommitFuseOperation
-
-

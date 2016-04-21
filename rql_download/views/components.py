@@ -84,7 +84,7 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
                     raise
 
         # Can't download if not logged
-        can_save_search = (can_save_search and 
+        can_save_search = (can_save_search and
                            not self._cw.session.anonymous_session)
 
         # Display the facet if something has to be displayed
@@ -137,7 +137,7 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         title = self._cw._("--unique title--")
 
         # Create the url to the CWSearch form
-        cls = self._cw.vreg["etypes"].etype_class("CWSearch")       
+        cls = self._cw.vreg["etypes"].etype_class("CWSearch")
         add_url = cls.cw_create_url(self._cw, path=path, title=title)
 
         base_url = cls.cw_create_url(self._cw, title=title)
@@ -151,7 +151,7 @@ class SaveCWSearchFilterBox(FacetFilterMixIn, component.CtxComponent):
         button += link
         button += u'<span class="glyphicon glyphicon-save" ' \
                   u'style="width: 25px;"></span>{0}'.format(
-            self._cw._("Add to cart"))
+                      self._cw._("Add to cart"))
         button += u'</a></div></div><br />'
 
         return self.linkbox_template.format(button)
@@ -205,4 +205,3 @@ def registration_callback(vreg):
     vreg.unregister(BookmarksBox)
     vreg.register(SaveCWSearchFilterBox)
     vreg.register(HelpCWSearchBox)
-

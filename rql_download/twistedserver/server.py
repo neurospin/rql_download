@@ -84,7 +84,7 @@ class VirtualPathTranslator(object):
         """ Method to list a virtual folder.
 
         Virtual folders have a common root organization:
-        
+
         ::
 
             instance name
@@ -102,7 +102,7 @@ class VirtualPathTranslator(object):
         -------
         out: iterator
             an iterator containing virtual folder description. Each iterator
-            item is a 3-uplet of the form (basename, longname, stat). 
+            item is a 3-uplet of the form (basename, longname, stat).
         """
 
         # Create an association between cw rset and db name
@@ -312,7 +312,7 @@ class VirtualPathTranslator(object):
         Returns
         -------
         out: posix.stat_result
-            the same structure returned by a stat or lstat.     
+            the same structure returned by a stat or lstat.
         """
         if not path_is_real:
             virtpath = self.split_virtual_path(path)
@@ -382,7 +382,7 @@ class VirtualPathTranslator(object):
         Returns
         -------
         out: iterator
-            each item is 2-uplet of the form (file path, associated rset).        
+            each item is 2-uplet of the form (file path, associated rset).
         """
         # print "--", virtpath
 
@@ -465,7 +465,7 @@ class CubicWebConchUser(UnixConchUser):
         ----------
         unix_username: str (mandatory)
             the sftp server will read file system with the permission
-            associated to this user.            
+            associated to this user.
         cw_session_ids: list of str (mandatory)
             the cubicweb sessions identifiers.
         login: str (mandatory)
@@ -652,7 +652,6 @@ class Search(object):
         session_index: int (mandatory)
             an index pointing to the instance of interest.
         search_name: string (optional, default None)
-            
 
         Returns
         -------
@@ -709,7 +708,7 @@ class CubicWebCredentialsChecker:
             a Deferred which will fire a string which identifies an avatar,
             an empty tuple to specify an authenticated anonymous user
             (provided as checkers.ANONYMOUS) or fire a
-            Failure(UnauthorizedLogin). Alternatively, return the result itself. 
+            Failure(UnauthorizedLogin). Alternatively, return the result itself.
         """
         try:
             session_ids = []

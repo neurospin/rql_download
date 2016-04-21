@@ -1,19 +1,19 @@
 ============
-RQL_download
+RQL Download
 ============
 
 Summary
 =======
 
-Cube to download a complete subset of data via sftp (two strategies proposed) and remotely query the database.
+Cube to download a complete subset of data via SFTP (two strategies proposed) and remotely query the database.
 Check `this link <https://neurospin.github.io/rql_download/>`_ for the complete
 documentation.
 
 Content
 =======
 
-CW_Browser
-----------
+cwbrowser
+---------
 
 This module allows remote quering in the database. It's available on pypi:
 
@@ -36,10 +36,10 @@ It provides meethods to script requests to a cubicweb database and inherits from
                  :alt: License
 
 
-RQL_download
+rql_download
 ------------
 
-This module allows to setup a s-ftp service on the server hosting your database. Thus, all query results are accessible (we use the python_fuse_ package or Twisted_ to build the filesystem) through a predefinite s-ftp repository. Users can then access and download their data using the s-ftp protocol.
+This module allows to setup a SFTP service on the server hosting your database. Thus, all query results are accessible (we use the python_fuse_ package or Twisted_ to build the filesystem) through a predefinite SFTP repository. Users can then access and download their data using the SFTP protocol.
 
 .. _Twisted: https://pypi.python.org/pypi/Twisted
 .. _python_fuse: https://pypi.python.org/pypi/fuse-python

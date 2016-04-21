@@ -7,13 +7,15 @@ distname = 'cubicweb-rql-download'
 numversion = (2, 0, 1)
 version = '.'.join(str(num) for num in numversion)
 
-license = 'LGPL'
-author = 'CEA'
-author_email = 'contact@logilab.fr'
+license = 'CeCILL-B'
+author = 'NSAp'
+author_email = 'antoine.grigis@cea.fr'
 description = 'Cube to download CWSearch.'
-web = 'http://www.cubicweb.org/project/%s' % distname
+web = 'https://github.com/neurospin/rql_download'
 
-__depends__ = {'cubicweb': '>= 3.20.9'}
+__depends__ = {
+    'cubicweb': '>= 3.20.9'
+}
 __recommends__ = {}
 
 classifiers = [
@@ -21,7 +23,7 @@ classifiers = [
     'Framework :: CubicWeb',
     'Programming Language :: Python',
     'Programming Language :: JavaScript',
-    ]
+]
 
 from os import listdir as _listdir
 from os.path import join, isdir
@@ -39,7 +41,7 @@ def listdir(dirpath):
 data_files = [
     # common files
     [THIS_CUBE_DIR, [fname for fname in glob('*.py') if fname != 'setup.py']],
-    ]
+]
 # check for possible extended cube layout
 for dname in ('entities', 'views', 'sobjects', 'hooks', 'schema', 'data', 'wdoc', 'i18n', 'migration'):
     if isdir(dname):

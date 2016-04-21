@@ -18,7 +18,7 @@ from yams.buildobjs import RichString
 
 
 class CWSearch(EntityType):
-    """ An entity used to save a search which may contains resources on the 
+    """ An entity used to save a search which may contains resources on the
     server file system.
 
     Attributes
@@ -38,8 +38,8 @@ class CWSearch(EntityType):
         the type of the rset.
     """
     __permissions__ = {
-        "read":   ("managers", ERQLExpression("X owned_by U"),),
-        "add":    ("managers", "users"),
+        "read": ("managers", ERQLExpression("X owned_by U"),),
+        "add": ("managers", "users"),
         "delete": ("managers", "owners"),
         "update": ("managers", "owners"),
     }
@@ -68,8 +68,8 @@ class File(EntityType):
     """ A downloadable file which may contains binary data.
     """
     __permissions__ = {
-        "read":   ("managers", ERQLExpression("X owned_by U"),),
-        "add":    ("managers", "users"),
+        "read": ("managers", ERQLExpression("X owned_by U"),),
+        "add": ("managers", "users"),
         "delete": ("managers", "owners"),
         "update": ("managers", "owners"),
     }
@@ -94,4 +94,3 @@ class File(EntityType):
     description = RichString(
         fulltextindexed=True, internationalizable=True,
         default_format="text/rest")
-

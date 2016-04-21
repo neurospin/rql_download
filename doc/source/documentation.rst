@@ -51,7 +51,3 @@ Documentation of the RQL Download tools
 
             </div>
     </div>
-
-
-
-
