@@ -160,8 +160,8 @@ class CWSearchAdd(hook.Hook):
         if len(export_vids) != 1:
             raise ValidationError(
                 "CWSearch", {
-                    "actions": _('cannot deal with different action export '
-                                 'types: {0}'.format(export_vids))})
+                    "actions": _('cannot deal with different or no action '
+                                 'export types: {0}'.format(export_vids))})
         export_vid = export_vids.pop()
 
         # Create an empty result structure
