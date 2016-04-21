@@ -7,6 +7,10 @@
 # for details.
 ##########################################################################
 
+# System import
+import traceback
+import json
+
 # CW import
 from cubicweb.view import View
 from cubicweb.web.views.json import JsonMixIn
@@ -19,6 +23,7 @@ from cubicweb.web.views.json import JsonMixIn
 class CWSearchRsetView(View):
     """ Create a new CWSearch entity by calling this view.
     """
+    templatable = False
     __regid__ = "cwsearchexport"
     title = _("cwsearch-export-view")
 
@@ -69,10 +74,20 @@ class CWSearchRsetView(View):
             unique_title = u"auto_generated_title_{0}".format(prefix)
 
             # Create the new CWSearch
-            self._cw.create_entity("CWSearch",
-                                   title=unique_title,
-                                   path=rql)
+            try:
+                self._cw.create_entity("CWSearch",
+                                       title=unique_title,
+                                       path=rql)
+                status = {"exitcode": 0, "stderr": u""}
+            except:
+                self._cw.cnx.rollback()
+                status = {"exitcode": 1,
+                          "stderr": unicode(traceback.format_exc())}
+            self.w(unicode(json.dumps(status)))
 
+        else:
+            status = {"exitcode": 0, "stderr": u""}
+            self.w(unicode(json.dumps(status)))
 
 class CubicwebConfigView(JsonMixIn, View):
     """ Dumps the fuse configuration in JSON format.
