@@ -22,7 +22,8 @@ from cubes.rql_download.config import CWSEARCH_RESULT_CONTAINER
 
 # Define global adaptor variables
 RQL_DOWNLOAD_EXPORT_ENTITIES = ["Subject"]
-RQL_DOWNLOAD_FSET_ENTITIES = ["Scan", "ProcessingRun", "GenomicMeasure"]
+RQL_DOWNLOAD_FSET_ENTITIES = ["Scan", "ProcessingRun", "GenomicMeasure",
+                              "Device"]
 RQL_DOWNLOAD_ENTITIES = ["FileSet", "ExternalFile"]
 
 
