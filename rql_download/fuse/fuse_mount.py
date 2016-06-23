@@ -101,7 +101,7 @@ def get_cw_option(instance_name, cw_option):
     # Parse the configuration file and retrive the basedir
     with open(config_file) as open_file:
         for line in open_file.readlines():
-            match = re.match(r"^(\w+)=(\S*)$", line)
+            match = re.match(r"^([a-zA-Z0-9_-]+)=(\S*)$", line)
             if match:
                 name, value = match.groups()
                 if name == cw_option:
