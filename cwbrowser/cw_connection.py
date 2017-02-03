@@ -315,6 +315,65 @@ class CWInstanceConnection(object):
 
         return rset
 
+    def get_genotype_measure(self, gene_name, genomic_measure, nb_tries=3,
+                             timeout=300):
+        """ Method that loads the genomic measures stored in PLINK format.
+
+        Parameters
+        ----------
+        gene_name: str (mandatory)
+            a gene name used to limit the number of measures that will be
+            loaded.
+        genomic_measure: str (mandatory)
+            the genomic measure name associated to PLINK files.
+        nb_tries: int (optional default 3)
+            if the update has not been detected after 'nb_of_try' trials
+            raise an exception.
+        timeout: int (optional, default 300)
+            number of seconds to wait for server response before considering
+            that the request failed.
+
+        Returns
+        -------
+        rset: dict
+            dictionary with 'labels' and 'records' (that contains
+            the requested cubicweb database parameters).
+        """
+        # Debug message
+        logger.debug("Genotype extraction: '{0}', '{1}'".format(
+            genomic_measure, gene_name))
+
+        # Create a dictionary with the request meta information
+        data = {
+            "vid": "metagen-search-json",
+            "measure": genomic_measure,
+            "gene": gene_name,
+            "export": "data"
+        }
+        
+        try_count = 0
+        while True:
+            try:  # Get the result set, it will always try at least once
+                try_count += 1
+                response = self.opener.open(self.url, urllib.urlencode(data),
+                                            timeout=timeout)
+                rset = self.importers["json"](response)
+                break
+            except Exception as e:
+                if try_count >= nb_tries:
+                    # keep original message of e and add infos
+                    e.message += ("\nFailed to get data after {} tries.\n"
+                                 "Timeout was set to: {} seconds\n"
+                                 "Request: {}").format(nb_tries, timeout,
+                                                       data['rql'])
+                    raise e
+                time.sleep(1)  # wait 1 second before retrying
+
+        # Debug message
+        logger.debug("Genotype result: '%s'", rset)
+
+        return rset
+
     ###########################################################################
     # Private Members
     ###########################################################################
