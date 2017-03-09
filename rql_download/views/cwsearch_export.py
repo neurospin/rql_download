@@ -10,8 +10,14 @@
 # System import
 import json
 import sys
+from packaging import version
 
-# CW import
+# Cubicweb import
+import cubicweb
+cw_version = version.parse(cubicweb.__version__)
+if cw_version >= version.parse("3.21.0"):
+    from cubicweb import _
+
 from cubicweb.view import View
 from cubicweb.web.views.json import JsonMixIn
 
