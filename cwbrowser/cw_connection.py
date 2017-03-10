@@ -8,20 +8,17 @@
 ##########################################################################
 
 # System import
+from __future__ import print_function
 import os
 import sys
 import urllib2
 import urllib
 import json
 import csv
-import logging
 import time
 import paramiko
 import stat
 import glob
-
-# Define logger
-logger = logging.getLogger(__name__)
 
 
 def load_csv(csv_stream, delimiter=";"):
@@ -89,7 +86,7 @@ class CWInstanceConnection(object):
     }
 
     def __init__(self, url, login, password, realm=None, port=22,
-                 server_root=os.path.sep, verbosity="warning"):
+                 server_root=os.path.sep, verbosity=0):
         """ Initilize the HTTPConnection class.
 
         Parameters
@@ -108,31 +105,9 @@ class CWInstanceConnection(object):
         server_root: str (optional default '/')
             the server root directory where the user mount points (chroot) are
             mapped.
-        verbosity: str (optional default 'warning')
-            the debug level that must be in ['debug', 'info', 'warning',
-            'error', 'critical']
+        verbosity: int (optional default 0)
+            the verbosity level.
         """
-        # Create logging config
-        levels = {
-            "debug": logging.DEBUG,
-            "info": logging.INFO,
-            "warning": logging.WARNING,
-            "error": logging.ERROR,
-            "critical": logging.CRITICAL
-        }
-        logging_format = ("[%(asctime)s] "
-                          "{%(pathname)s:%(lineno)d} "
-                          "%(levelname)s - %(message)s")
-        date_format = "%Y-%m-%d %H:%M:%S"
-        # If someone tried to log something before basicConfig is called,
-        # Python creates a default handler that goes to the console and
-        # will ignore further basicConfig calls: we need to remove the
-        # handlers if there is one.
-        while len(logging.root.handlers) > 0:
-            logging.root.removeHandler(logging.root.handlers[-1])
-        logging.basicConfig(level=levels[verbosity], format=logging_format,
-                            datefmt=date_format)
-
         # Class parameters
         self.url = url
         self.login = login
@@ -141,6 +116,7 @@ class CWInstanceConnection(object):
         self.port = port
         self.realm = realm
         self.server_root = server_root
+        self.verbosity = verbosity
         self._connect(password)
 
     ###########################################################################
@@ -168,8 +144,9 @@ class CWInstanceConnection(object):
             a list that contains the requested entity parameters.
         """
         # Debug message
-        logger.debug("Executing rql: '%s'", rql)
-        logger.debug("Exporting in: '%s'", export_type)
+        if self.verbosity > 2:
+            print("Executing rql: '%s'", rql)
+            print("Exporting in: '%s'", export_type)
 
         # Check export type
         if export_type not in self._EXPORT_TYPES:
@@ -204,7 +181,8 @@ class CWInstanceConnection(object):
                 time.sleep(1)  # wait 1 second before retrying
 
         # Debug message
-        logger.debug("RQL result: '%s'", rset)
+        if self.verbosity > 2:
+            print("RQL result: '%s'", rset)
 
         return rset
 
@@ -242,7 +220,8 @@ class CWInstanceConnection(object):
         while try_nb <= nb_tries:
 
             # Timer
-            logger.debug("Sleeping: '%i sec'", timer)
+            if self.verbosity > 2:
+                print("Sleeping: '%i sec'", timer)
             time.sleep(timer)
 
             # Get all the user CWSearch in the database
@@ -267,7 +246,8 @@ class CWInstanceConnection(object):
 
         # Get instance parameters
         cw_params = self.execute(rql="", export_type="cw")
-        logger.debug("Autodetected sync parameters: '%s'", str(cw_params))
+        if self.verbosity > 2:
+            print("Autodetected sync parameters: '%s'", str(cw_params))
 
         # Copy the data with the sftp fuse mount point
         self._get_server_dataset(sync_dir, cwsearch_title, cw_params)
@@ -275,8 +255,9 @@ class CWInstanceConnection(object):
         # Load the rset
         local_dir = os.path.join(sync_dir, cwsearch_title)
         rset_file = glob.glob(os.path.join(local_dir, "request_result.*"))
-        logger.debug("Autodetected json rset file at location '{0}'".format(
-            rset_file))
+        if self.verbosity > 2:
+            print("Autodetected json rset file at location '{0}'".format(
+                rset_file))
         if len(rset_file) != 1:
             raise IOError("'{0}' rset file not supported, expect a single "
                           "rset file.".format(rset_json_file))
@@ -311,7 +292,8 @@ class CWInstanceConnection(object):
             raise IOError("Unknown '{0}' rset extension.".format(rset_file))
 
         # Debug message
-        logger.debug("RQL result: '%s'", rset)
+        if self.verbosity > 2:
+            print("RQL result: '%s'", rset)
 
         return rset
 
@@ -340,8 +322,9 @@ class CWInstanceConnection(object):
             the requested cubicweb database parameters).
         """
         # Debug message
-        logger.debug("Genotype extraction: '{0}', '{1}'".format(
-            genomic_measure, gene_name))
+        if self.verbosity > 2:
+            print("Genotype extraction: '{0}', '{1}'".format(
+                genomic_measure, gene_name))
 
         # Create a dictionary with the request meta information
         data = {
@@ -370,7 +353,8 @@ class CWInstanceConnection(object):
                 time.sleep(1)  # wait 1 second before retrying
 
         # Debug message
-        logger.debug("Genotype result: '%s'", rset)
+        if self.verbosity > 2:
+            print("Genotype result: '%s'", rset)
 
         return rset
 
@@ -402,25 +386,27 @@ class CWInstanceConnection(object):
 
         # Get the virtual folder to sync
         virtual_dir_to_sync = os.path.join(mount_point, cwsearch_title)
-        logger.debug("Autodetected sync directory: '%s'", virtual_dir_to_sync)
+        if self.verbosity > 2:
+            print("Autodetected sync directory: '%s'", virtual_dir_to_sync)
 
         # Get the local folder
         local_dir = os.path.join(sync_dir, cwsearch_title)
         if os.path.isdir(local_dir):
-            logger.warning("The CWSearch '{0}' has been found at location "
-                           "'{1}'. Do not download the data again.".format(
-                                cwsearch_title, local_dir))
+            print("The CWSearch '{0}' has been found at location "
+                  "'{1}'. Do not download the data again.".format(
+                    cwsearch_title, local_dir))
 
         # Rsync via paramiko and sftp
         else:
             transport = paramiko.Transport((self.host, self.port))
             transport.connect(username=self.login, password=self.password)
             sftp = paramiko.SFTPClient.from_transport(transport)
-
-            logger.debug("Downloading: '%s' to '%s'", virtual_dir_to_sync,
-                         local_dir)
+            if self.verbosity > 2:
+                print("Downloading: '%s' to '%s'", virtual_dir_to_sync,
+                             local_dir)
             self._sftp_get_recursive(virtual_dir_to_sync, local_dir, sftp)
-            logger.debug("Downloading done")
+            if self.verbosity > 2:
+                print("Downloading done")
 
             sftp.close()
             transport.close()
@@ -483,8 +469,9 @@ class CWInstanceConnection(object):
             the rql rquest that will be executed on the cw instance.
         """
         # Debug message
-        logger.debug("Executing rql: '%s'", rql)
-        logger.debug("Exporting in: '%s'", export_type)
+        if self.verbosity > 2:
+            print("Executing rql: '%s'", rql)
+            print("Exporting in: '%s'", export_type)
 
         # Create a dictionary with the request meta information
         data = {
