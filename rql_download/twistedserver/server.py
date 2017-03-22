@@ -104,8 +104,7 @@ class VirtualPathTranslator(object):
             an iterator containing virtual folder description. Each iterator
             item is a 3-uplet of the form (basename, longname, stat).
         """
-
-        # Create an association between cw rset and db name
+        # Create/update an association between cw rset and db name
         self.rset_map = dict((key.lstrip("/"), value) for key, value in zip(
             self.INSTANCE_NAMES, self.search_request.get_searches()))
         self.all_cw_search_names = []
@@ -115,8 +114,6 @@ class VirtualPathTranslator(object):
 
         # Check we are dealing with a path
         assert path.startswith('/')
-
-        # ToDo: remove
         # print "LIST::", path
 
         # Construct root folder
@@ -315,6 +312,16 @@ class VirtualPathTranslator(object):
             the same structure returned by a stat or lstat.
         """
         if not path_is_real:
+
+            # Create the association between cw rset and db name
+            if not hasattr(self, "all_cw_search_names"):
+                self.rset_map = dict((key.lstrip("/"), value) for key, value in zip(
+                    self.INSTANCE_NAMES, self.search_request.get_searches()))
+                self.all_cw_search_names = []
+                for name, rset in self.rset_map.iteritems():
+                    self.all_cw_search_names.extend(
+                        [r[0].encode("utf-8") for r in rset])
+
             virtpath = self.split_virtual_path(path)
             if (virtpath.search_name != '' and
                virtpath.search_name not in (self.all_cw_search_names +
@@ -496,15 +503,15 @@ class CubicWebConchUser(UnixConchUser):
             sessionid, repo, instance_name = item
 
             # Get the corresponding cw session
-            session = repo._get_session(sessionid)  # XXX private method
-            session.set_cnxset()
+            session = repo._get_session(sessionid)
+            #session.set_cnxset()
             self.cw_sessions.append(session)
 
             # Get the user entity eid
             cw_connection = get_cw_connection(instance_name)
-            inner_session = cw_connection.session
-            login_eid = inner_session.execute(
-                "Any X WHERE X is CWUser, X login '{0}'".format(login))
+            with cw_connection:
+                login_eid = cw_connection.execute(
+                    "Any X WHERE X is CWUser, X login '{0}'".format(login))
             self.cw_users.append(login_eid[0][0])
 
             # Store the instance name: assume the name is unique
@@ -599,25 +606,28 @@ class Search(object):
         session = self.cwsessions[session_index]
         cwuser = self.cwusers[session_index]
 
-        # Get all the user CWSearch entities
-        rset = session.execute('Any D WHERE S is CWSearch, S title %(title)s, '
+        # Create the connection
+        with session.new_cnx() as cnx:
+
+            # Get all the user CWSearch entities
+            rset = cnx.execute('Any D WHERE S is CWSearch, S title %(title)s, '
                                'S owned_by %(cwuser)s, '
                                'S result F, F data D',
                                {'title': virtpath.search_name,
                                 'cwuser': cwuser})
 
-        # Reorganize the file paths
-        filepaths = map(lambda x: (x, False),
-                        json.loads(rset[0][0].getvalue())["files"])
+            # Reorganize the file paths
+            filepaths = map(lambda x: (x, False),
+                            json.loads(rset[0][0].getvalue())["files"])
 
-        # Add the rset to the build tree, add the appropriate
-        # file extension
-        rset = session.execute('Any T WHERE S is CWSearch, S title %(title)s, '
+            # Add the rset to the build tree, add the appropriate
+            # file extension
+            rset = cnx.execute('Any T WHERE S is CWSearch, S title %(title)s, '
                                'S rset_type T',
                                {'title': virtpath.search_name})
-        fext = VID_TO_EXT[rset[0][0]]
-        filepaths.append((osp.join(virtpath.search_basedir,
-                          u"request_result" + fext), True))
+            fext = VID_TO_EXT[rset[0][0]]
+            filepaths.append((osp.join(virtpath.search_basedir,
+                              u"request_result" + fext), True))
 
         return filepaths
 
@@ -632,10 +642,11 @@ class Search(object):
         """
         rsets = []
         for cwsession, cwuser in zip(self.cwsessions, self.cwusers):
-            rsets.append(
-                cwsession.execute('Any SN WHERE X is CWSearch, X title SN, '
-                                  'X owned_by %(cwuser)s ',
-                                  {'cwuser': cwuser}))
+            with cwsession.new_cnx() as cnx:
+                rsets.append(
+                    cnx.execute('Any SN WHERE X is CWSearch, X title SN, '
+                                'X owned_by %(cwuser)s ',
+                                {'cwuser': cwuser}))
         return rsets
 
     def get_file_data(self, file_eid, rset_file, session_index,
@@ -663,14 +674,16 @@ class Search(object):
         cwuser = self.cwusers[session_index]
 
         if rset_file:
-            rset = session.execute('Any D WHERE F is File, '
+            with session.new_cnx() as cnx:
+                rset = cnx.execute('Any D WHERE F is File, '
                                    'S is CWSearch, S title %(title)s, '
                                    'S owned_by %(cwuser)s, S rset F, '
                                    'F data D',
                                    {'title': search_name,
                                     'cwuser': cwuser})
         else:
-            rset = session.execute('Any D WHERE F is File, '
+            with session.new_cnx() as cnx:
+                rset = cnx.execute('Any D WHERE F is File, '
                                    'F eid %(eid)s, F data D',
                                    {'eid': file_eid})
         if rset:
@@ -763,7 +776,7 @@ class CubicWebSFTPRealm:
         out: tuple
             a 3-uplet of the form (interface, avatarAspect, logout).
         """
-        # print "INNNN::", identity, self.cw_repositories
+        #print "INNNN::", identity, self.cw_repositories
         cw_session_ids = identity[1]
         unix_username = self.conf.get('unix-username')
         user = CubicWebConchUser(unix_username,

@@ -108,6 +108,6 @@ class CubicwebConfigView(JsonMixIn, View):
         rset = {
         #    "mountdir": self._cw.vreg.config["mountdir"],
             "basedir": self._cw.vreg.config["basedir"],
-            "instance_name": self._cw.vreg.config["pyro-instance-id"]
+            "instance_name": self._cw.vreg.schema.name
         }
         self.wdata(rset)

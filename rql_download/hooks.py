@@ -218,7 +218,7 @@ class CWSearchAdd(hook.Hook):
             self.entity.cw_edited["rset"] = f_eid
 
             # Get all the files attached to the current request
-            # Note: we assume the database intergrity (ie. all file paths
+            # Note: we assume the database integrity (ie. all file paths
             # inserted in the db exist on the file system) and thus do not
             # check to speed up this process.
             files_set = set()

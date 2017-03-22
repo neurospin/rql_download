@@ -21,6 +21,8 @@ import subprocess
 
 # CW import
 from cubicweb.cwconfig import CubicWebConfiguration as cwcfg
+# CW imports
+from cubicweb.utils import admincnx
 
 # Fuse import
 from cubes.rql_download.fuse.fuse import (FUSE,
@@ -62,20 +64,10 @@ def get_cw_connection(instance_name):
 
     Returns
     -------
-    mih: cubicweb.server.migractions.ServerMigrationHelper
-        the server migration object that contains a 'session' and 'shutdown'
-        attributes.
+    connection: cubicweb connection
+        an admin connection.
     """
-    # Parse/configure the all in one configuration
-    config = cwcfg.config_for(instance_name)
-    sources = ("all",)
-    config.set_sources_mode(sources)
-    config.repairing = False
-
-    # Create server migration helper
-    mih = config.migration_handler()
-
-    return mih
+    return admincnx(instance_name)
 
 
 def get_cw_option(instance_name, cw_option):
@@ -426,87 +418,85 @@ class FuseRset(Operations):
         logger.debug("! starting virtual directory update")
 
         # Get a Cubicweb in memory connection
-        cw_connection = get_cw_connection(self.instance)
+        admin_cnx = get_cw_connection(self.instance)
 
         try:
             # Get the cw session to execute rql requests
-            cw_session = cw_connection.session
+            with admin_cnx as cnx:
 
-            # From the cw configuration file, get the mask we will apply
-            # on the virtual tree
-            data_root_dir = self.data_root_dir
+                # From the cw configuration file, get the mask we will apply
+                # on the virtual tree
+                data_root_dir = self.data_root_dir
 
-            # Create an empty virtual directory
-            self.vdir = VirtualDirectory(data_root_dir)
+                # Create an empty virtual directory
+                self.vdir = VirtualDirectory(data_root_dir)
 
-            # Get the current time for virtual directories times
-            now = time.time()
+                # Get the current time for virtual directories times
+                now = time.time()
 
-            # Go through all the user CWSearch entities
-            rql = ("Any S, N WHERE S is CWSearch, S title N, S owned_by U, "
-                   "U login '{0}'".format(self.login))
-            for cwsearch_eid, cwsearch_name in cw_session.execute(rql):
+                # Go through all the user CWSearch entities
+                rql = ("Any S, N WHERE S is CWSearch, S title N, S owned_by U, "
+                       "U login '{0}'".format(self.login))
+                for cwsearch_eid, cwsearch_name in cnx.execute(rql):
 
-                # Message
-                logger.debug(
-                    "! Processing CWSearch '{0}'".format(cwsearch_name))
+                    # Message
+                    logger.debug(
+                        "! Processing CWSearch '{0}'".format(cwsearch_name))
 
-                # Get the files associated to the current CWSearch
-                rql = "Any D WHERE S eid '{0}', S result F, F data D".format(
-                    cwsearch_eid)
-                files_data = cw_session.execute(rql)[0]
+                    # Get the files associated to the current CWSearch
+                    rql = "Any D WHERE S eid '{0}', S result F, F data D".format(
+                        cwsearch_eid)
+                    files_data = cnx.execute(rql)[0]
 
-                # Get the downloadable files path from the json
-                files = json.load(files_data[0])["files"]
-                logger.debug("! Found {0} valid files for '{1}'".format(
-                    len(files), cwsearch_name))
+                    # Get the downloadable files path from the json
+                    files = json.load(files_data[0])["files"]
+                    logger.debug("! Found {0} valid files for '{1}'".format(
+                        len(files), cwsearch_name))
 
-                # Get the rset binary associated to the current CWSearch
-                rql = "Any D WHERE S eid '{0}', S rset F, F data D".format(
-                    cwsearch_eid)
-                self.vdir.rset_data[cwsearch_name] = (
-                    cw_session.execute(rql)[0][0])
+                    # Get the rset binary associated to the current CWSearch
+                    rql = "Any D WHERE S eid '{0}', S rset F, F data D".format(
+                        cwsearch_eid)
+                    self.vdir.rset_data[cwsearch_name] = (
+                        cnx.execute(rql)[0][0])
 
-                # Add the rset to the build tree, add the appropriate
-                # file extension
-                rql = "Any T WHERE S eid '{0}', S rset_type T".format(
-                    cwsearch_eid)
-                fext = VID_TO_EXT[cw_session.execute(rql)[0][0]]
-                files.append(
-                    os.path.join(data_root_dir, "request_result" + fext))
+                    # Add the rset to the build tree, add the appropriate
+                    # file extension
+                    rql = "Any T WHERE S eid '{0}', S rset_type T".format(
+                        cwsearch_eid)
+                    fext = VID_TO_EXT[cnx.execute(rql)[0][0]]
+                    files.append(
+                        os.path.join(data_root_dir, "request_result" + fext))
 
-                # Go through all files and create the virtual directory
-                for fname in files:
+                    # Go through all files and create the virtual directory
+                    for fname in files:
 
-                    # Apply the mask: remove 'data_root_dir' from the
-                    # begining of the path
-                    if fname.startswith(data_root_dir):
-                        path = fname[len(data_root_dir):]
+                        # Apply the mask: remove 'data_root_dir' from the
+                        # begining of the path
+                        if fname.startswith(data_root_dir):
+                            path = fname[len(data_root_dir):]
 
-                    # Add the CWSearch name to the path
-                    if os.path.isabs(path):
-                        path = os.path.join(cwsearch_name, path[1:])
-                    else:
-                        path = os.path.join(cwsearch_name, path)
+                        # Add the CWSearch name to the path
+                        if os.path.isabs(path):
+                            path = os.path.join(cwsearch_name, path[1:])
+                        else:
+                            path = os.path.join(cwsearch_name, path)
 
-                    # Paths send by fuse are absolute => adds os.path.sep at
-                    # the begining
-                    virtual_path = path.split(os.path.sep)
-                    virtual_path.insert(0, os.path.sep)
+                        # Paths send by fuse are absolute => adds os.path.sep at
+                        # the begining
+                        virtual_path = path.split(os.path.sep)
+                        virtual_path.insert(0, os.path.sep)
 
-                    # Make sure all parent virtual directories are created
-                    for i in range(1, len(virtual_path)):
-                        dir_full_path = os.path.join(*virtual_path[:i])
-                        self.vdir.make_directory(
-                            dir_full_path, self.uid, self.gid, now)
+                        # Make sure all parent virtual directories are created
+                        for i in range(1, len(virtual_path)):
+                            dir_full_path = os.path.join(*virtual_path[:i])
+                            self.vdir.make_directory(
+                                dir_full_path, self.uid, self.gid, now)
 
-                    # Add the file to the fuse virtual tree
-                    self.vdir.add_file(
-                        os.path.join(*virtual_path), fname, self.uid, self.gid)
-
-        # Shut down the cw connection
-        finally:
-            cw_connection.shutdown()
+                        # Add the file to the fuse virtual tree
+                        self.vdir.add_file(
+                            os.path.join(*virtual_path), fname, self.uid, self.gid)
+        except Exception:
+            pass
 
         # Message
         logger.debug("! update done")
