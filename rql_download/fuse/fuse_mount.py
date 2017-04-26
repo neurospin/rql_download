@@ -21,8 +21,8 @@ import subprocess
 
 # CW import
 from cubicweb.cwconfig import CubicWebConfiguration as cwcfg
-# CW imports
-from cubicweb.utils import admincnx
+from cubicweb.server.utils import TasksManager
+
 
 # Fuse import
 from cubes.rql_download.fuse.fuse import (FUSE,
@@ -54,7 +54,7 @@ class Suicide(Exception):
     pass
 
 
-def get_cw_connection(instance_name):
+def get_cw_repo(instance_name):
     """ Connect to a local instance using an in memory connection.
 
     Parameters
@@ -64,10 +64,11 @@ def get_cw_connection(instance_name):
 
     Returns
     -------
-    connection: cubicweb connection
-        an admin connection.
+    repo: cubicweb Repository
+        a cubicweb Repository object.
     """
-    return admincnx(instance_name)
+    config = cwcfg.config_for(instance_name)
+    return Repository(config, TasksManager())
 
 
 def get_cw_option(instance_name, cw_option):
@@ -418,11 +419,11 @@ class FuseRset(Operations):
         logger.debug("! starting virtual directory update")
 
         # Get a Cubicweb in memory connection
-        admin_cnx = get_cw_connection(self.instance)
+        repo = get_cw_repo(self.instance)
 
         try:
             # Get the cw session to execute rql requests
-            with admin_cnx as cnx:
+            with repo.internal_cnx() as cnx:
 
                 # From the cw configuration file, get the mask we will apply
                 # on the virtual tree

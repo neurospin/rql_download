@@ -9,7 +9,7 @@ Fuse virtual folders
 Description
 -----------
 
-In order to expose the content of CWSearch entities, a process (which can be 
+In order to expose the content of CWSearch entities, a process (which can be
 started  automatically by cubicweb) can create a virtual folder with the the
 content of the result set associated to the search. The creation of such a
 virtual folder requires the cubicweb and system accounts to be the same
@@ -76,7 +76,7 @@ configuration file:
         X11Forwarding no
 
 .. warning::
-    
+
     Sshd will reject SFTP connections from accounts that are set to chroot into
     any directory where ownership/permissions are considered insecure by sshd.
 
@@ -115,7 +115,7 @@ Fuse
     :toctree: generated/twisted/
     :template: function.rst
 
-    fuse_mount.get_cw_connection
+    fuse_mount.get_cw_repo
     fuse_mount.get_cw_option
 
 
