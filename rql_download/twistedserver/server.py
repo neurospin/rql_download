@@ -38,7 +38,7 @@ from zope.interface import implements
 from cubicweb import cwconfig
 from cubicweb.server.repository import Repository
 from cubicweb.server.utils import TasksManager
-from cubes.rql_download.fuse.fuse_mount import get_cw_connection
+from cubes.rql_download.fuse.fuse_mount import get_cw_repo
 
 
 # Define a mapping between cw export vid and file extension
@@ -508,9 +508,9 @@ class CubicWebConchUser(UnixConchUser):
             self.cw_sessions.append(session)
 
             # Get the user entity eid
-            cw_connection = get_cw_connection(instance_name)
-            with cw_connection:
-                login_eid = cw_connection.execute(
+            cw_repo = get_cw_repo(instance_name)
+            with cw_repo.internal_cnx() as cnx:
+                login_eid = cnx.execute(
                     "Any X WHERE X is CWUser, X login '{0}'".format(login))
             self.cw_users.append(login_eid[0][0])
 
