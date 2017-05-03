@@ -13,6 +13,8 @@ import sys
 import json
 import os
 import datetime
+import threading
+import Queue
 
 # RQL import
 from rql.nodes import Constant, Function
@@ -22,7 +24,9 @@ from cubicweb import NotAnEntity
 from cubicweb import Binary, ValidationError
 from cubicweb.server import hook
 from cubicweb.predicates import is_instance
-
+from cubes.rql_download.fuse.fuse_mount import start
+from subprocess import call
+import glob
 _ = unicode
 
 
@@ -321,14 +325,16 @@ class PostCommitFuseOperation(hook.Operation):
 
         # Create a new fuse process: try first to update the fuse mount point
         # if already created otherwise create a new mount point.
-        cmd = [sys.executable, "-m", "cubes.rql_download.fuse.fuse_mount",
-               instance_name, login]
-        process = subprocess.Popen(cmd)
-        # Create zombie process, keep trace in memory to deal with them later.
-        if "cw_fuse_zombies" not in globals():
-            globals()["cw_fuse_zombies"] = [process]
-        else:
-            globals()["cw_fuse_zombies"].append(process)
+
+        # Create a queue to share the repo object safely across threads
+        queue = Queue.Queue()
+        queue.put(repo)
+        # Create and start a new thread
+        new_thread = threading.Thread(target=start,
+                                      args=(instance_name, login, queue))
+        # Start thread as daemon to be able to kill it nicely
+        new_thread.daemon = True
+        new_thread.start()
 
 
 class ServerStartupFuseMount(hook.Hook):
@@ -350,13 +356,32 @@ class ServerStartupFuseMount(hook.Hook):
                 rset = cnx.execute(rql)
                 logins = set([x[0] for x in rset])
 
-            # Start a fuse deamon for each user
             instance_name = self.repo.schema.name
-            for user in logins:
-                cmd = [sys.executable, "-m",
-                       "cubes.rql_download.fuse.fuse_mount",
-                       instance_name, user]
-                subprocess.Popen(cmd)
+
+            # Create a queue to share the repo object safely across threads
+            queue = Queue.Queue()
+            queue.put(self.repo)
+
+            if self.repo.vreg.config["unmount_existing"]:
+                mountdir = self.repo.vreg.config["mountdir"]
+                for user in os.listdir(mountdir):
+                    user_dir = os.path.join(mountdir, user, instance_name)
+                    cmd = ["fusermount", "-uz", user_dir]
+                    try:
+                        call(cmd)
+                    except:
+                        self.repo.exception(
+                            "Command '{}' failed.".format(" ".join(cmd)))
+
+            # Start one thread per user
+            threads = []
+            for login in list(logins)[:5]:
+                threads.append(
+                    threading.Thread(target=start,
+                                     args=(instance_name, login, queue)))
+                # Start thread as daemon to be able to kill it nicely
+                threads[-1].daemon = True
+                threads[-1].start()
 
 
 class ServerStartupFuseZombiesLoop(hook.Hook):

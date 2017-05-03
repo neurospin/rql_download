@@ -10,19 +10,17 @@
 # System import
 import os
 import re
-import sys
 import stat
 import json
 import time
 import pwd
 import logging
 import datetime
-import subprocess
 
 # CW import
 from cubicweb.cwconfig import CubicWebConfiguration as cwcfg
-from cubicweb.server.utils import TasksManager
-
+# CW imports
+from cubicweb.utils import admincnx
 
 # Fuse import
 from cubes.rql_download.fuse.fuse import (FUSE,
@@ -34,6 +32,7 @@ from cubes.rql_download.fuse.fuse import (FUSE,
                                           ENOTSUP)
 # Define the logger
 logger = logging.getLogger("fuse.log-mixin")
+logger.setLevel(logging.DEBUG)
 
 # Define a mapping between cw export vid and file extension
 VID_TO_EXT = {
@@ -54,7 +53,7 @@ class Suicide(Exception):
     pass
 
 
-def get_cw_repo(instance_name):
+def get_cw_connection(instance_name):
     """ Connect to a local instance using an in memory connection.
 
     Parameters
@@ -64,11 +63,10 @@ def get_cw_repo(instance_name):
 
     Returns
     -------
-    repo: cubicweb Repository
-        a cubicweb Repository object.
+    connection: cubicweb connection
+        an admin connection.
     """
-    config = cwcfg.config_for(instance_name)
-    return Repository(config, TasksManager())
+    return admincnx(instance_name)
 
 
 def get_cw_option(instance_name, cw_option):
@@ -366,7 +364,7 @@ class FuseRset(Operations):
     """ Class that create a mount point containing virtual path representing
     the CWSearch entities of a cw user.
     """
-    def __init__(self, instance, login):
+    def __init__(self, instance, login, queue):
         """ Initilize the FuseRset class.
 
         .. note::
@@ -381,6 +379,7 @@ class FuseRset(Operations):
             the cw login
         """
         # Class parameters
+        self.queue = queue
         self.instance = instance
         self.login = login
         self.vdir = None  # the virtual directory object
@@ -418,13 +417,11 @@ class FuseRset(Operations):
         # Message
         logger.debug("! starting virtual directory update")
 
-        # Get a Cubicweb in memory connection
-        repo = get_cw_repo(self.instance)
+        # Get the cw session to execute rql requests
+        repo = self.queue.get()
 
         try:
-            # Get the cw session to execute rql requests
             with repo.internal_cnx() as cnx:
-
                 # From the cw configuration file, get the mask we will apply
                 # on the virtual tree
                 data_root_dir = self.data_root_dir
@@ -473,6 +470,7 @@ class FuseRset(Operations):
 
                         # Apply the mask: remove 'data_root_dir' from the
                         # begining of the path
+                        path = None
                         if fname.startswith(data_root_dir):
                             path = fname[len(data_root_dir):]
 
@@ -496,11 +494,13 @@ class FuseRset(Operations):
                         # Add the file to the fuse virtual tree
                         self.vdir.add_file(
                             os.path.join(*virtual_path), fname, self.uid, self.gid)
-        except Exception:
-            pass
-
-        # Message
-        logger.debug("! update done")
+        except:
+            raise
+        finally:
+            # Put back the connection into the queue
+            self.queue.put(repo)
+            # Message
+            logger.debug("! update done")
 
     ########################################################################
     # Filesystem methods
@@ -720,21 +720,13 @@ class FuseRset(Operations):
         raise FuseOSError(EROFS)
 
 
-if __name__ == "__main__":
+def start(instance_name, login, queue):
 
-    # Setup the logger: cubicweb change the logging config and thus
-    # we setup en axtra stream handler
-    # ToDo: fix it
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.StreamHandler())
-
-    # Command line parameters
-    instance_name = sys.argv[1]
-    login = sys.argv[2]
     mount_base = get_cw_option(instance_name, "mountdir")
     mount_point = os.path.join(mount_base, login, instance_name)
-    logger.debug("Command line parameters: instance name = {0}, login = {1} fuse "
-                 "mount point = {2}".format(instance_name, login, mount_point))
+    logger.debug("Command line parameters: instance name = {0}, login = {1} "
+                 "fuse mount point = {2}".format(
+                    instance_name, login, mount_point))
 
     # Check if the user fuse mount point is available
     isalive = True
@@ -750,7 +742,7 @@ if __name__ == "__main__":
         os.stat(os.path.join(mount_point, ".update"))
     else:
         # Create the fuse mount point
-        FUSE(FuseRset(instance_name, login),
+        FUSE(FuseRset(instance_name, login, queue),
              mount_point,
              foreground=True,
              allow_other=True,
