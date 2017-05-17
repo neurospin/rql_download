@@ -63,11 +63,12 @@ else:
 
 # Create the home of each member
 for m in members:
-    fuse_user_home = os.path.join(options.basedir, "home", m)
+    fuse_home = os.path.join(options.basedir, "home")
+    fuse_user_home = os.path.join(fuse_home, m)
     fuse_instance_home = os.path.join(fuse_user_home, options.db_name)
     if not os.path.isdir(fuse_instance_home):
-        if not os.path.isdir(fuse_user_home):
-            os.makedirs(os.path.dirname(fuse_user_home), 0751)
+        if not os.path.isdir(fuse_home):
+            os.makedirs(fuse_home, 0751)
         os.makedirs(fuse_instance_home, 0771)
 
         if not options.use_ldap:

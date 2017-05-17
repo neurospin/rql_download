@@ -115,7 +115,6 @@ Fuse
     :toctree: generated/twisted/
     :template: function.rst
 
-    fuse_mount.get_cw_repo
     fuse_mount.get_cw_option
 
 

@@ -51,4 +51,12 @@ options = (
               "when the user has some CWSearch entities.",
       "group": "rql_download", "level": 0,
       }),
+    ("unmount_existing",
+      {"type": "yn",
+      "default": False,
+      "help": "if true cubicweb will automatically  unmount existing fuse"
+              "mountpoints for users having CWSearch entities before updating "
+              "them.",
+      "group": "rql_download", "level": 0,
+      }),
 )
