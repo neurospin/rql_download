@@ -19,8 +19,6 @@ import datetime
 
 # CW import
 from cubicweb.cwconfig import CubicWebConfiguration as cwcfg
-# CW imports
-from cubicweb.utils import admincnx
 
 # Fuse import
 from cubes.rql_download.fuse.fuse import (FUSE,
@@ -47,26 +45,6 @@ VID_TO_EXT = {
 # printed on the log. In order to debug is also necessary to add LoggingMixIn
 # to FuseRset below.
 # from cubes.rql_download.fuse.fuse import LoggingMixIn
-
-
-class Suicide(Exception):
-    pass
-
-
-def get_cw_connection(instance_name):
-    """ Connect to a local instance using an in memory connection.
-
-    Parameters
-    ----------
-    instance_name: str (mandatory)
-        the name of the cw instance we want to connect.
-
-    Returns
-    -------
-    connection: cubicweb connection
-        an admin connection.
-    """
-    return admincnx(instance_name)
 
 
 def get_cw_option(instance_name, cw_option):

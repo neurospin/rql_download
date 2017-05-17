@@ -17,9 +17,6 @@ import stat
 import posix
 from collections import namedtuple
 
-# Define the logger
-logger = logging.getLogger(__name__)
-
 # Twisted import
 from twisted.conch.ls import lsLine
 from twisted.conch.unix import (
@@ -32,14 +29,21 @@ from twisted.cred.error import UnauthorizedLogin
 from twisted.conch.interfaces import ISFTPServer, ISFTPFile
 from twisted.conch.ssh import factory, keys, session
 from twisted.internet import defer
+from twisted.python import log
 from zope.interface import implements
 
 # CW import
 from cubicweb import cwconfig
 from cubicweb.server.repository import Repository
 from cubicweb.server.utils import TasksManager
-from cubes.rql_download.fuse.fuse_mount import get_cw_repo
 
+# Define the logger
+def CWObserver(kwargs):
+    log_text = kwargs.get("log_text")
+    if log_text is not None:
+        if log_text.startswith("Traceback"):
+            print log_text
+log.addObserver(CWObserver)
 
 # Define a mapping between cw export vid and file extension
 VID_TO_EXT = {
@@ -504,12 +508,10 @@ class CubicWebConchUser(UnixConchUser):
 
             # Get the corresponding cw session
             session = repo._get_session(sessionid)
-            #session.set_cnxset()
             self.cw_sessions.append(session)
 
             # Get the user entity eid
-            cw_repo = get_cw_repo(instance_name)
-            with cw_repo.internal_cnx() as cnx:
+            with repo.internal_cnx() as cnx:
                 login_eid = cnx.execute(
                     "Any X WHERE X is CWUser, X login '{0}'".format(login))
             self.cw_users.append(login_eid[0][0])
@@ -532,7 +534,7 @@ class CubicWebConchUser(UnixConchUser):
         """
         for cwsession in self.cw_sessions:
             cwsession.close()
-        logger.info("'{0}' logout!".format(self.login))
+        print "'{0}' logout!".format(self.login)
 
     def _runAsUser(self, f, *args, **kw):
         """ Method to logged-in a user.

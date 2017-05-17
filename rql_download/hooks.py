@@ -362,6 +362,9 @@ class ServerStartupFuseMount(hook.Hook):
             queue = Queue.Queue()
             queue.put(self.repo)
 
+            # Clear mount points: force unmounting each user home instance
+            # directory, because these directories can be in an unexpected
+            # system state.
             if self.repo.vreg.config["unmount_existing"]:
                 mountdir = self.repo.vreg.config["mountdir"]
                 for user in os.listdir(mountdir):
@@ -375,41 +378,13 @@ class ServerStartupFuseMount(hook.Hook):
 
             # Start one thread per user
             threads = []
-            for login in list(logins)[:5]:
+            for login in logins:
                 threads.append(
                     threading.Thread(target=start,
                                      args=(instance_name, login, queue)))
                 # Start thread as daemon to be able to kill it nicely
                 threads[-1].daemon = True
                 threads[-1].start()
-
-
-class ServerStartupFuseZombiesLoop(hook.Hook):
-    """ On startup, register a task to clean zombie (defunc) processes stored
-    in the 'cw_fuse_zombies' global parameter.
-    """
-    __regid__ = "rqldownload.startup_fuse_zombies_loop"
-    events = ("server_startup", )
-
-    def __call__(self):
-        """ Start a loop to clean zombie processes.
-        """
-        # Specify the refresh time in days: every minute here
-        dt = datetime.timedelta(1. / 1440.)
-
-        # Define the cleaning function
-        def cleaning_cw_fuse_zombies():
-            if "cw_fuse_zombies" in globals():
-                fuse_zombies = globals()["cw_fuse_zombies"]
-                if fuse_zombies is None:
-                    fuse_zombies = []
-                for process in fuse_zombies:
-                    if process.poll() is not None:
-                        process.wait()
-                        globals()["cw_fuse_zombies"].remove(process)
-
-        # Register the cleaning looping task
-        self.repo.looping_task(dt.total_seconds(), cleaning_cw_fuse_zombies)
 
 
 ###############################################################################
