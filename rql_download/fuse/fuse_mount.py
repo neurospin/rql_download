@@ -16,6 +16,7 @@ import time
 import pwd
 import logging
 import datetime
+from threading import Lock
 
 # CW import
 from cubicweb.cwconfig import CubicWebConfiguration as cwcfg
@@ -357,6 +358,7 @@ class FuseRset(Operations):
             the cw login
         """
         # Class parameters
+        self.rwlock = Lock()
         self.queue = queue
         self.instance = instance
         self.login = login
@@ -594,8 +596,9 @@ class FuseRset(Operations):
             return self.vdir.rset_data[cwsearch_name].read(length)
         # The file exists on the file system
         else:
-            os.lseek(fh, offset, os.SEEK_SET)
-            return os.read(fh, length)
+            with self.rwlock:
+                os.lseek(fh, offset, os.SEEK_SET)
+                return os.read(fh, length)
 
     def release(self, path, fh):
         """ File-class version of 'release'.
