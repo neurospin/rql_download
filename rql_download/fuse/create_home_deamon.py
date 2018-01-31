@@ -70,6 +70,7 @@ for m in members:
         if not os.path.isdir(fuse_home):
             os.makedirs(fuse_home, 0751)
         os.makedirs(fuse_instance_home, 0771)
+        os.chmod(fuse_instance_home, 0771)
 
         if not options.use_ldap:
             cw_uid = int(options.cw_uid)
