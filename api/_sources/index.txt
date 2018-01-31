@@ -1,0 +1,35 @@
+..  cwbrowser documentation master file
+
+
+
+=========
+CWBrowser
+=========
+
+Python package to request CubicWeb services in order to get:
+
+* eCRF data.
+* imaging data: T1, T2, dMRI, fMRI, ...
+* genotype data.
+* processed data: FreeSurfer, MrTrix3, FSL, SPM, ...
+
+
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    generated/installation
+    generated/documentation
+
+
+=======
+Search
+=======
+
+:ref:`search`
+
+
+
+
+

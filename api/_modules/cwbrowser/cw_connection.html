@@ -1,0 +1,645 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  
+    <title>CWBROWSER &mdash; cwbrowser</title>
+  <!-- htmltitle is before nature.css - we use this hack to load bootstrap first -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../../_static/css/bootstrap.min.css" media="screen" />
+
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.2.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="cwbrowser" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+  
+   
+       <script type="text/javascript" src="../../_static/sidebar.js"></script>
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../../_static/js/bootstrap.min.js" type="text/javascript"></script>
+
+  <script src="../../_static/js/angular.min.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    var app = angular.module("navApp", []);
+    app.controller('navCtrl', ['$scope', '$window', function($scope, $window) {
+      $scope.isActive = function (viewLocation) {
+        var rel = $window.location.pathname.split("/")
+        rel = rel[rel.length - 1]
+        rel = rel.split(".")[0]
+        var active = (viewLocation === rel);
+        return active;};
+    }]);
+  </script>
+
+  </head>
+  <body role="document"><div class="banner">
+  <div class="container-fluid banner-container">
+    <div class="row banner-inner">
+      <div class="col-xs-4">
+        <img alt="Logo" src="../../_static/cwbrowser.png">
+      </div>
+      <div class="col-xs-8">
+            <p>Python package to request CubicWeb services.</p>
+      </div>
+    </div>  
+  </div>
+</div><nav class="navbar navbar-default navbar-static-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+        </a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse" ng-controller="navCtrl" ng-app="navApp">
+      <ul class="nav navbar-nav">
+        <li ng-class="{ active: isActive('index') }"><a href="../../index.html">Home</a></li>
+        <li ng-class="{ active: isActive('installation') }"><a href="../../generated/installation.html">Installation</a></li>
+        <li ng-class="{ active: isActive('gallery') }"><a href="../../auto_gallery/gallery.html">Gallery</a></li>
+        <li ng-class="{ active: isActive('documentation') }"><a href="../../generated/documentation.html">API documentation</a></li>
+        <!--<li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+	        <li><a href="../../generated/cwbrowser.html">Cwbrowser</a></li>
+          </ul>
+        </li>-->
+        <li><a href="https://github.com/AGrigis/pysphinxdoc">PYSPHINXDOC</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="content-wrapper">
+    <div class="sphinxsidebar">
+      <div class="sphinxsidebarwrapper">
+
+        <!-- info setup -->
+          <p class="doc-version">
+           This documentation is for cwbrowser <strong>version 2.2.1</strong>
+          </p>
+        <p class="citing">
+          If you use the software, please do not esitate to 
+          <a &mdash; <a href="https://github.com/neurospin/rql_download.git">
+          Report a Bug</a>.
+        </p>
+
+      <!-- toc tree -->
+      
+
+      </div>
+    </div>
+  
+
+  <div class="content">
+      
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for cwbrowser.cw_connection</h1><div class="highlight"><pre>
+<span></span><span class="c1">##########################################################################</span>
+<span class="c1"># NSAp - Copyright (C) CEA, 2013 - 2018</span>
+<span class="c1"># Distributed under the terms of the CeCILL-B license, as published by</span>
+<span class="c1"># the CEA-CNRS-INRIA. Refer to the LICENSE file or to</span>
+<span class="c1"># http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html</span>
+<span class="c1"># for details.</span>
+<span class="c1">##########################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A module to connect a CubicWeb service and send requests.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># System import</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">stat</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># for Python 2.x</span>
+    <span class="kn">from</span> <span class="nn">StringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># for Python 3.x</span>
+    <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+
+<span class="c1"># Third party import</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">paramiko</span>
+
+
+<div class="viewcode-block" id="load_csv"><a class="viewcode-back" href="../../generated/cwbrowser/cwbrowser.cw_connection.load_csv.html#cwbrowser.cw_connection.load_csv">[docs]</a><span class="k">def</span> <span class="nf">load_csv</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Load a csv.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    text: string (mandatory)</span>
+<span class="sd">        the csv text.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    csv_lines: list</span>
+<span class="sd">        a list containing all the csv lines.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">csv_stream</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csv_stream</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">)</span>
+    <span class="n">csv_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">csv_lines</span></div>
+
+
+<div class="viewcode-block" id="CWInstanceConnection"><a class="viewcode-back" href="../../generated/cwbrowser.cw_connection.html#cwbrowser.cw_connection.CWInstanceConnection">[docs]</a><span class="k">class</span> <span class="nc">CWInstanceConnection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Tool to dump the data stored in a cw instance.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # Import Connection module</span>
+<span class="sd">        from cwbrowser.cw_connection import CWInstanceConnection</span>
+
+<span class="sd">        # Create dummy rqls</span>
+<span class="sd">        rql1 = (&quot;Any C, G Where X is Subject, X code_in_study C, &quot;</span>
+<span class="sd">                &quot;X handedness &#39;ambidextrous&#39;, X gender G&quot;)</span>
+<span class="sd">        rql2 = (&quot;Any S WHERE S is Scan, S has_data A, A field &#39;3T&#39;, &quot;</span>
+<span class="sd">                &quot;S in_assessment B, B timepoint &#39;V1&#39;, S format &#39;GIS&#39;, &quot;</span>
+<span class="sd">                &quot;S in_assessment C, C concerns D, D code_in_study &#39;ab100207&#39;&quot;)</span>
+
+<span class="sd">        # HTTP test</span>
+<span class="sd">        url = @HTTPURL; login = @LOGIN; password = @PWD</span>
+<span class="sd">        connection = CWInstanceConnection(url, login, password, port=9191)</span>
+<span class="sd">        connection.execute(rql1, export_type=&quot;json&quot;)</span>
+<span class="sd">        connection.execute_with_sync(rql2, &quot;/tmp/fuse&quot;, timer=1)</span>
+
+<span class="sd">        # HTTPS test</span>
+<span class="sd">        url = @HTTPSURL; login = @LOGIN; password = @PWD</span>
+<span class="sd">        connection = CWInstanceConnection(url, login, password,</span>
+<span class="sd">                                          server_root=&quot;/home/$login&quot;)</span>
+<span class="sd">        connection.execute(rql)</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : str</span>
+<span class="sd">        the url to the cw instance.</span>
+<span class="sd">    login : str</span>
+<span class="sd">        the cw login.</span>
+<span class="sd">    opener:  OpenerDirector</span>
+<span class="sd">        object that contains the connexion to the cw instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Global variable that specify the supported export cw formats</span>
+    <span class="n">_EXPORT_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="s2">&quot;cw&quot;</span><span class="p">]</span>
+    <span class="n">importers</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;json&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span>
+        <span class="s2">&quot;csv&quot;</span><span class="p">:</span> <span class="n">load_csv</span><span class="p">,</span>
+        <span class="s2">&quot;cw&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span>
+        <span class="s2">&quot;cwsearch&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">login</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">server_root</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span>
+                 <span class="n">verify</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initilize the HTTPConnection class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        url: str (mandatory)</span>
+<span class="sd">            the url to the cw instance.</span>
+<span class="sd">        login: str (mandatory)</span>
+<span class="sd">            the cw login.</span>
+<span class="sd">        password: str (mandatory)</span>
+<span class="sd">            the cw user password.</span>
+<span class="sd">        port: int (optional default 22)</span>
+<span class="sd">            the sftp port.</span>
+<span class="sd">        server_root: str (optional default &#39;/&#39;)</span>
+<span class="sd">            the server root directory where the user mount points (chroot) are</span>
+<span class="sd">            mapped.</span>
+<span class="sd">        verify: bool (optional, default True)</span>
+<span class="sd">            if unset, disable the security certificate check.</span>
+<span class="sd">        verbosity: int (optional default 0)</span>
+<span class="sd">            the verbosity level.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Class parameters</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;https&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Authentication was requested on a non secured URL ({0}).&quot;</span>
+                <span class="s2">&quot;Request has been blocked for security reasons.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">login</span> <span class="o">=</span> <span class="n">login</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">password</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_root</span> <span class="o">=</span> <span class="n">server_root</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verify</span> <span class="o">=</span> <span class="n">verify</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span>
+
+    <span class="c1">###########################################################################</span>
+    <span class="c1"># Public Members</span>
+    <span class="c1">###########################################################################</span>
+
+<div class="viewcode-block" id="CWInstanceConnection.execute"><a class="viewcode-back" href="../../generated/cwbrowser.cw_connection.html#cwbrowser.cw_connection.CWInstanceConnection.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rql</span><span class="p">,</span> <span class="n">export_type</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">nb_tries</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method that loads the rset from a rql request.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rql: str (mandatory)</span>
+<span class="sd">            the rql rquest that will be executed on the cw instance.</span>
+<span class="sd">        export_type: str (optional default &#39;json&#39;)</span>
+<span class="sd">            the result set export format: one defined in &#39;_EXPORT_TYPES&#39;.</span>
+<span class="sd">        nb_tries: int (optional default 2)</span>
+<span class="sd">            number of times a request will be repeated if it fails.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        rset: list of list of str</span>
+<span class="sd">            a list that contains the requested entity parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Debug message</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Executing rql: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">rql</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Exporting in: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">export_type</span><span class="p">)</span>
+
+        <span class="c1"># Check export type</span>
+        <span class="k">if</span> <span class="n">export_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_EXPORT_TYPES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown export type &#39;{0}&#39;, expect one in &quot;</span>
+                            <span class="s2">&quot;&#39;{1}&#39;.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">export_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_EXPORT_TYPES</span><span class="p">))</span>
+
+        <span class="c1"># Create a dictionary with the request meta information</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;__login&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span>
+            <span class="s2">&quot;__password&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">,</span>
+            <span class="s2">&quot;rql&quot;</span><span class="p">:</span> <span class="n">rql</span><span class="p">,</span>
+            <span class="s2">&quot;vid&quot;</span><span class="p">:</span> <span class="n">export_type</span> <span class="o">+</span> <span class="s2">&quot;export&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;_binary&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">export_type</span> <span class="o">==</span> <span class="s2">&quot;cw&quot;</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;_binary&quot;</span><span class="p">]</span>
+        
+        <span class="n">try_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>  <span class="c1"># Get the result set, it will always try at least once</span>
+                <span class="n">try_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span><span class="n">verify</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">,</span>
+                    <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">reason</span><span class="p">)</span>
+                <span class="n">rset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">importers</span><span class="p">[</span><span class="n">export_type</span><span class="p">](</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">try_count</span> <span class="o">&gt;=</span> <span class="n">nb_tries</span><span class="p">:</span>
+                    <span class="c1"># keep original message of e and add infos</span>
+                    <span class="n">e</span><span class="o">.</span><span class="n">message</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to get data after {} tries.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="s2">&quot;Request: {}&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nb_tries</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;rql&quot;</span><span class="p">])</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># wait 1 second before retrying</span>
+
+        <span class="c1"># Debug message</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;RQL result: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">rset</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rset</span></div>
+
+<div class="viewcode-block" id="CWInstanceConnection.execute_with_sync"><a class="viewcode-back" href="../../generated/cwbrowser.cw_connection.html#cwbrowser.cw_connection.CWInstanceConnection.execute_with_sync">[docs]</a>    <span class="k">def</span> <span class="nf">execute_with_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rql</span><span class="p">,</span> <span class="n">sync_dir</span><span class="p">,</span> <span class="n">timer</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">nb_tries</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method that loads the rset from a rql request through sftp protocol</span>
+<span class="sd">        using the CWSearch mechanism.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rql: str (mandatory)</span>
+<span class="sd">            the rql rquest that will be executed on the cw instance.</span>
+<span class="sd">        sync_dir: str (mandatory)</span>
+<span class="sd">            the destination folder where the rql data are synchronized.</span>
+<span class="sd">        timer: int (optional default 3)</span>
+<span class="sd">            the time in seconds we are waiting for the fuse or twisted</span>
+<span class="sd">            server update.</span>
+<span class="sd">        nb_tries: int (optional default 3)</span>
+<span class="sd">            if the update has not been detected after &#39;nb_of_try&#39; trials</span>
+<span class="sd">            raise an exception.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        rset: list of list or list of dict</span>
+<span class="sd">            a list that contains the requested cubicweb database parameters</span>
+<span class="sd">            when a json rset is generated, a list of dictionaries if a csv</span>
+<span class="sd">            rset is generated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create the CWSearch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_cwsearch</span><span class="p">(</span><span class="n">rql</span><span class="p">)</span>
+
+        <span class="c1"># Wait for the update: use double quote in rql</span>
+        <span class="n">try_nb</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">cwsearch_title</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">rql</span> <span class="o">=</span> <span class="n">rql</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">try_nb</span> <span class="o">&lt;=</span> <span class="n">nb_tries</span><span class="p">:</span>
+
+            <span class="c1"># Timer</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Sleeping: &#39;</span><span class="si">%i</span><span class="s2"> sec&#39;&quot;</span><span class="p">,</span> <span class="n">timer</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">timer</span><span class="p">)</span>
+
+            <span class="c1"># Get all the user CWSearch in the database</span>
+            <span class="n">rset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="s2">&quot;Any S, T, P Where S is CWSearch, S title T, S path P&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Check if the cubicweb update has been done.</span>
+            <span class="c1"># If true, get the associated CWSearch title</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">rset</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">rql</span><span class="p">:</span>
+                    <span class="n">cwsearch_title</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="n">cwsearch_title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="c1"># Increment</span>
+            <span class="n">try_nb</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># If the search is not created</span>
+        <span class="k">if</span> <span class="n">try_nb</span> <span class="o">==</span> <span class="p">(</span><span class="n">nb_tries</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;The search has not been created properly.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get instance parameters</span>
+        <span class="n">cw_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">rql</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">export_type</span><span class="o">=</span><span class="s2">&quot;cw&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Autodetected sync parameters: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cw_params</span><span class="p">))</span>
+
+        <span class="c1"># Copy the data with the sftp fuse mount point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_server_dataset</span><span class="p">(</span><span class="n">sync_dir</span><span class="p">,</span> <span class="n">cwsearch_title</span><span class="p">,</span> <span class="n">cw_params</span><span class="p">)</span>
+
+        <span class="c1"># Load the rset</span>
+        <span class="n">local_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sync_dir</span><span class="p">,</span> <span class="n">cwsearch_title</span><span class="p">)</span>
+        <span class="n">rset_file</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local_dir</span><span class="p">,</span> <span class="s2">&quot;request_result.*&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Autodetected json rset file at location &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">rset_file</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rset_file</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;&#39;{0}&#39; rset file not supported, expect a single &quot;</span>
+                          <span class="s2">&quot;rset file.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rset_json_file</span><span class="p">))</span>
+        <span class="n">rset_file</span> <span class="o">=</span> <span class="n">rset_file</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">filext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">rset_file</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># &gt; deal with json file</span>
+        <span class="k">if</span> <span class="n">filext</span> <span class="o">==</span> <span class="s2">&quot;.json&quot;</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rset_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_data</span><span class="p">:</span>
+                <span class="n">rset</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_data</span><span class="p">)</span>
+
+            <span class="c1"># Tune the rset files in order to point in the local filesystem</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">local_dir</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">):</span>
+                <span class="n">local_dir</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cw_params</span><span class="p">[</span><span class="s2">&quot;basedir&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">):</span>
+                <span class="n">cw_params</span><span class="p">[</span><span class="s2">&quot;basedir&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
+            <span class="k">for</span> <span class="n">rset_items</span> <span class="ow">in</span> <span class="n">rset</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">item_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rset_items</span><span class="p">)):</span>
+                    <span class="n">item</span> <span class="o">=</span> <span class="n">rset_items</span><span class="p">[</span><span class="n">item_index</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">and</span>
+                       <span class="n">item</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">cw_params</span><span class="p">[</span><span class="s2">&quot;basedir&quot;</span><span class="p">])):</span>
+                        <span class="n">rset_items</span><span class="p">[</span><span class="n">item_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                            <span class="n">cw_params</span><span class="p">[</span><span class="s2">&quot;basedir&quot;</span><span class="p">],</span> <span class="n">local_dir</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># &gt; deal with csv file</span>
+        <span class="k">elif</span> <span class="n">filext</span> <span class="o">==</span> <span class="s2">&quot;.csv&quot;</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rset_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">csv_data</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">csv_data</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">quotechar</span><span class="o">=</span><span class="s2">&quot;|&quot;</span><span class="p">)</span>
+                <span class="n">rset</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+
+        <span class="c1"># &gt; raise an error when the file extension is not supported</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Unknown &#39;{0}&#39; rset extension.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rset_file</span><span class="p">))</span>
+
+        <span class="c1"># Debug message</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;RQL result: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">rset</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rset</span></div>
+
+<div class="viewcode-block" id="CWInstanceConnection.get_genotype_measure"><a class="viewcode-back" href="../../generated/cwbrowser.cw_connection.html#cwbrowser.cw_connection.CWInstanceConnection.get_genotype_measure">[docs]</a>    <span class="k">def</span> <span class="nf">get_genotype_measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gene_name</span><span class="p">,</span> <span class="n">genomic_measure</span><span class="p">,</span> <span class="n">nb_tries</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method that loads the genomic measures stored in PLINK format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        gene_name: str (mandatory)</span>
+<span class="sd">            a gene name used to limit the number of measures that will be</span>
+<span class="sd">            loaded.</span>
+<span class="sd">        genomic_measure: str (mandatory)</span>
+<span class="sd">            the genomic measure name associated to PLINK files.</span>
+<span class="sd">        nb_tries: int (optional default 3)</span>
+<span class="sd">            if the update has not been detected after &#39;nb_of_try&#39; trials</span>
+<span class="sd">            raise an exception.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        rset: dict</span>
+<span class="sd">            dictionary with &#39;labels&#39; and &#39;records&#39; (that contains</span>
+<span class="sd">            the requested cubicweb database parameters).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Debug message</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Genotype extraction: &#39;{0}&#39;, &#39;{1}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">genomic_measure</span><span class="p">,</span> <span class="n">gene_name</span><span class="p">))</span>
+
+        <span class="c1"># Create a dictionary with the request meta information</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;__login&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span>
+            <span class="s2">&quot;__password&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">,</span>
+            <span class="s2">&quot;vid&quot;</span><span class="p">:</span> <span class="s2">&quot;metagen-search-json&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;measure&quot;</span><span class="p">:</span> <span class="n">genomic_measure</span><span class="p">,</span>
+            <span class="s2">&quot;gene&quot;</span><span class="p">:</span> <span class="n">gene_name</span><span class="p">,</span>
+            <span class="s2">&quot;export&quot;</span><span class="p">:</span> <span class="s2">&quot;data&quot;</span>
+        <span class="p">}</span>
+        
+        <span class="n">try_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>  <span class="c1"># Get the result set, it will always try at least once</span>
+                <span class="n">try_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">,</span>
+                    <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">reason</span><span class="p">)</span>
+                <span class="n">rset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">importers</span><span class="p">[</span><span class="s2">&quot;json&quot;</span><span class="p">](</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">try_count</span> <span class="o">&gt;=</span> <span class="n">nb_tries</span><span class="p">:</span>
+                    <span class="c1"># keep original message of e and add infos</span>
+                    <span class="n">e</span><span class="o">.</span><span class="n">message</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to get data after {} tries.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="s2">&quot;Request: {}&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nb_tries</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;rql&quot;</span><span class="p">])</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># wait 1 second before retrying</span>
+
+        <span class="c1"># Debug message</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Genotype result: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">rset</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rset</span></div>
+
+    <span class="c1">###########################################################################</span>
+    <span class="c1"># Private Members</span>
+    <span class="c1">###########################################################################</span>
+
+    <span class="k">def</span> <span class="nf">_get_server_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sync_dir</span><span class="p">,</span> <span class="n">cwsearch_title</span><span class="p">,</span> <span class="n">cw_params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Download the CWSearch result trough a sftp connection.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            If a folder &#39;sync_dir&#39; + &#39;cwsearch_title&#39; is detected on the local</span>
+<span class="sd">            machine, no download is run. We assume that the CWSearch has already</span>
+<span class="sd">            been downloaded properly.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sync_dir: str (mandatory)</span>
+<span class="sd">            the destination folder where the rql data are synchronized.</span>
+<span class="sd">        cwsearch_title: str (mandatory)</span>
+<span class="sd">            the title of the CWSearch that will be downloaded.</span>
+<span class="sd">        cw_params: dict (mandatory)</span>
+<span class="sd">            a dictionary containing cw/fuse parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Build the mount point</span>
+        <span class="n">mount_point</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server_root</span><span class="p">,</span> <span class="n">cw_params</span><span class="p">[</span><span class="s2">&quot;instance_name&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Get the virtual folder to sync</span>
+        <span class="n">virtual_dir_to_sync</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mount_point</span><span class="p">,</span> <span class="n">cwsearch_title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Autodetected sync directory: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">virtual_dir_to_sync</span><span class="p">)</span>
+
+        <span class="c1"># Get the local folder</span>
+        <span class="n">local_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sync_dir</span><span class="p">,</span> <span class="n">cwsearch_title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">local_dir</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;The CWSearch &#39;{0}&#39; has been found at location &quot;</span>
+                  <span class="s2">&quot;&#39;{1}&#39;. Do not download the data again.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">cwsearch_title</span><span class="p">,</span> <span class="n">local_dir</span><span class="p">))</span>
+
+        <span class="c1"># Rsync via paramiko and sftp</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">transport</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">Transport</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
+            <span class="n">transport</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">)</span>
+            <span class="n">sftp</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPClient</span><span class="o">.</span><span class="n">from_transport</span><span class="p">(</span><span class="n">transport</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Downloading: &#39;</span><span class="si">%s</span><span class="s2">&#39; to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">virtual_dir_to_sync</span><span class="p">,</span>
+                             <span class="n">local_dir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sftp_get_recursive</span><span class="p">(</span><span class="n">virtual_dir_to_sync</span><span class="p">,</span> <span class="n">local_dir</span><span class="p">,</span> <span class="n">sftp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Downloading done&quot;</span><span class="p">)</span>
+
+            <span class="n">sftp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">transport</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_sftp_get_recursive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">sftp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Recursive download of the data through a sftp connection.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str (mandatory)</span>
+<span class="sd">            the sftp path to download.</span>
+<span class="sd">        dest: str (mandatory)</span>
+<span class="sd">            the destination folder on the local machine.</span>
+<span class="sd">        sftp: paramiko sftp connection (mandatory)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Go through the current sftp folder content</span>
+        <span class="n">dir_items</span> <span class="o">=</span> <span class="n">sftp</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dir_items</span><span class="p">:</span>
+
+            <span class="c1"># Construct the item absolute path</span>
+            <span class="n">item_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+            <span class="n">dest_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+
+            <span class="c1"># If a directory is found</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sftp_isdir</span><span class="p">(</span><span class="n">item_path</span><span class="p">,</span> <span class="n">sftp</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_sftp_get_recursive</span><span class="p">(</span><span class="n">item_path</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">,</span> <span class="n">sftp</span><span class="p">)</span>
+
+            <span class="c1"># Otherwise transfer the data</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sftp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">item_path</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_sftp_isdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">sftp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Check if a distant path is a directory through a sftp connection.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str (mandatory)</span>
+<span class="sd">            the sftp path to download.</span>
+<span class="sd">        sftp: paramiko sftp connection (mandatory)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_ISDIR</span><span class="p">(</span><span class="n">sftp</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">st_mode</span><span class="p">)</span>
+        <span class="c1">#Path does not exist, so by definition not a directory</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">_create_cwsearch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rql</span><span class="p">,</span> <span class="n">export_type</span><span class="o">=</span><span class="s2">&quot;cwsearch&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Method that creates a CWSearch entity from a rql.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            The CWSearch title has to be unique, build automatically title</span>
+<span class="sd">            of the form &#39;auto_generated_title_x&#39; where x is incremented</span>
+<span class="sd">            each time an element is inserted in the data base.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rql: str (mandatory)</span>
+<span class="sd">            the rql rquest that will be executed on the cw instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Debug message</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Executing rql: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">rql</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Exporting in: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">export_type</span><span class="p">)</span>
+
+        <span class="c1"># Create a dictionary with the request meta information</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;__login&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span>
+            <span class="s2">&quot;__password&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">,</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">rql</span><span class="p">,</span>
+            <span class="s2">&quot;vid&quot;</span><span class="p">:</span> <span class="n">export_type</span> <span class="o">+</span> <span class="s2">&quot;export&quot;</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Get the result set</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">,</span>
+                                 <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">reason</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">importers</span><span class="p">[</span><span class="n">export_type</span><span class="p">](</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;exitcode&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t create &#39;CWSearch&#39; from RQL &#39;{0}&#39;: &quot;</span>
+                             <span class="s2">&quot;{1}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rql</span><span class="p">,</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">]))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+
+    <div class="clearer">
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+    &copy; 2018, Antoine Grigis - antoine.grigis@cea.fr &lt;antoine.grigis@cea.fr&gt;.
+</div>
+  </body>
+</html>
