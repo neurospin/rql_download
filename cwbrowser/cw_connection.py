@@ -1,39 +1,51 @@
-#! /usr/bin/env python
 ##########################################################################
-# NSAp - Copyright (C) CEA, 2013
+# NSAp - Copyright (C) CEA, 2013 - 2018
 # Distributed under the terms of the CeCILL-B license, as published by
 # the CEA-CNRS-INRIA. Refer to the LICENSE file or to
 # http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html
 # for details.
 ##########################################################################
 
+"""
+A module to connect a CubicWeb service and send requests.
+"""
+
 # System import
 from __future__ import print_function
 import os
 import sys
-import urllib2
-import urllib
 import json
-import csv
 import time
-import paramiko
 import stat
 import glob
+import csv
+try:
+    # for Python 2.x
+    from StringIO import StringIO
+except ImportError:
+    # for Python 3.x
+    from io import StringIO
+
+# Third party import
+import requests
+import numpy
+import paramiko
 
 
-def load_csv(csv_stream, delimiter=";"):
-    """ Load a csv file.
+def load_csv(text, delimiter=";"):
+    """ Load a csv.
 
     Parameters
     ----------
-    csv_stream: open file (mandatory)
-        the file stream we want to load.
+    text: string (mandatory)
+        the csv text.
 
     Returns
     -------
     csv_lines: list
         a list containing all the csv lines.
     """
+    csv_stream = StringIO(text)
     reader = csv.reader(csv_stream, delimiter=delimiter)
     csv_lines = [line for line in reader]
 
@@ -63,7 +75,7 @@ class CWInstanceConnection(object):
 
         # HTTPS test
         url = @HTTPSURL; login = @LOGIN; password = @PWD
-        connection = CWInstanceConnection(url, login, password, realm="Imagen",
+        connection = CWInstanceConnection(url, login, password,
                                           server_root="/home/$login")
         connection.execute(rql)
 
@@ -79,14 +91,14 @@ class CWInstanceConnection(object):
     # Global variable that specify the supported export cw formats
     _EXPORT_TYPES = ["json", "csv", "cw"]
     importers = {
-        "json": json.load,
+        "json": json.loads,
         "csv": load_csv,
-        "cw": json.load,
-        "cwsearch": json.load
+        "cw": json.loads,
+        "cwsearch": json.loads
     }
 
-    def __init__(self, url, login, password, realm=None, port=22,
-                 server_root=os.path.sep, verbosity=0):
+    def __init__(self, url, login, password, port=22, server_root=os.path.sep,
+                 verify=True, verbosity=0):
         """ Initilize the HTTPConnection class.
 
         Parameters
@@ -97,33 +109,35 @@ class CWInstanceConnection(object):
             the cw login.
         password: str (mandatory)
             the cw user password.
-        realm: str (optional default None)
-            authentification domain (see firefox -> Outils -> Developpement web
-            -> Reseau -> Get)
         port: int (optional default 22)
             the sftp port.
         server_root: str (optional default '/')
             the server root directory where the user mount points (chroot) are
             mapped.
+        verify: bool (optional, default True)
+            if unset, disable the security certificate check.
         verbosity: int (optional default 0)
             the verbosity level.
         """
         # Class parameters
+        if not url.startswith("https"):
+            raise ValueError(
+                "Authentication was requested on a non secured URL ({0})."
+                "Request has been blocked for security reasons.".format(url))
         self.url = url
         self.login = login
         self.password = password
         self.host = self.url.split("/")[2].split(":")[0]
         self.port = port
-        self.realm = realm
         self.server_root = server_root
+        self.verify = verify
         self.verbosity = verbosity
-        self._connect(password)
 
     ###########################################################################
     # Public Members
     ###########################################################################
 
-    def execute(self, rql, export_type="json", nb_tries=2, timeout=300):
+    def execute(self, rql, export_type="json", nb_tries=2):
         """ Method that loads the rset from a rql request.
 
         Parameters
@@ -134,9 +148,6 @@ class CWInstanceConnection(object):
             the result set export format: one defined in '_EXPORT_TYPES'.
         nb_tries: int (optional default 2)
             number of times a request will be repeated if it fails.
-        timeout: int (optional, default 300)
-            number of seconds to wait for server response before considering
-            that the request failed.
 
         Returns
         -------
@@ -155,6 +166,8 @@ class CWInstanceConnection(object):
 
         # Create a dictionary with the request meta information
         data = {
+            "__login": self.login,
+            "__password": self.password,
             "rql": rql,
             "vid": export_type + "export",
             "_binary": 1
@@ -166,17 +179,18 @@ class CWInstanceConnection(object):
         while True:
             try:  # Get the result set, it will always try at least once
                 try_count += 1
-                response = self.opener.open(self.url, urllib.urlencode(data),
-                                            timeout=timeout)
-                rset = self.importers[export_type](response)
+                response = requests.post(
+                    self.url, data=data,verify=self.verify,
+                    auth=(self.login, self.password))
+                if not response.ok:
+                    raise ValueError(response.reason)
+                rset = self.importers[export_type](response.content)
                 break
             except Exception as e:
                 if try_count >= nb_tries:
                     # keep original message of e and add infos
                     e.message += ("\nFailed to get data after {} tries.\n"
-                                 "Timeout was set to: {} seconds\n"
-                                 "Request: {}").format(nb_tries, timeout,
-                                                       data['rql'])
+                                  "Request: {}").format(nb_tries, data["rql"])
                     raise e
                 time.sleep(1)  # wait 1 second before retrying
 
@@ -297,8 +311,7 @@ class CWInstanceConnection(object):
 
         return rset
 
-    def get_genotype_measure(self, gene_name, genomic_measure, nb_tries=3,
-                             timeout=300):
+    def get_genotype_measure(self, gene_name, genomic_measure, nb_tries=3):
         """ Method that loads the genomic measures stored in PLINK format.
 
         Parameters
@@ -311,9 +324,6 @@ class CWInstanceConnection(object):
         nb_tries: int (optional default 3)
             if the update has not been detected after 'nb_of_try' trials
             raise an exception.
-        timeout: int (optional, default 300)
-            number of seconds to wait for server response before considering
-            that the request failed.
 
         Returns
         -------
@@ -328,6 +338,8 @@ class CWInstanceConnection(object):
 
         # Create a dictionary with the request meta information
         data = {
+            "__login": self.login,
+            "__password": self.password,
             "vid": "metagen-search-json",
             "measure": genomic_measure,
             "gene": gene_name,
@@ -338,17 +350,18 @@ class CWInstanceConnection(object):
         while True:
             try:  # Get the result set, it will always try at least once
                 try_count += 1
-                response = self.opener.open(self.url, urllib.urlencode(data),
-                                            timeout=timeout)
-                rset = self.importers["json"](response)
+                response = requests.post(
+                    self.url, data=data, verify=self.verify,
+                    auth=(self.login, self.password))
+                if not response.ok:
+                    raise ValueError(response.reason)
+                rset = self.importers["json"](response.content)
                 break
             except Exception as e:
                 if try_count >= nb_tries:
                     # keep original message of e and add infos
                     e.message += ("\nFailed to get data after {} tries.\n"
-                                 "Timeout was set to: {} seconds\n"
-                                 "Request: {}").format(nb_tries, timeout,
-                                                       data['rql'])
+                                  "Request: {}").format(nb_tries, data["rql"])
                     raise e
                 time.sleep(1)  # wait 1 second before retrying
 
@@ -475,38 +488,18 @@ class CWInstanceConnection(object):
 
         # Create a dictionary with the request meta information
         data = {
+            "__login": self.login,
+            "__password": self.password,
             "path": rql,
-            "vid": export_type + "export",
+            "vid": export_type + "export"
         }
 
         # Get the result set
-        response = self.opener.open(self.url, urllib.urlencode(data))
-        status = self.importers[export_type](response)
+        response = requests.post(self.url, data=data, verify=self.verify,
+                                 auth=(self.login, self.password))
+        if not response.ok:
+            raise ValueError(response.reason)
+        status = self.importers[export_type](response.content)
         if status["exitcode"] != 0:
             raise ValueError("Can't create 'CWSearch' from RQL '{0}': "
                              "{1}.".format(rql, status["stderr"]))
-
-    def _connect(self, password):
-        """ Method to create an object that handle opening of HTTP/HTTPS URLs.
-
-        Parameters
-        ----------
-        password: str (mandatory)
-            the cw user password.
-        """
-        # Create the handlers and the associated opener
-        self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
-        if self.realm is not None:
-            auth_handler = urllib2.HTTPBasicAuthHandler()
-            auth_handler.add_password(realm=self.realm,
-                                      uri=self.url,
-                                      user=self.login,
-                                      passwd=password)
-            self.opener.add_handler(auth_handler)
-
-        # Connect to the cw instance
-        data = {
-            "__login": self.login,
-            "__password": password,
-        }
-        self.opener.open(self.url, urllib.urlencode(data))

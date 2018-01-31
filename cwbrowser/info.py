@@ -1,6 +1,5 @@
-#! /usr/bin/env python
 ##########################################################################
-# NSAp - Copyright (C) CEA, 2013
+# NSAp - Copyright (C) CEA, 2013 - 2018
 # Distributed under the terms of the CeCILL-B license, as published by
 # the CEA-CNRS-INRIA. Refer to the LICENSE file or to
 # http://www.cecill.info/licences/Licence_CeCILL-B_V1-en.html
@@ -10,7 +9,7 @@
 # cwbrowser current version
 _version_major = 2
 _version_minor = 2
-_version_micro = 0
+_version_micro = 1
 
 
 # Expected by setup.py: string of form "X.Y.Z"
@@ -31,15 +30,27 @@ CLASSIFIERS = [
         "Topic :: Utilities"]
 
 # Project descriptions
-description = "CWBROWSER"
+description = "Python package to request CubicWeb services."
+SUMMARY = """
+.. container:: summary-carousel
+
+    CWBrowser is a Python module to **access data in a CubicWeb service** that
+    offers:
+
+    * a common API to send a request and if requested retrived the image data.
+    * a common API to deal with genomic measures stored in PLINK format.
+"""
 long_description = """
 =========
-CWBROWSER
+CWBrowser
 =========
 
-Summary
--------
-Methods to access information in a CubicWeb database.
+Python package to request CubicWeb services in order to get:
+
+* eCRF data.
+* imaging data: T1, T2, dMRI, fMRI, ...
+* genotype data.
+* processed data: FreeSurfer, MrTrix3, FSL, SPM, ...
 """
 
 # Main setup parameters
@@ -53,12 +64,13 @@ URL = "https://github.com/neurospin/rql_download.git"
 DOWNLOAD_URL = "https://github.com/neurospin/rql_download.git"
 LICENSE = "CeCILLB"
 CLASSIFIERS = CLASSIFIERS
-AUTHOR = "CWBROWSER developers"
+AUTHOR = "{0} - {1}".format(MAINTAINER, MAINTAINER_EMAIL)
 AUTHOR_EMAIL = "antoine.grigis@cea.fr"
 PLATFORMS = "OS Independent"
 VERSION = __version__
 PROVIDES = ["cwbrowser"]
 REQUIRES = [
-    "paramiko",
+    "paramiko>=1.16",
+    "requests>=2.18"
 ]
 EXTRA_REQUIRES = {}
