@@ -1,45 +1,27 @@
-============
-RQL Download
-============
+=========
+CWBrowser
+=========
 
 Summary
 =======
 
-Cube to download a complete subset of data via SFTP (two strategies proposed) and remotely query the database.
-Check `this link <https://neurospin.github.io/rql_download/>`_ for the complete
-documentation.
+This Python package allows remote quering to a CubicWeb instance that inherit the RQL DOWNLOAD cube features.
+This cube allows to setup a SFTP service on the server hosting your database. Thus, all query results are accessible (we use the python_fuse_ package or Twisted_ to build the filesystem) through a predefinite SFTP repository. Users can then access and download their data using the SFTP protocol.
+
 
 Content
 =======
 
-cwbrowser
----------
 
-This module allows remote quering in the database. It's available on pypi:
+Cube
+----
 
-- |latest_version|
-- |Development_Status|
-- |License|
+Check `this link <https://neurospin.github.io/rql_download/cube>`_ for the complete
+documentation of the CubicWeb cube described above.
 
-It provides meethods to script requests to a cubicweb database and inherits from the rql_download cube.
+Remote Python API
+-----------------
 
-.. |latest_version| image:: https://pypip.in/version/cwbrowser/badge.png
-                        :target: https://pypi.python.org/pypi/cwbrowser/
-                        :alt: Latest Version
-    
-.. |Development_Status| image:: https://pypip.in/status/cwbrowser/badge.png
-                            :target: https://pypi.python.org/pypi/cwbrowser/
-                            :alt: Development Status
+Check `this link <https://neurospin.github.io/rql_download/api>`_ for the complete
+documentation of the CWBrowser Python API described above.
 
-.. |License| image:: https://pypip.in/license/cwbrowser/badge.png
-                 :target: https://pypi.python.org/pypi/cwbrowser/
-                 :alt: License
-
-
-rql_download
-------------
-
-This module allows to setup a SFTP service on the server hosting your database. Thus, all query results are accessible (we use the python_fuse_ package or Twisted_ to build the filesystem) through a predefinite SFTP repository. Users can then access and download their data using the SFTP protocol.
-
-.. _Twisted: https://pypi.python.org/pypi/Twisted
-.. _python_fuse: https://pypi.python.org/pypi/fuse-python

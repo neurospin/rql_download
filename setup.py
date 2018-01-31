@@ -8,8 +8,6 @@
 ##########################################################################
 
 # System import
-from ez_setup import use_setuptools
-use_setuptools()
 import os
 from setuptools import find_packages, setup
 
