@@ -11,7 +11,10 @@ A module with common functions.
 """
 
 # System import
+import sys
 import getpass
+if sys.version_info[0] > 2:
+    raw_input = input
 
 
 def logo():

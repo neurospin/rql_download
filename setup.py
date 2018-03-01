@@ -20,7 +20,10 @@ for module in find_packages():
 
 # Get the package meta information
 release_info = {}
-execfile(os.path.join("cwbrowser", "info.py"), release_info)
+infopath = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "cwbrowser", "info.py"))
+with open(infopath) as open_file:
+    exec(open_file.read(), release_info)
 
 # Build the setup
 setup(

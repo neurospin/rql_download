@@ -19,12 +19,11 @@ import time
 import stat
 import glob
 import csv
-try:
-    # for Python 2.x
-    from StringIO import StringIO
-except ImportError:
-    # for Python 3.x
+if sys.version_info[0] > 2:
+    basestring = str
     from io import StringIO
+else:
+    from StringIO import StringIO
 
 # Third party import
 import requests
@@ -184,7 +183,8 @@ class CWInstanceConnection(object):
                     auth=(self.login, self.password))
                 if not response.ok:
                     raise ValueError(response.reason)
-                rset = self.importers[export_type](response.content)
+                rset = self.importers[export_type](
+                    response.content.decode("utf-8"))
                 break
             except Exception as e:
                 if try_count >= nb_tries:
@@ -355,7 +355,7 @@ class CWInstanceConnection(object):
                     auth=(self.login, self.password))
                 if not response.ok:
                     raise ValueError(response.reason)
-                rset = self.importers["json"](response.content)
+                rset = self.importers["json"](response.content.decode("utf-8"))
                 break
             except Exception as e:
                 if try_count >= nb_tries:
@@ -499,7 +499,7 @@ class CWInstanceConnection(object):
                                  auth=(self.login, self.password))
         if not response.ok:
             raise ValueError(response.reason)
-        status = self.importers[export_type](response.content)
+        status = self.importers[export_type](response.content.decode("utf-8"))
         if status["exitcode"] != 0:
             raise ValueError("Can't create 'CWSearch' from RQL '{0}': "
                              "{1}.".format(rql, status["stderr"]))

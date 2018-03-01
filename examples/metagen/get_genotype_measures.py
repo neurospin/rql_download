@@ -158,5 +158,7 @@ for row in records:
     info[row[0]] = {}
     for key, val in zip(rs_ids, row[2:]):
         info[row[0]][key] = val
-print("The genotype measures associated to 'BRCA2' and 'TOMM22P2':")
-pprint(info)
+sid = info.keys()[0]
+print("The genotype measures of '{0}' associated to 'BRCA2' and "
+      "'TOMM22P2':".format(sid))
+pprint(info[sid])
