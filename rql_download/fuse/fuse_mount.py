@@ -31,7 +31,15 @@ from cubes.rql_download.fuse.fuse import (FUSE,
                                           ENOTSUP)
 # Define the logger
 logger = logging.getLogger("fuse.log-mixin")
-logger.setLevel(logging.DEBUG)
+
+# Define a mapping to the logging level
+levels = {
+    "DEBUG": logging.DEBUG,
+    "INFO": logging.INFO,
+    "WARNING": logging.WARNING,
+    "ERROR": logging.ERROR,
+    "CRITICAL": logging.CRITICAL
+}
 
 # Define a mapping between cw export vid and file extension
 VID_TO_EXT = {
@@ -395,7 +403,7 @@ class FuseRset(Operations):
         """
 
         # Message
-        logger.debug("! starting virtual directory update")
+        logger.info("! Starting virtual directory update")
 
         # Get the cw session to execute rql requests
         repo = self.queue.get()
@@ -418,7 +426,7 @@ class FuseRset(Operations):
                 for cwsearch_eid, cwsearch_name in cnx.execute(rql):
 
                     # Message
-                    logger.debug(
+                    logger.info(
                         "! Processing CWSearch '{0}'".format(cwsearch_name))
 
                     # Get the files associated to the current CWSearch
@@ -428,7 +436,7 @@ class FuseRset(Operations):
 
                     # Get the downloadable files path from the json
                     files = json.load(files_data[0])["files"]
-                    logger.debug("! Found {0} valid files for '{1}'".format(
+                    logger.info("! Found {0} valid files for '{1}'".format(
                         len(files), cwsearch_name))
 
                     # Get the rset binary associated to the current CWSearch
@@ -480,7 +488,7 @@ class FuseRset(Operations):
             # Put back the connection into the queue
             self.queue.put(repo)
             # Message
-            logger.debug("! update done")
+            logger.info("! Update done")
 
     ########################################################################
     # Filesystem methods
@@ -625,84 +633,96 @@ class FuseRset(Operations):
     ########################################################################
 
     def chmod(self, path, mode):
-        logging.error("chmod")
+        logging.debug("chmod: operation not supported.")
         raise FuseOSError(EROFS)
 
     def chown(self, path, uid, gid):
-        logger.error("chown")
+        logger.debug("chown: operation not supported.")
         raise FuseOSError(EROFS)
 
     def create(self, path, mode, fi=None):
-        logger.error("create")
+        logger.debug("create: operation not supported.")
         raise FuseOSError(EROFS)
 
     def fsync(self, path, datasync, fh):
-        logger.error("fsync")
+        logger.debug("fsync: operation not supported.")
         raise FuseOSError(ENOTSUP)
 
     def fsyncdir(self, path, datasync, fh):
-        logger.error("fsyncdir")
+        logger.debug("fsyncdir: operation not supported.")
         raise FuseOSError(ENOTSUP)
 
     def link(self, target, source):
-        logger.error("link")
+        logger.debug("link: operation not supported.")
         raise FuseOSError(EROFS)
 
     def mkdir(self, path, mode):
-        logger.error("mkdir")
+        logger.debug("mkdir: operation not supported.")
         raise FuseOSError(EROFS)
 
     def mknod(self, path, mode, dev):
-        logger.error("mknod")
+        logger.debug("mknod: operation not supported.")
         raise FuseOSError(EROFS)
 
     def readlink(self, path):
-        logger.error("readlink")
+        logger.debug("readlink: operation not supported.")
         raise FuseOSError(ENOTSUP)
 
     def removexattr(self, path, name):
-        logger.error("removexattr")
+        logger.debug("removexattr: operation not supported.")
         raise FuseOSError(ENOTSUP)
 
     def rename(self, old, new):
-        logger.error("rename")
+        logger.debug("rename: operation not supported.")
         raise FuseOSError(EROFS)
 
     def rmdir(self, path):
-        logger.error("rmdir")
+        logger.debug("rmdir: operation not supported.")
         raise FuseOSError(EROFS)
 
     def setxattr(self, path, name, value, options, position=0):
-        logger.error("setxattr")
+        logger.debug("setxattr: operation not supported.")
         raise FuseOSError(ENOTSUP)
 
     def statfs(self, path):
-        logger.error("statfs")
+        logger.debug("statfs: operation not supported.")
         raise FuseOSError(ENOTSUP)
 
     def symlink(self, target, source):
-        logger.error("symlink")
+        logger.debug("symlink: operation not supported.")
         raise FuseOSError(EROFS)
 
     def truncate(self, path, length, fh=None):
-        logger.error("truncate")
+        logger.debug("truncate: operation not supported.")
         raise FuseOSError(EROFS)
 
     def unlink(self, path):
-        logger.error("unlink")
+        logger.debug("unlink: operation not supported.")
         raise FuseOSError(EROFS)
 
     def utimens(self, path, times=None):
-        logger.error("utimens")
+        logger.debug("utimens: operation not supported.")
         raise FuseOSError(ENOTSUP)
 
     def write(self, path, data, offset, fh):
-        logger.error("write")
+        logger.debug("write: operation not supported.")
         raise FuseOSError(EROFS)
 
 
 def start(instance_name, login, queue):
 
+    # Define the fuse log level
+    logger.setLevel(logging.DEBUG)
+    level_name = get_cw_option(instance_name, "log-threshold")
+    level = levels.get(level_name)
+    if level is None:
+        logger.setLevel(logging.DEBUG)
+        logger.error("Unsupported log level {0}, setting to default.".format(
+            level_name))
+    else:
+        logger.setLevel(level)      
+
+    # Get mount parameters
     mount_base = get_cw_option(instance_name, "mountdir")
     mount_point = os.path.join(mount_base, login, instance_name)
     logger.debug("Command line parameters: instance name = {0}, login = {1} "
