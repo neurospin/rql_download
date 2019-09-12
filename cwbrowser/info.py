@@ -70,7 +70,7 @@ PLATFORMS = "OS Independent"
 VERSION = __version__
 PROVIDES = ["cwbrowser"]
 REQUIRES = [
-    "paramiko>=1.16",
-    "requests>=2.18"
+    "paramiko>=2.6",
+    "requests>=2.21"
 ]
 EXTRA_REQUIRES = {}
